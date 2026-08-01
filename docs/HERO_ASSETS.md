@@ -2,9 +2,10 @@
 
 The hero plays `public/assets/home/kitchen-film.mp4` — the owner's ten-second
 kitchen film, shot with the real packets. It is the same file the 3D world
-below the hero is built from, cut differently: the hero runs the whole ten
-seconds once, the world takes six shots out of it and holds each one on a
-screen standing in the corridor (see [HOME_WORLD.md](./HOME_WORLD.md)).
+below the hero is built from, cut differently: the hero plays the whole ten
+seconds on a loop, the world takes six shots out of it and holds each one on
+a tiled screen standing in the corridor (see
+[HOME_WORLD.md](./HOME_WORLD.md)).
 
 One film, one download, one decoder warm by the time the world starts.
 
@@ -13,34 +14,31 @@ generated. So is the film. Nothing on this page comes from a third-party
 host — `next.config.ts` declares no `remotePatterns`, and there is no CDN
 fallback to fail over to, because there is nothing to fall back from.
 
-## Scrolling is the projector
+## The film plays; the scroll moves the room
 
-The scroll position *is* the film's playhead, not a trigger for it. Stop
-scrolling and the toss freezes mid-air; scroll back and the masala goes back
-into the sachet.
+The film runs on its own clock, muted and looping, from the moment it has a
+frame to show. It is not scrubbed, and it is not waiting to be triggered: a
+cooking film is a performance, and a wheel is not what should be performing
+it — the toss hangs, the oil bubbles and the fry crisps at the speed they
+were shot at, whether the page is moving or not.
 
-| Scroll | Scene | Playhead |
-| ------ | ----- | -------- |
-| 0–20% | The toss. Florets and chilli hanging over the plate. | 0 → 2.35s |
-| 20–50% | The hands. The sachet opens, the masala goes on. | 2.35 → 5.5s |
-| 50–75% | Into the oil, and the fry. | 5.5 → 7.45s |
-| 75–100% | Plated, then both packs behind both plates. | 7.45 → 10s |
+The scroll still drives the hero, it just drives everything around the
+footage. One number does it: the stage carries `--p`, the raw scroll
+progress through the section, and `Hero.module.css` derives the dolly, the
+vignette, the readability scrim and the closing wash from it, while the same
+timeline hands the copy from one beat to the next.
 
-The four boundaries are **the cuts in the footage**. That is the whole reason
-they sit where they do: a scene of the storyboard must never straddle a cut,
-or the scrub lands on a frame belonging to the next shot and the copy is
-captioning the wrong picture.
+| Scroll | What moves |
+| ------ | ---------- |
+| 0–14% | The opening card holds; the scroll cue fades. |
+| 14–56% | The title card steps aside, the room walks forward. |
+| 56–72% | The subheadline steps back so the food can fill the screen. |
+| 72–95% | The copy lifts and the sign-off card fades up over the film. |
+| 95–100% | The wash to cream, into the world below. |
 
-It runs forward, all the way through, and lands on the packs — the film's own
-last shot arrives exactly as the sign-off card fades up over it. An earlier
-version of this hero ran its last leg backwards, which is free with a
-generated explosion (the reverse of one is a perfect landing) and wrong with
-real kitchen footage: hands un-pouring masala reads as a video played in
-reverse, because it is one.
-
-The copy is keyed to the same progress: the title card steps aside as the
-sachet opens, the subheadline steps back for the fry so the food can fill the
-screen, and the logo lockup lands with the plated dish.
+The film pauses when the section leaves the viewport, and picks up again
+when it comes back. A decoder running behind a page nobody is looking at is
+a battery bill for a picture that is not on screen.
 
 ## Two layouts, decided by a media query
 
@@ -55,8 +53,8 @@ timeline. **The two must stay in step.**
 
 Because the stylesheet alone decides this, the hero is in its final shape on
 the first paint. The film then arrives into a stage that is already the right
-size: it fades in over its own poster and picks up the playhead, and nothing
-on screen moves to accommodate it. The poster alone already carries the
+size: it fades in over its own poster and starts running, and nothing on
+screen moves to accommodate it. The poster alone already carries the
 dolly, the vignette and every copy beat, so the hero is never a dead stretch
 of scrolling while the video downloads.
 
@@ -65,36 +63,31 @@ straight out of the mp4. That is not a nicety: the still and the video are
 registered to the same pixel, so the dissolve between them has nothing to
 give away.
 
-## Getting the film scrubbable
+## Getting the film on screen
 
-Scrubbing needs random access to the whole file, and streaming cannot give
-it: every seek becomes a range request, and a scroll asks for them far
-faster than the network can answer, so the picture sticks on whichever frame
-arrived last. Three things in `Hero.tsx` prevent that, and all three matter.
+It is an ordinary muted, looping, autoplaying `<video>` served from
+`/public`. There is no blob, no proxy and no fetch of our own, because
+nothing here needs random access to the file: playing forward is exactly
+what a stream is good at, and the browser starts as soon as it has enough
+to go on.
 
-- **The file is downloaded once, not streamed.** It is fetched into a blob
-  on the first scroll, wheel, touch or pointer event (with a 0.5s fallback)
-  and the element is handed the object URL, after which every seek is local.
-  This is why the film has to be **same-origin**: a cross-origin host that
-  sends no CORS headers kills the blob fetch in the browser and the hero
-  silently degrades to unscrubbable streaming — which is exactly "the video
-  doesn't load when I scroll". It is served from `/public`, so this holds by
-  construction. If the fetch still fails, or the file is heavier than 28MB,
-  the element streams from the same path and the seek loop clamps to the
-  buffered end, so the scrub follows the downloaded footage instead of
-  freezing.
-- **The playhead is handed over on `canplaythrough`**, or once `buffered`
-  covers the duration — not on `loadeddata`, which only means a first frame
-  turned up.
-- **Only one seek is ever in flight.** The scroll writes a target; a
-  separate frame loop eases toward it and assigns `currentTime` only when
-  the previous seek has finished. The easing is also what turns a scrubbed
-  file into a camera move rather than something that tracks the wheel notch
-  for notch.
+Two details are deliberate.
 
-Safari additionally refuses to seek a video that has never played, so the
-element is played and paused once on `loadedmetadata` while it is still
-muted and showing frame zero.
+- **The element is not mounted at first paint.** It arrives on the first
+  scroll, wheel, touch or pointer event, with a half-second fallback so it
+  always arrives — the poster is a priority image, and the opening second
+  belongs to it and the fonts rather than to a video download.
+- **The crossfade is armed on `loadeddata`, not `canplaythrough`.** The
+  picture is only dissolving up over its own frame zero, so the moment
+  there is a frame to show is the moment to show it. Waiting for the whole
+  file would hold the still frame long after the film is moving underneath
+  it.
+
+An earlier version of this hero pulled the file into a blob and drove
+`currentTime` from the scroll position. All of that is gone: the machinery
+it needed — the same-origin blob fetch, the size cap, the single-seek-in-
+flight loop, the Safari priming play/pause — existed only to make seeking
+survivable, and nothing seeks any more.
 
 ## Depth
 
@@ -140,7 +133,7 @@ toggle appears by itself.
 
 | File | Purpose | Source |
 | ---- | ------- | ------ |
-| `public/assets/home/kitchen-film.mp4` | The film. Scrubbed by the hero, cut into six segments by the world. 1280×720, 10s, silent | owner-supplied |
+| `public/assets/home/kitchen-film.mp4` | The film. Played whole by the hero, cut into six segments by the world. 1280×720, 10s, silent | owner-supplied |
 | `public/assets/hero/hero-poster.webp` | The hero's poster, and the still shown on phones and with reduced motion. The film's own frame 0 | pulled from the film |
 | `public/assets/home/kitchen-film-poster.webp` | Poster for the flat layout's ordinary `<video>`. A frame from 9.35s | pulled from the film |
 | `public/assets/hero/ambience.mp3` | Optional ambient sizzle. Owner-supplied; the sound toggle only appears when this exists | not supplied |
@@ -152,10 +145,18 @@ toggle appears by itself.
 Headless Chromium ships without H.264, so the mp4 has to be intercepted and
 served as WebM for a harness run. Redirect that interception at a **static
 file** (`route.continue({url})`), never `route.fulfill` with a buffer: a
-fulfilled response carries no `Accept-Ranges`, the element reports the film
-as unseekable, every seek is silently clamped to zero, and the hero sits on
-frame one while looking, at a glance, like it is working.
+fulfilled response carries no `Accept-Ranges`, and the world's six screens
+each cue their own segment by seeking, which a body served without ranges
+silently clamps to zero.
 
-The hero's blob fetch is armed by a user gesture, so nudge the wheel before
-probing, then check `video.src` starts with `blob:` — if it still points at
-the mp4, you are measuring the streaming fallback, not the scrub.
+The hero's element is mounted on a user gesture, so nudge the wheel before
+probing. Then read `currentTime` at two stops far enough apart to tell the
+two failure modes apart: a film that is genuinely playing gives different
+times that wrap around ten seconds, while a frozen one repeats itself.
+`paused` should be false anywhere inside the hero and true below it.
+
+`next start` snapshots `/public` at build time, and it holds its build
+manifest in memory — deleting `.next` under a running server leaves it
+serving HTML that points at chunks no longer on disk, which shows up as a
+500 and a MIME-type refusal rather than as anything to do with the page.
+Stop the server by pid before rebuilding.

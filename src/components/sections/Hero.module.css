@@ -103,7 +103,9 @@
 /*
  * The film arrives on a breath, not a switch: it dissolves in over its own
  * poster frame while settling from fractionally too large down to exact
- * registration, so the cut from still to moving is never visible.
+ * registration, so the cut from still to moving is never visible. The
+ * poster is the film's own frame zero, which is what leaves the dissolve
+ * nothing to give away.
  */
 .video {
   opacity: 0;
@@ -421,7 +423,7 @@
 
 /* ---------- Furniture ---------- */
 
-/* The marker only means something once the scroll is driving a film */
+/* The marker only means something where the scroll drives the stage */
 .cue {
   display: none;
   position: absolute;

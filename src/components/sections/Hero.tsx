@@ -20,15 +20,7 @@ const HEADLINE = ["Where", "Every", "Dish", "Comes", "Alive"];
  */
 const CINEMATIC = "(min-width: 768px) and (prefers-reduced-motion: no-preference)";
 
-/** Beyond this the film is not worth holding in memory, so it is streamed. */
-const MAX_INLINE_BYTES = 28 * 1024 * 1024;
-
-/** How fast the picture closes on where the scroll says it should be. */
-const PLAYHEAD_EASE = 0.22;
-
 export interface HeroAssets {
-  /** Same-origin, always: a cross-origin film cannot be fetched into a blob,
-   *  and without the blob it cannot be scrubbed. */
   videoSrc: string;
   posterSrc: string;
   /** Ambient sizzle loop. Absent until the owner drops the file in. */
@@ -38,31 +30,30 @@ export interface HeroAssets {
 /**
  * "A Feast in Motion".
  *
- * The kitchen film, and the scroll wheel is the projector. The gobi hangs
- * over the plate, the sachet opens, the masala goes on, it fries, and both
- * packs land behind both finished plates. Stop scrolling and the food
- * freezes mid-air; scroll back and it runs backwards, because the scroll
- * position *is* the playhead rather than something that merely triggers
- * playback.
+ * The kitchen film plays, on its own, at its own speed: the gobi hangs over
+ * the plate, the sachet opens, the masala goes on, it fries, and both packs
+ * land behind both finished plates. It loops, and it never waits to be
+ * driven — a cooking film is a performance, and the scroll is not what
+ * should be performing it.
  *
- * It is the same file the 3D world below plays, cut differently: here the
- * whole ten seconds runs once from top to bottom of the hero, so the section
- * ends on the product at the exact moment the sign-off card fades up.
+ * The scroll still does plenty; it just does it to the room rather than to
+ * the footage. The stage is a real 3D space rather than a stack of flat
+ * layers: the film hangs a long way back inside a perspective, so the
+ * pointer swings it on two axes while the type stays put in front of it,
+ * and the scroll walks it forward through that space instead of merely
+ * scaling it up. One number carries all of it — the stage gets `--p`, the
+ * raw scroll progress, and the stylesheet derives the dolly, the vignette,
+ * the scrim and the closing wash from it, while the copy beats hand over
+ * along the same timeline.
  *
- * The stage is a real 3D space rather than a stack of flat layers. The film
- * hangs a long way back inside a perspective, so the pointer swings it on
- * two axes while the type stays put in front of it, and the scroll walks it
- * forward through that space instead of merely scaling it up.
- *
- * Two numbers carry the whole thing. The stage gets `--p`, the raw scroll
- * progress, and the stylesheet derives the dolly, the vignette and the scrim
- * from it; the other is the film's playhead.
+ * The tiled wall of this same film is the world below the hero, not this
+ * section: here it is the footage itself, played whole.
  *
  * Which of the two layouts applies is decided by a media query in the
  * stylesheet, not by this component, so the hero is already in its final
  * shape on the very first paint. The film then arrives into a stage that is
- * already the right size: it fades in over its own poster frame and picks up
- * the playhead, and nothing on screen moves to accommodate it. Phones and
+ * already the right size: it fades in over its own poster frame and starts
+ * running, and nothing on screen moves to accommodate it. Phones and
  * readers who ask for reduced motion get the still frame, all the copy at
  * once, and a hero one screen tall.
  */
@@ -77,11 +68,8 @@ export default function Hero({
   const stageRef = usePointerParallax<HTMLDivElement>();
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  /** Where the scroll says the film should be, 0-1. Written every frame. */
-  const playheadRef = useRef({ value: 0 });
   const [cinematic, setCinematic] = useState(false);
   const [wantsVideo, setWantsVideo] = useState(false);
-  const [source, setSource] = useState<string | null>(null);
   const [filmReady, setFilmReady] = useState(false);
   const [ambient, setAmbient] = useState(false);
 
@@ -93,8 +81,10 @@ export default function Hero({
     return () => query.removeEventListener("change", update);
   }, []);
 
-  /* The file is fetched on the first sign of intent rather than at first
-     paint, with a short fallback so it is buffered before anyone reaches it. */
+  /* The film is asked for on the first sign of intent rather than at first
+     paint, so it is not competing with the fonts and the poster for the
+     opening second — with a short fallback, because a hero that waits for a
+     gesture that never comes is a hero nobody sees move. */
   useEffect(() => {
     if (!cinematic) return;
 
@@ -124,120 +114,34 @@ export default function Hero({
   }, [cinematic]);
 
   /*
-   * Scrubbing needs random access to the whole film, and a stream cannot
-   * give it: every seek becomes a range request, a scroll asks for them far
-   * faster than the network can answer, and the picture ends up stuck on
-   * whichever frame arrived last. So the file is pulled down once and the
-   * element is handed a blob, after which every seek is local and instant.
-   *
-   * If the host will not serve it to a fetch, or the file is too heavy to
-   * keep in memory, this falls back to streaming the URL directly — slower
-   * to become scrubbable, but never worse than before.
+   * A muted, looping film needs nothing from us to run, and the element's
+   * own `autoplay` covers the ordinary case. This is for the two it does
+   * not: a browser that refused the first attempt but will take one after
+   * the gesture that armed the fetch, and the stretch of page after the
+   * hero — a decoder running behind a section nobody is looking at is a
+   * battery bill for a picture that is not on screen.
    */
   useEffect(() => {
-    if (!wantsVideo) return;
-
-    const direct = assets.videoSrc;
-    const controller = new AbortController();
-    let objectUrl: string | null = null;
-    let live = true;
-
-    fetch(direct, { signal: controller.signal, credentials: "omit" })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const bytes = Number(response.headers.get("content-length") ?? 0);
-        if (bytes > MAX_INLINE_BYTES) throw new Error("too large to hold");
-        return response.blob();
-      })
-      .then((blob) => {
-        if (!live) return;
-        objectUrl = URL.createObjectURL(blob);
-        setSource(objectUrl);
-      })
-      .catch(() => {
-        if (live) setSource(direct);
-      });
-
-    return () => {
-      live = false;
-      controller.abort();
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [wantsVideo, assets.videoSrc]);
-
-  /*
-   * Ready means the whole film can be seeked without the network in the
-   * loop, not merely that a first frame turned up. Handing the playhead
-   * over at `loadeddata`, as this used to, is what left the picture stuck
-   * part of the way down the page.
-   */
-  const checkReady = useCallback((video: HTMLVideoElement) => {
-    if (video.readyState >= video.HAVE_ENOUGH_DATA) {
-      setFilmReady(true);
-      return;
-    }
-    const { buffered, duration } = video;
-    if (!Number.isFinite(duration) || duration === 0) return;
-    if (buffered.length === 0) return;
-    if (buffered.start(0) <= 0.05 && buffered.end(0) >= duration - 0.25) {
-      setFilmReady(true);
-    }
-  }, []);
-
-  /* Safari will not seek a video that has never played. Start it and stop
-     it again immediately, while it is still muted and showing frame zero. */
-  const prime = useCallback((video: HTMLVideoElement) => {
-    void video
-      .play()
-      .then(() => video.pause())
-      .catch(() => {});
-  }, []);
-
-  /*
-   * The scroll says where the film should be; this is what actually moves
-   * it, and it is deliberately not wired straight into the scroll handler.
-   * Only one seek is ever in flight, because a decoder cannot answer them
-   * as fast as a scroll can ask and the backlog is what looks like a frozen
-   * video. And it eases toward the target rather than snapping to it, which
-   * is what turns a scrubbed file into a camera move.
-   */
-  useEffect(() => {
-    if (!filmReady) return;
     const video = videoRef.current;
-    if (!video) return;
+    const section = sectionRef.current;
+    if (!video || !section) return;
 
-    let raf = 0;
-    let shown = playheadRef.current.value;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          void video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      /* A sliver is enough: the sticky stage is on screen for the whole
+         section, so this only ever fires at the two ends of it. */
+      { threshold: 0 },
+    );
+    observer.observe(section);
 
-    const tick = () => {
-      raf = requestAnimationFrame(tick);
-
-      const length = video.duration;
-      if (!Number.isFinite(length) || length === 0) return;
-
-      shown += (playheadRef.current.value - shown) * PLAYHEAD_EASE;
-      if (video.seeking) return;
-
-      /* Clear of the very end, which some browsers refuse to seek to */
-      let target = Math.min(shown * length, length - 0.05);
-
-      /* In the streaming fallback a seek past what has arrived parks the
-         decoder until the network catches up, which reads as a freeze. Hold
-         at the newest loaded frame instead and the scrub keeps moving; on a
-         blob everything is buffered and this changes nothing. */
-      const { buffered } = video;
-      if (buffered.length > 0) {
-        const loaded = buffered.end(buffered.length - 1) - 0.1;
-        if (loaded > 0 && target > loaded) target = loaded;
-      }
-
-      if (Math.abs(video.currentTime - target) < 0.02) return;
-      video.currentTime = target;
-    };
-
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [filmReady]);
+    return () => observer.disconnect();
+  }, [wantsVideo]);
 
   /*
    * Tells the floating navigation to switch to dark glass while this section
@@ -308,21 +212,20 @@ export default function Hero({
   }, [stageRef]);
 
   /*
-   * The storyboard, wired to the scroll bar: scene 1 the toss 0-20%, scene 2
-   * the hands 20-50%, scene 3 the fry 50-75%, scene 4 the plates 75-100%.
+   * The storyboard, wired to the scroll bar.
    *
-   * Built once, whether or not the film has landed. The playhead legs write
-   * into a ref that nothing reads until the file is scrubbable, so the video
-   * arriving never tears this timeline down and rebuilds it mid-scroll. The
-   * poster alone already carries the dolly, the vignette and every copy
-   * beat, so the hero is never a dead stretch while the video downloads.
+   * Built once, and it touches nothing the film owns: the picture runs on
+   * its own clock underneath, and this only walks the room forward and
+   * hands the copy from one beat to the next. So the video arriving never
+   * tears this timeline down and rebuilds it mid-scroll, and the poster
+   * alone already carries the dolly, the vignette and every copy beat — the
+   * hero is never a dead stretch while the film is still on its way.
    */
   useEffect(() => {
     if (!cinematic) return;
 
     const ctx = gsap.context(() => {
       const stage = stageRef.current;
-      const playhead = playheadRef.current;
       const progress = { value: 0 };
 
       const tl = gsap.timeline({
@@ -355,22 +258,6 @@ export default function Hero({
         },
         0,
       );
-
-      /*
-       * The four legs are the film's own four shots. The boundaries are the
-       * cuts in the footage, so a scene of the storyboard never straddles a
-       * cut and the scrub never lands on a frame that belongs to the next
-       * shot. Seconds over the film's ten: 2.35, 5.5, 7.45, 10.
-       */
-      /* The toss: florets and chilli hanging over the plate */
-      tl.to(playhead, { value: 0.235, duration: 0.2 }, 0);
-      /* The hands: the sachet opens, the masala goes on */
-      tl.to(playhead, { value: 0.55, duration: 0.3, ease: "power1.in" }, 0.2);
-      /* Into the oil, and the fry */
-      tl.to(playhead, { value: 0.745, duration: 0.25 }, 0.5);
-      /* Plated, then both packs behind both plates — the film arrives at the
-         product exactly as the sign-off card fades up over it */
-      tl.to(playhead, { value: 1, duration: 0.25, ease: "power2.out" }, 0.75);
 
       /* The title card steps aside as the plate starts to come apart */
       tl.to(`.${styles.storyLine}`, { autoAlpha: 0, y: -30, duration: 0.1 }, 0.14);
@@ -451,18 +338,21 @@ export default function Hero({
               priority
               sizes="100vw"
             />
-            {source && (
+            {wantsVideo && (
               <video
                 ref={videoRef}
                 className={`${styles.plate} ${styles.video}`}
                 data-ready={filmReady ? "true" : "false"}
-                src={source}
+                src={assets.videoSrc}
+                autoPlay
+                loop
                 muted
                 playsInline
                 preload="auto"
-                onLoadedMetadata={(event) => prime(event.currentTarget)}
-                onProgress={(event) => checkReady(event.currentTarget)}
-                onCanPlayThrough={(event) => checkReady(event.currentTarget)}
+                /* Not `canplaythrough`: the picture is only crossfading up
+                   over its own frame zero, so the moment there is a frame to
+                   show is the moment to start showing it. */
+                onLoadedData={() => setFilmReady(true)}
               />
             )}
           </div>
@@ -534,7 +424,7 @@ export default function Hero({
 
         <div className={styles.cue} aria-hidden="true">
           <span className={styles.cueDot} />
-          <span className={styles.cueLabel}>Scroll to play</span>
+          <span className={styles.cueLabel}>Scroll to explore</span>
         </div>
 
         {assets.ambientSrc && (

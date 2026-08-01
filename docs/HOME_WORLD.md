@@ -57,9 +57,10 @@ page already told:
 | 8.75–9.95 | both packs behind both plates | finale |
 
 That mapping is `FILM_SCREENS` in `film.ts`. The hero above plays the same
-file, cut differently — see [HERO_ASSETS.md](./HERO_ASSETS.md) — so by the
-time the world's first screen fades up the footage is already decoded and in
-cache. Each beat owns a *segment* of
+file whole — see [HERO_ASSETS.md](./HERO_ASSETS.md) — so by the time the
+world's first screen fades up the footage is already decoded and in cache.
+The tiled wall belongs to the world alone: the hero shows the footage
+itself, and the wall is what the page becomes once you have left it. Each beat owns a *segment* of
 seconds and a *band* of progress, and the segment **plays** while its band is
 up — it is not scrubbed. A cooking film scrubbed by a scroll wheel is a
 slideshow; the oil has to actually bubble. Scroll picks the shot, the shot

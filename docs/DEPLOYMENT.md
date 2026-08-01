@@ -40,10 +40,11 @@ configure, no third-party media dependency, and `next.config.ts` allows no
 remote image hosts at all.
 
 The one file worth knowing about is `public/assets/home/kitchen-film.mp4`,
-which both the hero and the 3D world play. It has to stay same-origin: the
-hero downloads it into a blob so the scroll can scrub it, and a cross-origin
-host without CORS headers would break that silently. Details:
-[docs/HERO_ASSETS.md](./HERO_ASSETS.md).
+which both the hero and the 3D world play — once for both, since it is the
+same URL. Serve it with byte ranges (any ordinary static host does, and so
+does `next start`): the world's six screens each seek to their own segment,
+and a response without `Accept-Ranges` leaves every one of them pinned to
+the first frame. Details: [docs/HERO_ASSETS.md](./HERO_ASSETS.md).
 
 ## What is already production-ready
 
