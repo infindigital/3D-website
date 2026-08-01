@@ -16,9 +16,6 @@ gsap.registerPlugin(ScrollTrigger);
    or with reduced motion, so it never blocks the core hero. */
 const HeroCanvas = dynamic(() => import("@/three/HeroCanvas"), { ssr: false });
 
-const HERO_VIDEO = "/assets/hero/hero-loop.mp4";
-const HERO_POSTER = "/assets/hero/hero-poster.webp";
-
 const LINE_ONE = ["Authentic", "Flavour."];
 const LINE_TWO = ["Crafted", "to", "Perfection."];
 
@@ -30,52 +27,28 @@ export interface HeroPack {
 }
 
 export interface HeroAssets {
-  video: boolean;
-  poster: boolean;
-  chilli: boolean;
-  curryLeaf: boolean;
-  starAnise: boolean;
+  /** Local file when committed, Higgsfield CDN URL otherwise */
+  videoSrc: string;
+  posterSrc: string;
+  chilli: string;
+  curryLeaf: string;
+  starAnise: string;
   /** Packs whose artwork exists in public/assets/products */
   packs: HeroPack[];
 }
 
 interface FloatConfig {
   key: "chilli" | "curryLeaf" | "starAnise";
-  src: string;
   className: string;
   depth: number;
   size: number;
 }
 
 const floatConfigs: FloatConfig[] = [
-  {
-    key: "chilli",
-    src: "/assets/hero/chilli.png",
-    className: "floatChilli",
-    depth: 34,
-    size: 180,
-  },
-  {
-    key: "curryLeaf",
-    src: "/assets/hero/curry-leaf.png",
-    className: "floatLeaf",
-    depth: 22,
-    size: 170,
-  },
-  {
-    key: "starAnise",
-    src: "/assets/hero/star-anise.png",
-    className: "floatAnise",
-    depth: 46,
-    size: 120,
-  },
-  {
-    key: "chilli",
-    src: "/assets/hero/chilli.png",
-    className: "floatChilliSmall",
-    depth: 58,
-    size: 96,
-  },
+  { key: "chilli", className: "floatChilli", depth: 34, size: 180 },
+  { key: "curryLeaf", className: "floatLeaf", depth: 22, size: 170 },
+  { key: "starAnise", className: "floatAnise", depth: 46, size: 120 },
+  { key: "chilli", className: "floatChilliSmall", depth: 58, size: 96 },
 ];
 
 /**
@@ -264,14 +237,14 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
     return () => ctx.revert();
   }, []);
 
-  const floats = floatConfigs.filter((f) => assets[f.key]);
+  const floats = floatConfigs;
 
   return (
     <section ref={sectionRef} className={styles.hero} aria-label="RS Chef'z">
       <div ref={scopeRef} className={styles.scope}>
         <div className={styles.media} aria-hidden="true">
           <div className={styles.mediaZoom}>
-            {assets.video && showVideo ? (
+            {showVideo ? (
               <video
                 className={styles.video}
                 autoPlay
@@ -279,21 +252,19 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
                 loop
                 playsInline
                 preload="auto"
-                poster={assets.poster ? HERO_POSTER : undefined}
+                poster={assets.posterSrc}
               >
-                <source src={HERO_VIDEO} type="video/mp4" />
+                <source src={assets.videoSrc} type="video/mp4" />
               </video>
-            ) : assets.poster ? (
+            ) : (
               <Image
                 className={styles.video}
-                src={HERO_POSTER}
+                src={assets.posterSrc}
                 alt=""
                 fill
                 priority
                 sizes="100vw"
               />
-            ) : (
-              <div className={styles.mediaFallback} />
             )}
           </div>
           <div className={styles.veil} />
@@ -311,7 +282,7 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
             <div className={styles.floatDrift} data-depth={float.depth}>
               <div className={styles.floatIdle}>
                 <Image
-                  src={float.src}
+                  src={assets[float.key]}
                   alt=""
                   width={float.size}
                   height={float.size}

@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     formats: ["image/avif", "image/webp"],
+    // Hero media streams from the Higgsfield CDN until the files are
+    // committed locally (see src/config/heroMedia.ts)
+    remotePatterns: [
+      { protocol: "https", hostname: "d8j0ntlcm91z4.cloudfront.net" },
+    ],
   },
   // Three.js and drei ship large ES modules; this keeps bundles lean.
   transpilePackages: ["three"],

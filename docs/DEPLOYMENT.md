@@ -32,11 +32,13 @@ No other tokens or secrets are required to deploy.
 3. Update `NEXT_PUBLIC_SITE_URL` to the final domain and redeploy so
    canonical URLs, Open Graph tags and the sitemap use it.
 
-## Hero media (one outstanding step)
+## Hero media
 
 The cinematic dish video and ambient hero assets were generated on
-Higgsfield but their CDN is unreachable from the build container, so the
-files are fetched on a normal machine instead:
+Higgsfield and stream directly from its public CDN, so the hero is
+complete on the very first deploy with no extra steps. To self-host the
+files instead (recommended eventually, so the site has no third-party
+media dependency), run on a normal machine:
 
 ```bash
 node scripts/fetch-hero-assets.mjs
@@ -44,9 +46,7 @@ git add public/assets/hero public/assets/textures
 git commit -m "Add hero media" && git push
 ```
 
-The hero checks for the files at build time and skips any layer whose
-file is missing, so the site deploys fine before this step; the video
-simply appears on the first deploy after the files are committed.
+Committed files win over the CDN automatically on the next build.
 Details: [docs/HERO_ASSETS.md](./HERO_ASSETS.md).
 
 ## What is already production-ready

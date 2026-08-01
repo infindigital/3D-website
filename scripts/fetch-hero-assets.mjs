@@ -15,7 +15,7 @@ const CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_3G4bnJPvIHipa5YfpqpDWYcQA
 const assets = [
   {
     dest: "public/assets/hero/hero-loop.mp4",
-    url: `${CDN}/hf_20260801_074016_13fc7c19-1f1d-42e1-999d-5a6dc17a2d02.mp4`,
+    url: `${CDN}/hf_20260801_091029_3c59713f-ffe3-4311-9691-a03f6b124a70.mp4`,
   },
   {
     dest: "public/assets/hero/hero-poster.webp",

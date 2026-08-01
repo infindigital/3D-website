@@ -8,6 +8,7 @@ import Ritual from "@/components/sections/Ritual";
 import PromiseBand from "@/components/sections/PromiseBand";
 import type { StagePack } from "@/three/PackStage";
 import { products } from "@/config/products";
+import { heroMediaRemote } from "@/config/heroMedia";
 
 const publicDir = join(process.cwd(), "public");
 
@@ -16,10 +17,14 @@ function has(publicPath: string): boolean {
 }
 
 /**
- * Checked at build time so the hero renders cleanly while the generated
- * media files are still on their way into public/assets/hero, and the
- * owner-supplied package artwork into public/assets/products.
+ * Resolved at build time. A committed file under public/assets/hero always
+ * wins; until it lands the browser streams the same media straight from
+ * the Higgsfield CDN, so the hero is complete on the very first deploy.
  */
+function resolveMedia(localPath: string, remote: string): string {
+  return has(localPath) ? localPath : remote;
+}
+
 function getHeroAssets(): HeroAssets {
   const packs: HeroPack[] = products
     .filter((product) => has(product.images.front))
@@ -30,11 +35,20 @@ function getHeroAssets(): HeroAssets {
     }));
 
   return {
-    video: has("/assets/hero/hero-loop.mp4"),
-    poster: has("/assets/hero/hero-poster.webp"),
-    chilli: has("/assets/hero/chilli.png"),
-    curryLeaf: has("/assets/hero/curry-leaf.png"),
-    starAnise: has("/assets/hero/star-anise.png"),
+    videoSrc: resolveMedia("/assets/hero/hero-loop.mp4", heroMediaRemote.video),
+    posterSrc: resolveMedia(
+      "/assets/hero/hero-poster.webp",
+      heroMediaRemote.poster,
+    ),
+    chilli: resolveMedia("/assets/hero/chilli.png", heroMediaRemote.chilli),
+    curryLeaf: resolveMedia(
+      "/assets/hero/curry-leaf.png",
+      heroMediaRemote.curryLeaf,
+    ),
+    starAnise: resolveMedia(
+      "/assets/hero/star-anise.png",
+      heroMediaRemote.starAnise,
+    ),
     packs,
   };
 }
