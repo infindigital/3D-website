@@ -470,9 +470,9 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
                   </li>
                 ))}
               </ul>
+              {/* The brand signs its own promise: no second name here */}
               <p className={styles.footnote}>
-                FSSAI licensed. Proudly a Product of India, made by SS Food
-                Products, Mangaluru.
+                FSSAI licensed. Proudly a Product of India.
               </p>
             </div>
           </div>
