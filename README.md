@@ -67,7 +67,7 @@ docs/                  Environment and integration documentation
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | 1 | Project setup | Done |
-| 2 | Navigation + Hero (scroll-played dish film) | Done, streams from the CDN until the file is self-hosted (see docs/HERO_ASSETS.md) |
+| 2 | Navigation + Hero ("A Feast in Motion", scroll-scrubbed dish film) | Done, streams from the CDN until the file is self-hosted (see docs/HERO_ASSETS.md) |
 | 3 | Interactive 3D pack stage | Done, real package artwork committed |
 | 4 | Scroll storytelling (story reel, flavour scenes, ritual, promise, footer) | Done |
 | 5 | Product pages (pinned 3D pack flip, dish parade, blend story, cross-link) | Done |
@@ -79,7 +79,10 @@ Each phase ships only after explicit approval of the previous one.
 
 ## Design rules
 
-- Bright, fresh, food-inspired palette. No dark backgrounds.
+- Bright, fresh, food-inspired palette. The hero is the one deliberate
+  exception: a charcoal and warm-brown stage so the food carries all the
+  colour, washing out to cream before the page continues. Everything below
+  it stays light.
 - Fonts: Poppins (headings) + Manrope (body), loaded via next/font.
 - Package artwork is supplied by the brand owner. Never generated.
 - Cinematic timing, soft easing, natural motion. No template animations.

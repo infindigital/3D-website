@@ -32,6 +32,11 @@ function getHeroAssets(): HeroAssets {
       "/assets/hero/hero-poster.webp",
       heroMediaRemote.poster,
     ),
+    /* Optional and owner-supplied. The hero only draws its sound toggle
+       when this file exists, and never plays it unprompted either way. */
+    ambientSrc: has("/assets/hero/ambience.mp3")
+      ? "/assets/hero/ambience.mp3"
+      : undefined,
   };
 }
 
@@ -57,7 +62,10 @@ export default function HomePage() {
 
   return (
     <main id="main">
-      <Hero assets={getHeroAssets()} />
+      <Hero
+        assets={getHeroAssets()}
+        hasLogo={has("/assets/brand/logo.png")}
+      />
       {stagePacks.length > 0 && <ProductStage packs={stagePacks} />}
       <StoryReel />
       {products.map((product, index) => (

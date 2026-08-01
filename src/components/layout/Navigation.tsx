@@ -28,14 +28,32 @@ const links = [
 export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [onDark, setOnDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  /*
+   * The bar floats over whatever is beneath it, and the home page now opens
+   * on the one dark section of the site. A section marks itself with
+   * data-dark-section="true" while it is showing something the light glass
+   * would sit badly on; the bar switches to dark glass for as long as that
+   * section covers the band it occupies, and switches back on its own when
+   * the hero washes out to cream at the end.
+   */
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    const update = () => {
+      setScrolled(window.scrollY > 24);
+      const dark = document.querySelector('[data-dark-section="true"]');
+      const box = dark?.getBoundingClientRect();
+      setOnDark(!!box && box.top <= 0 && box.bottom > 110);
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [pathname]);
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
@@ -61,7 +79,9 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
     >
       <nav
         aria-label="Main"
-        className={`${styles.bar} ${scrolled ? styles.scrolled : ""}`}
+        className={`${styles.bar} ${scrolled ? styles.scrolled : ""} ${
+          onDark ? styles.onDark : ""
+        }`}
       >
         <Link
           href="/"

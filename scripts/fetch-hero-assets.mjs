@@ -15,11 +15,11 @@ const CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_3G4bnJPvIHipa5YfpqpDWYcQA
 const assets = [
   {
     dest: "public/assets/hero/hero-loop.mp4",
-    url: `${CDN}/hf_20260801_093933_87e152a2-bf03-4cbe-a524-908b4d030b34.mp4`,
+    url: `${CDN}/hf_20260801_104539_ce158ce6-a3b8-4b7a-94a6-a1ece909b2fa.mp4`,
   },
   {
     dest: "public/assets/hero/hero-poster.webp",
-    url: `${CDN}/hf_20260801_093229_56726257-ad69-4c27-9c60-eb9faa3515ea_min.webp`,
+    url: `${CDN}/hf_20260801_104254_5718f989-817c-4d67-a232-2e22ec424254_min.webp`,
   },
   {
     dest: "public/assets/textures/ingredients-scatter.png",

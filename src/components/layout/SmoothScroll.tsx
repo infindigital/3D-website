@@ -13,6 +13,23 @@ gsap.registerPlugin(ScrollTrigger);
  * one scroll source of truth. Under reduced motion Lenis is skipped and
  * ScrollTrigger falls back to native scroll.
  */
+/** The live instance, so in-page jumps go through Lenis instead of fighting it */
+let activeLenis: Lenis | null = null;
+
+/**
+ * Scrolls to an element. Lenis owns the scroll position while it is running,
+ * so a native scrollIntoView would tear; this hands the move to Lenis and
+ * only falls back to the browser when Lenis is off (reduced motion).
+ */
+export function scrollToElement(target: Element | null) {
+  if (!target) return;
+  if (activeLenis) {
+    activeLenis.scrollTo(target as HTMLElement, { duration: 1.4 });
+    return;
+  }
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
 
@@ -29,6 +46,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       touchMultiplier: 1.5,
     });
     lenisRef.current = lenis;
+    activeLenis = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);
 
@@ -43,6 +61,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       cancelAnimationFrame(rafId);
       lenis.destroy();
       lenisRef.current = null;
+      activeLenis = null;
     };
   }, []);
 

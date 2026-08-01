@@ -62,6 +62,7 @@ export default function ProductStage({ packs }: { packs: StagePack[] }) {
 
   return (
     <section
+      id="products"
       ref={sectionRef}
       className={styles.stage}
       aria-label="The RS Chef'z lineup"

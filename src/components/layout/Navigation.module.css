@@ -23,12 +23,58 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.5);
   transition:
     box-shadow 0.5s var(--ease-soft),
+    border-color 0.5s var(--ease-soft),
     background 0.5s var(--ease-soft);
 }
 
 .scrolled {
   background: rgba(255, 255, 255, 0.82);
   box-shadow: var(--shadow-soft);
+}
+
+/*
+ * Over a dark section. Declared after .scrolled so it wins while both are
+ * on, which is the whole length of the hero.
+ */
+.onDark {
+  background: rgba(26, 15, 9, 0.44);
+  border-color: rgba(255, 226, 190, 0.18);
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.4);
+}
+
+.onDark .link {
+  color: rgba(255, 236, 210, 0.74);
+}
+
+.onDark .link:hover,
+.onDark .linkActive {
+  color: #fff6ea;
+}
+
+.onDark .link:hover {
+  background: rgba(255, 213, 160, 0.16);
+}
+
+.onDark .linkActive::after {
+  background: var(--color-turmeric);
+}
+
+.onDark .brandName {
+  color: #ff6f62;
+}
+
+/* A warm halo so the artwork lifts off the charcoal instead of sinking in */
+.onDark .brandLogo {
+  filter: drop-shadow(0 0 14px rgba(255, 210, 150, 0.45));
+}
+
+.onDark .menuButton {
+  background: rgba(26, 15, 9, 0.6);
+  border-color: rgba(255, 226, 190, 0.22);
+}
+
+.onDark .menuButton span {
+  background: #fff6ea;
 }
 
 .brand {
