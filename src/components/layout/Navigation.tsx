@@ -74,9 +74,10 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
               className={styles.brandLogo}
               src="/assets/brand/logo.png"
               alt=""
-              width={172}
-              height={81}
+              width={1000}
+              height={426}
               priority
+              sizes="120px"
             />
           ) : (
             <span className={styles.brandMark} aria-hidden="true">

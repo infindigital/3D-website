@@ -73,11 +73,11 @@
   color: var(--color-logo-red);
 }
 
-/* Real logo, swapped in once public/assets/brand/logo.png exists */
+/* Real logo, transparent background, swapped in once
+   public/assets/brand/logo.png exists */
 .brandLogo {
   width: auto;
-  height: 42px;
-  border-radius: 8px;
+  height: 40px;
 }
 
 .links {

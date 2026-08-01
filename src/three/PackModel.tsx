@@ -58,6 +58,7 @@ export default function PackModel({ front, back, onSelect }: PackModelProps) {
       <mesh geometry={geometry} position={[0, 0, 0.012]}>
         <meshPhysicalMaterial
           map={frontMap}
+          alphaTest={0.5}
           roughness={0.5}
           clearcoat={0.55}
           clearcoatRoughness={0.35}
@@ -66,6 +67,7 @@ export default function PackModel({ front, back, onSelect }: PackModelProps) {
       <mesh geometry={geometry} rotation={[0, Math.PI, 0]} position={[0, 0, -0.012]}>
         <meshPhysicalMaterial
           map={backMap}
+          alphaTest={0.5}
           roughness={0.5}
           clearcoat={0.55}
           clearcoatRoughness={0.35}

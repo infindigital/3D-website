@@ -43,8 +43,8 @@ export const products: Product[] = [
     usage: "50g masala for 700g of cleaned Gobi, Paneer or Mushroom.",
     accentColor: "#E63324",
     images: {
-      front: "/assets/products/gobi-manchurian/front.png",
-      back: "/assets/products/gobi-manchurian/back.png",
+      front: "/assets/products/gobi-manchurian/front.webp",
+      back: "/assets/products/gobi-manchurian/back.webp",
     },
     whatsappMessage:
       "Hi RS Chef'z, I would like to order Gobi Manchurian Masala.",
@@ -68,8 +68,8 @@ export const products: Product[] = [
     usage: "500g masala for 7.5kg of cleaned Chicken, Fish or Gobi.",
     accentColor: "#F2860D",
     images: {
-      front: "/assets/products/three-in-one/front.png",
-      back: "/assets/products/three-in-one/back.png",
+      front: "/assets/products/three-in-one/front.webp",
+      back: "/assets/products/three-in-one/back.webp",
     },
     whatsappMessage: "Hi RS Chef'z, I would like to order 3 in 1 Masala.",
   },
