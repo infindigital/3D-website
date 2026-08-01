@@ -46,10 +46,12 @@ src/
   app/                 Routes: home + products/[slug]
   components/
     layout/            Navigation, footer, smooth scroll provider
-    sections/          Page sections (hero, story, reveal, cards)
+    home/              The home world: one 3D flight, HTML panels over it
+    sections/          Hero and the product-page sections
     ui/                Buttons, cards, micro-interactions
   animations/          GSAP timelines and scroll choreography
   three/               R3F scenes, materials, cameras
+    world/             The home world's canvas, flight path and film
   hooks/               Shared hooks (viewport, mouse, scroll)
   utils/               Helpers
   config/              Site + product configuration
@@ -57,6 +59,7 @@ src/
 public/
   assets/
     brand/             Logo files (supplied by owner)
+    home/              The kitchen film (supplied by owner) and its poster
     products/          Package artwork (supplied by owner, never generated)
     textures/          3D textures
 docs/                  Environment and integration documentation
@@ -74,6 +77,7 @@ docs/                  Environment and integration documentation
 | 6 | Responsive (phone/tablet audit, flip + reel pacing, balanced pack artwork) | Done |
 | 7 | Optimization (off-screen render pausing, texture preload, lighter artwork) | Done |
 | 8 | Deployment (SEO, sitemap, OG card, headers, Vercel guide) | Done, see docs/DEPLOYMENT.md |
+| 9 | The home world: everything below the hero rebuilt as one continuous 3D flight, with the owner's kitchen film cut into it | Done, see docs/HOME_WORLD.md |
 
 Each phase ships only after explicit approval of the previous one.
 
@@ -86,3 +90,6 @@ Each phase ships only after explicit approval of the previous one.
 - Fonts: Poppins (headings) + Manrope (body), loaded via next/font.
 - Package artwork is supplied by the brand owner. Never generated.
 - Cinematic timing, soft easing, natural motion. No template animations.
+- The home page below the hero is one scene, not a stack of sections. Scroll
+  progress is its only clock; see docs/HOME_WORLD.md before changing a camera
+  key, a copy band or a film segment, because those three have to agree.

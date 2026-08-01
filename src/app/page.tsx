@@ -1,12 +1,8 @@
 import { existsSync } from "fs";
 import { join } from "path";
 import Hero, { type HeroAssets } from "@/components/sections/Hero";
-import ProductStage from "@/components/sections/ProductStage";
-import StoryReel from "@/components/sections/StoryReel";
-import FlavourScene from "@/components/sections/FlavourScene";
-import Ritual from "@/components/sections/Ritual";
-import PromiseBand from "@/components/sections/PromiseBand";
-import type { StagePack } from "@/three/PackStage";
+import HomeWorld from "@/components/home/HomeWorld";
+import type { StagePack } from "@/three/world/types";
 import { products } from "@/config/products";
 import { heroMediaRemote } from "@/config/heroMedia";
 
@@ -46,9 +42,10 @@ function getHeroAssets(): HeroAssets {
 }
 
 /**
- * The 3D pack stage needs at least the front artwork. The back face reuses
- * the front until the back scan lands. Package artwork is owner-supplied,
- * never generated, so the whole section stays hidden until it exists.
+ * The 3D world needs at least the front artwork for a pack to appear in it.
+ * The back face reuses the front until the back scan lands. Package artwork
+ * is owner-supplied and never generated, so a pack whose file is missing is
+ * simply not placed in the world; the copy about it still is.
  */
 function getStagePacks(): StagePack[] {
   return products
@@ -62,27 +59,20 @@ function getStagePacks(): StagePack[] {
     }));
 }
 
+/**
+ * The home page is two acts. The hero is a film the scroll plays; below it
+ * everything else — the lineup, the story, both packs, the ritual and the
+ * promise — is one continuous flight through a single 3D world rather than
+ * a stack of separate sections.
+ */
 export default function HomePage() {
-  const stagePacks = getStagePacks();
-
   return (
     <main id="main">
       <Hero
         assets={getHeroAssets()}
         hasLogo={has("/assets/brand/logo.png")}
       />
-      {stagePacks.length > 0 && <ProductStage packs={stagePacks} />}
-      <StoryReel />
-      {products.map((product, index) => (
-        <FlavourScene
-          key={product.slug}
-          product={product}
-          flip={index % 2 === 1}
-          hasFront={has(product.images.front)}
-        />
-      ))}
-      <Ritual />
-      <PromiseBand />
+      <HomeWorld packs={getStagePacks()} products={products} />
     </main>
   );
 }

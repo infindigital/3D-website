@@ -1,0 +1,588 @@
+/* ============================================================
+   The 3D world: everything on the home page below the hero.
+
+   The default rules below are the ordinary page — one section after
+   another, no pinning, no canvas. The immersive layout is added by the
+   media query at the bottom, which is repeated verbatim as IMMERSIVE in
+   HomeWorld.tsx. THE TWO MUST STAY IN STEP.
+
+   Deciding the shape in the stylesheet rather than in an effect is what
+   keeps the page correct on the very first paint, before any JavaScript
+   has run and before the canvas exists.
+   ============================================================ */
+
+.world {
+  position: relative;
+  background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-white) 46%, var(--color-cream) 100%);
+}
+
+.viewport {
+  position: relative;
+}
+
+.canvas {
+  display: none;
+}
+
+/* The CSS stand-in for the world: three slow warm glows. Visible whenever
+   the canvas is not, which covers phones, reduced motion and any browser
+   without WebGL, so the copy is never marooned on a flat white field. */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+}
+
+.glowTurmeric {
+  top: -14vmax;
+  left: -18vmax;
+  background: radial-gradient(circle, var(--tint-turmeric) 0%, transparent 68%);
+}
+
+.glowChilli {
+  top: 38%;
+  right: -22vmax;
+  background: radial-gradient(circle, var(--tint-chilli) 0%, transparent 68%);
+}
+
+.glowGreen {
+  bottom: -16vmax;
+  left: 8vmax;
+  background: radial-gradient(circle, var(--tint-green) 0%, transparent 68%);
+}
+
+.beats {
+  position: relative;
+  z-index: 1;
+}
+
+.beat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: clamp(4rem, 11vw, 8rem) clamp(1.25rem, 5vw, 3rem);
+}
+
+.panel {
+  max-width: 46rem;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-chilli);
+  margin-bottom: 0.9rem;
+}
+
+.title {
+  font-size: clamp(2rem, 5.2vw, 3.4rem);
+  margin-bottom: 1rem;
+}
+
+.flavourTitle {
+  font-size: clamp(2rem, 5.2vw, 3.4rem);
+  margin-bottom: 0.75rem;
+}
+
+.sub,
+.body {
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 38rem;
+  margin: 0 auto;
+}
+
+.tagline {
+  font-family: var(--font-heading);
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  font-weight: 600;
+  color: var(--accent, var(--color-chilli));
+  margin-bottom: 0.9rem;
+}
+
+.statement {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(2rem, 6.5vw, 4.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-align: center;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+/* ---------------------------------------------------- the pack artwork */
+
+.packShots {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 4vw, 2.75rem);
+  width: 100%;
+}
+
+.packShot {
+  display: block;
+  width: clamp(8rem, 26vw, 15rem);
+  filter: drop-shadow(0 26px 46px rgba(122, 60, 16, 0.22));
+  transition: transform 0.6s var(--ease-cinematic);
+}
+
+.packShot:hover {
+  transform: translateY(-10px) rotate(-1.5deg);
+}
+
+/* ------------------------------------------------------------- actions */
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.linkCard,
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-on-accent);
+  background: var(--accent, var(--color-chilli));
+  box-shadow: var(--shadow-soft);
+  transition:
+    box-shadow 0.4s var(--ease-soft),
+    filter 0.4s var(--ease-soft);
+}
+
+.linkCard:hover,
+.cta:hover {
+  box-shadow: var(--shadow-lift);
+  filter: saturate(1.15);
+}
+
+.cta {
+  margin-top: 1.6rem;
+}
+
+.ctaArrow {
+  transition: transform 0.4s var(--ease-cinematic);
+}
+
+.cta:hover .ctaArrow {
+  transform: translateX(5px);
+}
+
+/* --------------------------------------------------------------- chips */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  list-style: none;
+  margin-top: 1.5rem;
+}
+
+.chip {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-glass-border);
+  backdrop-filter: blur(8px);
+}
+
+/* --------------------------------------------------------------- steps */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  list-style: none;
+  margin-top: 2.5rem;
+  text-align: left;
+}
+
+.step {
+  position: relative;
+  padding: 1.6rem 1.4rem 1.5rem;
+  border-radius: 1.25rem;
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-glass-border);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+}
+
+.stepNumber {
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-turmeric);
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+.stepTitle {
+  font-size: 1.25rem;
+  margin-bottom: 0.4rem;
+}
+
+.stepCopy {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------- promise */
+
+.cards {
+  display: grid;
+  /* Narrow enough that all three still sit in a row inside the immersive
+     panel, which is a good deal tighter than the flat page's column; a
+     2 + 1 wrap under a two-line headline reads as a mistake. */
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  list-style: none;
+  margin-top: 2.25rem;
+  text-align: left;
+}
+
+.card {
+  padding: 1.5rem 1.4rem;
+  border-radius: 1.25rem;
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-glass-border);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+}
+
+.badge {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: 0.9rem;
+  color: var(--text-on-accent);
+  background: var(--color-green);
+  /* Pentagon, echoing the mark in the logo */
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+.badge svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  margin-bottom: 0.35rem;
+}
+
+.cardCopy {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.footnote {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------ the film */
+
+/* The flat layout's version of the world: the same kitchen film, played
+   straight through instead of cut across six screens standing in a 3D
+   corridor. It is only rendered when there is no canvas to put it in. */
+
+.filmBlock {
+  width: 100%;
+  /* The same gutter the panels above and below use, so the film sits in
+     the page's column rather than running off both edges of a phone */
+  max-width: calc(46rem + 2 * clamp(1.25rem, 5vw, 3rem));
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+  margin: clamp(2.5rem, 7vw, 4.5rem) auto 0;
+  display: grid;
+  gap: 0.9rem;
+  justify-items: center;
+}
+
+.film {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 1.25rem;
+  background: var(--color-cream);
+  box-shadow: 0 30px 60px -28px rgba(122, 60, 16, 0.5);
+  object-fit: cover;
+}
+
+.filmCaption {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- rail */
+
+.rail {
+  display: none;
+}
+
+/* ============================================================
+   The immersive world. Repeated verbatim as IMMERSIVE in HomeWorld.tsx.
+   ============================================================ */
+
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .world {
+    /* The length of the flight. Every band in BANDS is a fraction of this,
+       so lengthening it slows the whole world down evenly. */
+    height: 760vh;
+    background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-white) 50%, var(--color-cream) 100%);
+  }
+
+  .viewport {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    /* The canvas is the picture, the copy is the caption: pointer events
+       reach it only where no panel is on top. */
+    animation: worldFade 1.4s var(--ease-soft) both;
+  }
+
+  @keyframes worldFade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Once the real world is drawing, the CSS stand-in gets out of its way */
+  .world[data-canvas="on"] .backdrop {
+    opacity: 0;
+    transition: opacity 1.4s var(--ease-soft);
+  }
+
+  .world[data-canvas="on"] .packShots {
+    display: none;
+  }
+
+  .beats {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  .beat {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0;
+    max-width: none;
+    padding: var(--nav-height) clamp(1.5rem, 6vw, 5rem) 4rem;
+    /* Written every frame by the scroll driver in HomeWorld.tsx */
+    opacity: var(--o, 0);
+    transform: translate3d(0, calc((1 - var(--o, 0)) * 26px), 0);
+    will-change: opacity, transform;
+  }
+
+  /* Only the panel that is actually up can be clicked through to */
+  .beat[data-on="false"] {
+    pointer-events: none;
+  }
+
+  .beat .panel {
+    background: var(--surface-glass);
+    border: 1px solid var(--surface-glass-border);
+    backdrop-filter: blur(14px);
+    border-radius: 1.75rem;
+    padding: clamp(1.75rem, 3vw, 2.75rem);
+    box-shadow: var(--shadow-soft);
+    max-width: 34rem;
+  }
+
+  /* The two product beats sit to one side so the pack the camera is
+     looking at keeps the other half of the frame to itself. */
+  .beatLeft,
+  .beatRight {
+    justify-items: start;
+  }
+
+  .beatLeft {
+    padding-right: 46vw;
+  }
+
+  .beatRight {
+    justify-items: end;
+    padding-left: 46vw;
+  }
+
+  .beatLeft .panel,
+  .beatRight .panel {
+    text-align: left;
+  }
+
+  .beatLeft .chips,
+  .beatRight .chips,
+  .beatLeft .sub,
+  .beatRight .sub {
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
+  /* The statements have no card behind them — they are read against the
+     spice itself — so they carry their own pool of light instead, the same
+     trick the hero uses over the film. */
+  .beatCentre .statement {
+    position: relative;
+    padding: 2rem 3rem;
+  }
+
+  .beatCentre .statement::before {
+    content: "";
+    position: absolute;
+    inset: -30% -12%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 248, 238, 0.94) 0%,
+      rgba(255, 248, 238, 0.72) 42%,
+      rgba(255, 248, 238, 0) 72%
+    );
+    z-index: -1;
+  }
+
+  .beat[data-beat="ritual"] .panel {
+    max-width: 62rem;
+    /* No card here: the three step cards float over the three rings the
+       spice has just gathered itself into, so a panel behind them would
+       cover the one thing this beat is about. */
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 0;
+  }
+
+  .beat[data-beat="finale"] .panel {
+    /* Narrow enough that the two packs flank the card rather than hide
+       behind it */
+    max-width: 44rem;
+  }
+
+  .panelCard {
+    background: rgba(255, 248, 238, 0.9);
+  }
+
+  /* ---- the rail ---- */
+
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    position: absolute;
+    right: clamp(1rem, 2.5vw, 2rem);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+  }
+
+  .dot {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border-radius: 50%;
+    background: rgba(107, 90, 78, 0.28);
+    transition:
+      background-color 0.5s var(--ease-soft),
+      transform 0.5s var(--ease-cinematic);
+  }
+
+  .dot:hover {
+    transform: scale(1.35);
+    background: rgba(107, 90, 78, 0.5);
+  }
+
+  .dot[data-on="true"] {
+    background: var(--color-chilli);
+    transform: scale(1.35);
+  }
+
+  .dotLabel {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-soft);
+    pointer-events: none;
+  }
+
+  .dot:hover .dotLabel,
+  .dot[data-on="true"] .dotLabel {
+    opacity: 1;
+  }
+}
+
+/* A narrow-but-tall desktop window cannot afford the side padding that
+   keeps a pack in frame, so the product panels come back to the middle. */
+@media (min-width: 768px) and (max-width: 1100px) and (prefers-reduced-motion: no-preference) {
+  .beatLeft {
+    padding-right: clamp(1.5rem, 6vw, 5rem);
+  }
+
+  .beatRight {
+    padding-left: clamp(1.5rem, 6vw, 5rem);
+  }
+
+  .beatLeft .panel,
+  .beatRight .panel {
+    max-width: 26rem;
+  }
+}

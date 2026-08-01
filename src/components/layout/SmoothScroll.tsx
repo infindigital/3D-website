@@ -30,6 +30,19 @@ export function scrollToElement(target: Element | null) {
   target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/**
+ * Scrolls to an absolute document offset. The 3D world's rail needs to land
+ * partway through a section rather than at an element, which scrollTo on an
+ * element cannot express.
+ */
+export function scrollToOffset(y: number) {
+  if (activeLenis) {
+    activeLenis.scrollTo(y, { duration: 1.6 });
+    return;
+  }
+  window.scrollTo({ top: y, behavior: "smooth" });
+}
+
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
 
