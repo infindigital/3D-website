@@ -1,0 +1,173 @@
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--nav-height) + 30px) 24px 40px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 100%);
+}
+
+.wash {
+  position: absolute;
+  inset: -12%;
+  background: radial-gradient(
+    ellipse 58% 62% at 70% 46%,
+    color-mix(in srgb, var(--accent) 16%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  align-items: center;
+  gap: clamp(36px, 6vw, 90px);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.kicker {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.title {
+  font-size: clamp(2.6rem, 5.6vw, 4.6rem);
+  line-height: 1.02;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.28em;
+}
+
+.mask {
+  display: inline-block;
+  overflow: hidden;
+  padding: 0.08em 0 0.14em;
+}
+
+.titleWord {
+  display: inline-block;
+  will-change: transform;
+}
+
+.tagline {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.08rem, 2.1vw, 1.35rem);
+  color: var(--accent);
+}
+
+.description {
+  font-size: clamp(1rem, 1.8vw, 1.12rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 52ch;
+}
+
+.ctas {
+  margin-top: 12px;
+}
+
+.packSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  will-change: transform;
+}
+
+.canvasWrap {
+  width: 100%;
+  height: clamp(420px, 62vh, 620px);
+}
+
+/* Flat fallback keeps the same scroll-driven turn without WebGL */
+.flipScene {
+  perspective: 1400px;
+}
+
+.flipper {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.face {
+  width: clamp(240px, 30vw, 400px);
+  height: auto;
+  backface-visibility: hidden;
+  filter: drop-shadow(0 44px 54px rgba(120, 60, 20, 0.26));
+}
+
+.faceBack {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+.captions {
+  position: relative;
+  min-height: 1.6em;
+  width: 100%;
+  text-align: center;
+}
+
+.captionFront,
+.captionBack {
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.captionBack {
+  opacity: 0;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    min-height: auto;
+    padding-bottom: 70px;
+  }
+
+  .inner {
+    grid-template-columns: 1fr;
+  }
+
+  .copy {
+    align-items: center;
+    text-align: center;
+    order: 2;
+  }
+
+  .title {
+    justify-content: center;
+  }
+
+  .packSide {
+    order: 1;
+  }
+
+  .canvasWrap {
+    height: clamp(340px, 52vh, 460px);
+  }
+}

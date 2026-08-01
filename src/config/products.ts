@@ -14,6 +14,11 @@ export interface Product {
   dishes: string[];
   ingredients: string[];
   usage: string;
+  /** Pack-to-food ratio printed on the pack, shown as the big usage stat */
+  ratio: {
+    masala: string;
+    food: string;
+  };
   /** Theme accent for this product's scenes and pages */
   accentColor: string;
   images: {
@@ -41,6 +46,7 @@ export const products: Product[] = [
       "Natural Spices",
     ],
     usage: "50g masala for 700g of cleaned Gobi, Paneer or Mushroom.",
+    ratio: { masala: "50g", food: "700g" },
     accentColor: "#E63324",
     images: {
       front: "/assets/products/gobi-manchurian/front.webp",
@@ -66,6 +72,7 @@ export const products: Product[] = [
       "Natural Spices",
     ],
     usage: "500g masala for 7.5kg of cleaned Chicken, Fish or Gobi.",
+    ratio: { masala: "500g", food: "7.5kg" },
     accentColor: "#F2860D",
     images: {
       front: "/assets/products/three-in-one/front.webp",

@@ -64,7 +64,7 @@ docs/                  Environment and integration documentation
 | 2 | Navigation + Hero (dish video, scroll 3D, pack showcase) | Done, media fetch pending (see docs/HERO_ASSETS.md) |
 | 3 | 3D Hero (R3F spice particles + interactive pack stage) | Done, real package artwork committed |
 | 4 | Scroll storytelling (story reel, flavour scenes, ritual, promise, footer) | Done |
-| 5 | Product pages | Pending |
+| 5 | Product pages (pinned 3D pack flip, dish parade, blend story, cross-link) | Done |
 | 6 | Responsive | Pending |
 | 7 | Optimization | Pending |
 | 8 | Deployment | Pending |
