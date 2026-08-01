@@ -1,32 +1,27 @@
-import { siteConfig } from "@/config/site";
+import { existsSync } from "fs";
+import { join } from "path";
+import Hero, { type HeroAssets } from "@/components/sections/Hero";
 
 /**
- * Home page. Placeholder for Phase 1.
- * Hero, brand story, 3D scenes and scroll storytelling arrive in later phases.
+ * Checked at build time so the hero renders cleanly while the generated
+ * media files are still on their way into public/assets/hero.
  */
+function getHeroAssets(): HeroAssets {
+  const heroDir = join(process.cwd(), "public", "assets", "hero");
+  const has = (name: string) => existsSync(join(heroDir, name));
+  return {
+    video: has("hero-loop.mp4"),
+    poster: has("hero-poster.webp"),
+    chilli: has("chilli.png"),
+    curryLeaf: has("curry-leaf.png"),
+    starAnise: has("star-anise.png"),
+  };
+}
+
 export default function HomePage() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "1rem",
-        textAlign: "center",
-        padding: "2rem",
-      }}
-    >
-      <h1 style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)" }}>
-        {siteConfig.name}
-      </h1>
-      <p style={{ color: "var(--text-secondary)", fontSize: "1.25rem" }}>
-        {siteConfig.tagline}
-      </p>
-      <p style={{ color: "var(--text-secondary)" }}>
-        Phase 1 scaffold. The cinematic experience is on its way.
-      </p>
+    <main id="main">
+      <Hero assets={getHeroAssets()} />
     </main>
   );
 }

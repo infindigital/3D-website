@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Manrope } from "next/font/google";
 import SmoothScroll from "@/components/layout/SmoothScroll";
+import Navigation from "@/components/layout/Navigation";
 import { siteConfig, getSiteUrl } from "@/config/site";
 import "./globals.css";
 
@@ -56,7 +57,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} ${manrope.variable}`}>
       <body>
-        <SmoothScroll>{children}</SmoothScroll>
+        <SmoothScroll>
+          <Navigation />
+          {children}
+        </SmoothScroll>
       </body>
     </html>
   );

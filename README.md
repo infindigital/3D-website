@@ -61,7 +61,7 @@ docs/                  Environment and integration documentation
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | 1 | Project setup | Done |
-| 2 | Navigation + Hero | Pending approval |
+| 2 | Navigation + Hero | Done, media fetch pending (see docs/HERO_ASSETS.md) |
 | 3 | 3D Hero | Pending |
 | 4 | Scroll animations | Pending |
 | 5 | Product pages | Pending |
