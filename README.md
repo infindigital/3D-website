@@ -33,6 +33,12 @@ Open http://localhost:3000
 Every token and configurable value lives in environment variables.
 See `docs/ENVIRONMENT.md` for the full list and instructions.
 
+## Deploying
+
+The site deploys to Vercel with zero build configuration.
+Follow `docs/DEPLOYMENT.md` for the step-by-step guide, custom domain
+setup and the post-deploy checklist.
+
 ## Project structure
 
 ```
@@ -67,7 +73,7 @@ docs/                  Environment and integration documentation
 | 5 | Product pages (pinned 3D pack flip, dish parade, blend story, cross-link) | Done |
 | 6 | Responsive (phone/tablet audit, flip + reel pacing, balanced pack artwork) | Done |
 | 7 | Optimization (off-screen render pausing, texture preload, lighter artwork) | Done |
-| 8 | Deployment | Pending |
+| 8 | Deployment (SEO, sitemap, OG card, headers, Vercel guide) | Done, see docs/DEPLOYMENT.md |
 
 Each phase ships only after explicit approval of the previous one.
 
