@@ -9,9 +9,13 @@ import styles from "./Footer.module.css";
 
 /**
  * Closing band and footer. The invitation to buy sits on a warm gradient,
- * followed by the brand block, product links and the company line from the
- * pack. Server rendered, no animation, so the page always ends on solid
- * ground.
+ * followed by the brand block and the product links. Server rendered, no
+ * animation, so the page always ends on solid ground.
+ *
+ * The page signs off as RS Chef'z and nothing else: no registered name, no
+ * address, no other brand's contact details. It is the only name the site
+ * uses anywhere, and the footer is the last place it should start using a
+ * different one.
  */
 export default function Footer() {
   const hasLogo = existsSync(
@@ -62,33 +66,11 @@ export default function Footer() {
           </ul>
         </nav>
 
-        <div className={styles.linksCol}>
-          <p className={styles.colTitle}>Company</p>
-          <ul className={styles.linkList}>
-            <li className={styles.companyLine}>{siteConfig.company}</li>
-            <li className={styles.companyLine}>{siteConfig.location}</li>
-            <li>
-              <a className={styles.link} href="mailto:contact@ssmasala.com">
-                contact@ssmasala.com
-              </a>
-            </li>
-            <li>
-              <a
-                className={styles.link}
-                href="https://www.ssmasala.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                www.ssmasala.com
-              </a>
-            </li>
-          </ul>
-        </div>
       </div>
 
       <div className={styles.bottom}>
         <p>
-          &copy; {year} {siteConfig.company}. All rights reserved.
+          &copy; {year} {siteConfig.name}. All rights reserved.
         </p>
         <p>FSSAI licensed. Product of India.</p>
       </div>

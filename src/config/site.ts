@@ -9,6 +9,9 @@ export const siteConfig = {
   tagline: "Authentic Flavour. Crafted to Perfection.",
   description:
     "Bring restaurant-style taste to your kitchen with premium RS Chef'z masalas. Gobi Manchurian Masala and 3 in 1 Masala for Chicken 65, Fish Fry and Gobi Manchurian.",
+  /* Held for whatever needs the registered entity later — an invoice, a
+     policy page, a schema.org block. Nothing on the site shows it: every
+     page signs off as RS Chef'z. */
   company: "SS Food Products",
   location: "Mangaluru, Karnataka, India",
   amazonStoreUrl:
