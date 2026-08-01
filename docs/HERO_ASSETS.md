@@ -1,8 +1,10 @@
 # Hero ambient media
 
 Ambient visuals for the hero section, generated with Higgsfield on 2026-08-01.
-They are backgrounds, spice cutouts and textures only. Package artwork and the
-brand logo are supplied by the owner and are never generated.
+The hero video is a cinematic 3D camera move over the signature dishes
+(Gobi Manchurian, Chicken 65, Fish Fry). Everything here is dish scenery,
+spice cutouts and textures only. Package artwork and the brand logo are
+supplied by the owner and are never generated.
 
 ## How to fetch
 
@@ -19,8 +21,8 @@ Commit the downloaded files afterwards, they are part of the site.
 
 | File | Purpose | Source |
 | ---- | ------- | ------ |
-| `public/assets/hero/hero-loop.mp4` | 8s 1080p cinematic spice camera move, hero background video | Kling 3.0 Turbo, job `7f263f41` |
-| `public/assets/hero/hero-poster.webp` | Video poster and reduced motion / mobile fallback | Marketing Studio, job `c0993610` |
+| `public/assets/hero/hero-loop.mp4` | 8s 1080p cinematic 3D camera move over Gobi Manchurian, Chicken 65 and Fish Fry, hero background video | Kling 3.0 Turbo job `2989781a`, upscaled to 1080p by job `13fc7c19` |
+| `public/assets/hero/hero-poster.webp` | Video poster and reduced motion / mobile fallback, same dish scene | Marketing Studio, job `f4e77121` |
 | `public/assets/hero/chilli.png` | Floating chilli cutout, transparent | job `f3ff2f1c` + background remover |
 | `public/assets/hero/curry-leaf.png` | Floating curry leaf cutout, transparent | job `a14a1073` + background remover |
 | `public/assets/hero/star-anise.png` | Floating star anise cutout, transparent | job `c62b9c15` + background remover |

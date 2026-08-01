@@ -2,10 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import BuyButtons from "@/components/ui/BuyButtons";
 import { usePointerParallax } from "@/hooks/usePointerParallax";
 import styles from "./Hero.module.css";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const HERO_VIDEO = "/assets/hero/hero-loop.mp4";
 const HERO_POSTER = "/assets/hero/hero-poster.webp";
@@ -13,16 +17,25 @@ const HERO_POSTER = "/assets/hero/hero-poster.webp";
 const LINE_ONE = ["Authentic", "Flavour."];
 const LINE_TWO = ["Crafted", "to", "Perfection."];
 
+export interface HeroPack {
+  /** Public URL of the owner-supplied package front image */
+  src: string;
+  slug: string;
+  name: string;
+}
+
 export interface HeroAssets {
   video: boolean;
   poster: boolean;
   chilli: boolean;
   curryLeaf: boolean;
   starAnise: boolean;
+  /** Packs whose artwork exists in public/assets/products */
+  packs: HeroPack[];
 }
 
 interface FloatConfig {
-  key: keyof HeroAssets;
+  key: "chilli" | "curryLeaf" | "starAnise";
   src: string;
   className: string;
   depth: number;
@@ -61,11 +74,17 @@ const floatConfigs: FloatConfig[] = [
 ];
 
 /**
- * Cinematic hero. A generated 3D-style camera move through spices plays as a
- * full-bleed video, with parallax ingredient cutouts floating above it and a
- * masked headline reveal. Reduced motion and small screens get the poster
- * image instead of the video. Missing media files simply do not render, the
- * layout stays intact until they land in public/assets/hero.
+ * Cinematic hero. A generated 3D camera move over the signature dishes plays
+ * as a full-bleed video, with parallax ingredient cutouts floating above it
+ * and a masked headline reveal. Scrolling tips the content back in 3D while
+ * the video zooms deeper and the cutouts drift at depth-based speeds.
+ * Reduced motion and small screens get the poster image instead of the video.
+ * Missing media files simply do not render, the layout stays intact until
+ * they land in public/assets/hero.
+ *
+ * Each animation system owns its own element so they compose instead of
+ * fighting: .float (pointer parallax, CSS vars) > .floatDrift (GSAP entrance
+ * y + scroll yPercent) > .floatIdle (CSS keyframes).
  */
 export default function Hero({ assets }: { assets: HeroAssets }) {
   const sectionRef = usePointerParallax<HTMLElement>();
@@ -93,7 +112,8 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         `.${styles.eyebrow}`,
         `.${styles.sub}`,
         `.${styles.ctas}`,
-        `.${styles.float}`,
+        `.${styles.floatDrift}`,
+        `.${styles.packetDrift}`,
         `.${styles.cue}`,
       ];
 
@@ -145,9 +165,30 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         "-=0.65",
       );
 
-      if (document.querySelector(`.${styles.float}`)) {
+      if (document.querySelector(`.${styles.packetDrift}`)) {
         tl.fromTo(
-          `.${styles.float}`,
+          `.${styles.packetDrift}`,
+          {
+            y: 90,
+            opacity: 0.001,
+            rotateY: (index: number) => (index === 0 ? 32 : -32),
+            transformPerspective: 900,
+          },
+          {
+            y: 0,
+            opacity: 1,
+            rotateY: 0,
+            duration: 1.5,
+            stagger: 0.14,
+            ease: "power3.out",
+          },
+          0.75,
+        );
+      }
+
+      if (document.querySelector(`.${styles.floatDrift}`)) {
+        tl.fromTo(
+          `.${styles.floatDrift}`,
           { y: 70, opacity: 0.001, rotate: 14 },
           {
             y: 0,
@@ -167,6 +208,52 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         { opacity: 1, duration: 0.8 },
         "-=0.5",
       );
+
+      /*
+       * Scroll choreography, scrubbed against the hero's own height.
+       * The content plane tips away from the viewer while the video zooms
+       * deeper and each cutout drifts by its depth, which is what sells the
+       * dimensionality on scroll. Entrance animates y, scroll animates
+       * yPercent, so the two never overwrite each other.
+       */
+      const scrollTl = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: scopeRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+
+      scrollTl.to(`.${styles.mediaZoom}`, { yPercent: 14, scale: 1.18 }, 0);
+
+      scrollTl.to(
+        `.${styles.content}`,
+        {
+          yPercent: -20,
+          scale: 0.92,
+          rotateX: 16,
+          opacity: 0,
+          transformPerspective: 1100,
+          transformOrigin: "center 20%",
+        },
+        0,
+      );
+
+      gsap.utils
+        .toArray<HTMLElement>(`.${styles.floatDrift}`)
+        .forEach((el) => {
+          const depth = Number(el.dataset.depth) || 20;
+          scrollTl.to(el, { yPercent: -depth * 1.4, rotate: depth * 0.35 }, 0);
+        });
+
+      scrollTl.fromTo(
+        `.${styles.cue}`,
+        { opacity: 1 },
+        { opacity: 0, duration: 0.18, immediateRender: false },
+        0,
+      );
     }, scopeRef);
 
     return () => ctx.revert();
@@ -178,30 +265,32 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
     <section ref={sectionRef} className={styles.hero} aria-label="RS Chef'z">
       <div ref={scopeRef} className={styles.scope}>
         <div className={styles.media} aria-hidden="true">
-          {assets.video && showVideo ? (
-            <video
-              className={styles.video}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              poster={assets.poster ? HERO_POSTER : undefined}
-            >
-              <source src={HERO_VIDEO} type="video/mp4" />
-            </video>
-          ) : assets.poster ? (
-            <Image
-              className={styles.video}
-              src={HERO_POSTER}
-              alt=""
-              fill
-              priority
-              sizes="100vw"
-            />
-          ) : (
-            <div className={styles.mediaFallback} />
-          )}
+          <div className={styles.mediaZoom}>
+            {assets.video && showVideo ? (
+              <video
+                className={styles.video}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                poster={assets.poster ? HERO_POSTER : undefined}
+              >
+                <source src={HERO_VIDEO} type="video/mp4" />
+              </video>
+            ) : assets.poster ? (
+              <Image
+                className={styles.video}
+                src={HERO_POSTER}
+                alt=""
+                fill
+                priority
+                sizes="100vw"
+              />
+            ) : (
+              <div className={styles.mediaFallback} />
+            )}
+          </div>
           <div className={styles.veil} />
         </div>
 
@@ -212,14 +301,16 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
             style={{ "--depth": float.depth } as React.CSSProperties}
             aria-hidden="true"
           >
-            <div className={styles.floatIdle}>
-              <Image
-                src={float.src}
-                alt=""
-                width={float.size}
-                height={float.size}
-                sizes={`${float.size}px`}
-              />
+            <div className={styles.floatDrift} data-depth={float.depth}>
+              <div className={styles.floatIdle}>
+                <Image
+                  src={float.src}
+                  alt=""
+                  width={float.size}
+                  height={float.size}
+                  sizes={`${float.size}px`}
+                />
+              </div>
             </div>
           </div>
         ))}
@@ -252,6 +343,35 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
             Bring restaurant-style taste to your kitchen with premium RS
             Chef&apos;z masalas.
           </p>
+          {assets.packs.length > 0 && (
+            <div className={styles.packRow}>
+              {assets.packs.map((pack, index) => (
+                <Link
+                  key={pack.slug}
+                  href={`/products/${pack.slug}`}
+                  className={`${styles.packet} ${
+                    index === 0 ? styles.packetLeft : styles.packetRight
+                  }`}
+                  style={{ "--depth": 24 } as React.CSSProperties}
+                  aria-label={`Explore ${pack.name}`}
+                >
+                  <div className={styles.packetDrift}>
+                    <div className={styles.packetIdle}>
+                      <Image
+                        className={styles.packetImg}
+                        src={pack.src}
+                        alt={`${pack.name} pack`}
+                        width={400}
+                        height={560}
+                        priority
+                        sizes="(max-width: 560px) 40vw, 200px"
+                      />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
           <BuyButtons className={styles.ctas} />
         </div>
 

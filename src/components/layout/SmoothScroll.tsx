@@ -2,11 +2,16 @@
 
 import { ReactNode, useEffect, useRef } from "react";
 import Lenis from "lenis";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Wraps the app with Lenis smooth scrolling.
- * GSAP ScrollTrigger will be driven from this same Lenis instance in the
- * scroll-animation phase, so there is exactly one scroll source of truth.
+ * ScrollTrigger updates from this same Lenis instance, so there is exactly
+ * one scroll source of truth. Under reduced motion Lenis is skipped and
+ * ScrollTrigger falls back to native scroll.
  */
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
@@ -24,6 +29,8 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       touchMultiplier: 1.5,
     });
     lenisRef.current = lenis;
+
+    lenis.on("scroll", ScrollTrigger.update);
 
     let rafId: number;
     const raf = (time: number) => {

@@ -17,6 +17,13 @@
   will-change: transform;
 }
 
+/* Inner layer the scroll timeline zooms, separate from the entrance scale */
+.mediaZoom {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
 .video {
   position: absolute;
   inset: 0;
@@ -141,6 +148,11 @@
   pointer-events: none;
 }
 
+/* Layer owned by GSAP: entrance y and scroll yPercent drift */
+.floatDrift {
+  will-change: transform;
+}
+
 .floatIdle {
   animation: idleFloat 7s ease-in-out infinite;
 }
@@ -192,6 +204,71 @@
   50% {
     transform: translateY(-16px);
   }
+}
+
+/*
+ * Product packs, the centre of the hero once the owner-supplied package
+ * artwork lands in public/assets/products. Same layer split as the floats:
+ * .packet (pointer parallax) > .packetDrift (GSAP) > .packetIdle (CSS bob).
+ */
+.packRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(18px, 5vw, 54px);
+  margin-top: 4px;
+  perspective: 900px;
+}
+
+.packet {
+  display: block;
+  transform: translate3d(
+    calc(var(--parallax-x, 0) * var(--depth, 0) * 1px),
+    calc(var(--parallax-y, 0) * var(--depth, 0) * 0.7px),
+    0
+  );
+  border-radius: 18px;
+}
+
+.packet:focus-visible {
+  outline: 3px solid var(--color-turmeric);
+  outline-offset: 6px;
+}
+
+.packetDrift {
+  will-change: transform;
+}
+
+.packetIdle {
+  animation: idleFloat 8.4s ease-in-out infinite;
+}
+
+.packetRight .packetIdle {
+  animation-delay: -3.1s;
+}
+
+.packetImg {
+  width: clamp(112px, 15vw, 196px);
+  height: auto;
+  transform: rotate(var(--tilt, 0deg));
+  filter: drop-shadow(0 34px 44px rgba(120, 60, 20, 0.26));
+  transition:
+    transform 0.5s var(--ease-soft),
+    filter 0.5s var(--ease-soft);
+}
+
+.packetLeft {
+  --tilt: -5deg;
+}
+
+.packetRight {
+  --tilt: 5deg;
+}
+
+.packet:hover .packetImg,
+.packet:focus-visible .packetImg {
+  transform: rotate(var(--tilt, 0deg)) translateY(-10px) scale(1.04);
+  filter: drop-shadow(0 44px 54px rgba(120, 60, 20, 0.32));
 }
 
 .cue {
@@ -281,5 +358,13 @@
 
   .content {
     gap: 22px;
+  }
+
+  .packRow {
+    gap: 16px;
+  }
+
+  .packetImg {
+    width: 34vw;
   }
 }
