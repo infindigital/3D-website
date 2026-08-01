@@ -70,7 +70,7 @@ docs/                  Environment and integration documentation
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | 1 | Project setup | Done |
-| 2 | Navigation + Hero ("A Feast in Motion", scroll-scrubbed dish film) | Done, streams from the CDN until the file is self-hosted (see docs/HERO_ASSETS.md) |
+| 2 | Navigation + Hero (the kitchen film, scrubbed by scroll) | Done, self-hosted like everything else (see docs/HERO_ASSETS.md) |
 | 3 | Interactive 3D pack stage | Done, real package artwork committed |
 | 4 | Scroll storytelling (story reel, flavour scenes, ritual, promise, footer) | Done |
 | 5 | Product pages (pinned 3D pack flip, dish parade, blend story, cross-link) | Done |

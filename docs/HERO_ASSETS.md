@@ -1,35 +1,46 @@
-# Hero film — "A Feast in Motion"
+# Hero film
 
-The hero plays one continuous shot of the signature dishes, generated with
-Higgsfield on 2026-08-01: a premium black plate of Gobi Manchurian, Fish Fry,
-Chicken 65 and Masala Chicken on a charcoal ground, the camera pushing in
-before the food bursts upward and hangs in zero gravity while the lens flies
-through it.
+The hero plays `public/assets/home/kitchen-film.mp4` — the owner's ten-second
+kitchen film, shot with the real packets. It is the same file the 3D world
+below the hero is built from, cut differently: the hero runs the whole ten
+seconds once, the world takes six shots out of it and holds each one on a
+screen standing in the corridor (see [HOME_WORLD.md](./HOME_WORLD.md)).
 
-Everything here is dish scenery and texture only. Package artwork and the
-brand logo are supplied by the owner and are never generated.
+One film, one download, one decoder warm by the time the world starts.
+
+Package artwork and the brand logo are owner-supplied and are never
+generated. So is the film. Nothing on this page comes from a third-party
+host — `next.config.ts` declares no `remotePatterns`, and there is no CDN
+fallback to fail over to, because there is nothing to fall back from.
 
 ## Scrolling is the projector
 
 The scroll position *is* the film's playhead, not a trigger for it. Stop
-scrolling and the food freezes mid-air; scroll back and every ingredient
-returns to the plate exactly as it left.
+scrolling and the toss freezes mid-air; scroll back and the masala goes back
+into the sachet.
 
 | Scroll | Scene | Playhead |
 | ------ | ----- | -------- |
-| 0–20% | Arrival. The plate rests, the camera creeps in. | 0 → 1.8s |
-| 20–50% | Explosion. The food leaves the plate and separates. | 1.8 → 5.2s |
-| 50–75% | Rotation. The camera flies through the floating ingredients. | 5.2 → 10s |
-| 75–100% | Rebuild. Everything falls back and lands. | 10 → 1.8s |
+| 0–20% | The toss. Florets and chilli hanging over the plate. | 0 → 2.35s |
+| 20–50% | The hands. The sachet opens, the masala goes on. | 2.35 → 5.5s |
+| 50–75% | Into the oil, and the fry. | 5.5 → 7.45s |
+| 75–100% | Plated, then both packs behind both plates. | 7.45 → 10s |
 
-The last quarter runs the film **backwards**. The reverse of an explosion is
-a perfect landing, so nothing has to be animated twice and every piece
-returns to precisely where it started, settling on the pushed-in plate rather
-than the wide opening frame.
+The four boundaries are **the cuts in the footage**. That is the whole reason
+they sit where they do: a scene of the storyboard must never straddle a cut,
+or the scrub lands on a frame belonging to the next shot and the copy is
+captioning the wrong picture.
 
-The copy is keyed to the same progress: the scene-one title card steps aside
-as the plate comes apart, the subheadline steps back for the macro shots so
-the food can fill the screen, and the logo lockup lands with the dish.
+It runs forward, all the way through, and lands on the packs — the film's own
+last shot arrives exactly as the sign-off card fades up over it. An earlier
+version of this hero ran its last leg backwards, which is free with a
+generated explosion (the reverse of one is a perfect landing) and wrong with
+real kitchen footage: hands un-pouring masala reads as a video played in
+reverse, because it is one.
+
+The copy is keyed to the same progress: the title card steps aside as the
+sachet opens, the subheadline steps back for the fry so the food can fill the
+screen, and the logo lockup lands with the plated dish.
 
 ## Two layouts, decided by a media query
 
@@ -49,6 +60,11 @@ on screen moves to accommodate it. The poster alone already carries the
 dolly, the vignette and every copy beat, so the hero is never a dead stretch
 of scrolling while the video downloads.
 
+`public/assets/hero/hero-poster.webp` is the film's own frame 0, pulled
+straight out of the mp4. That is not a nicety: the still and the video are
+registered to the same pixel, so the dissolve between them has nothing to
+give away.
+
 ## Getting the film scrubbable
 
 Scrubbing needs random access to the whole file, and streaming cannot give
@@ -59,16 +75,14 @@ arrived last. Three things in `Hero.tsx` prevent that, and all three matter.
 - **The file is downloaded once, not streamed.** It is fetched into a blob
   on the first scroll, wheel, touch or pointer event (with a 0.5s fallback)
   and the element is handed the object URL, after which every seek is local.
-  This is why the film is never fetched from the CDN directly: Higgsfield's
-  CDN sends no CORS headers, so a cross-origin `fetch` of it dies in the
-  browser and the hero silently degrades to unscrubbable streaming — which
-  is exactly "the video doesn't load when I scroll". Instead
-  `src/app/api/hero-film/route.ts` proxies the film through this site's own
-  origin (CORS does not bind server-to-server requests), so the blob fetch
-  is same-origin and works everywhere. If the fetch still fails, or the
-  file is heavier than 28MB, the element streams from the same route, and
-  the seek loop clamps to the buffered end so the scrub follows the
-  downloaded footage instead of freezing.
+  This is why the film has to be **same-origin**: a cross-origin host that
+  sends no CORS headers kills the blob fetch in the browser and the hero
+  silently degrades to unscrubbable streaming — which is exactly "the video
+  doesn't load when I scroll". It is served from `/public`, so this holds by
+  construction. If the fetch still fails, or the file is heavier than 28MB,
+  the element streams from the same path and the seek loop clamps to the
+  buffered end, so the scrub follows the downloaded footage instead of
+  freezing.
 - **The playhead is handed over on `canplaythrough`**, or once `buffered`
   covers the duration — not on `loadeddata`, which only means a first frame
   turned up.
@@ -105,7 +119,7 @@ when the film is frozen.
   feathered pool of shade with a slight backdrop blur; it is the readability
   floor for the type, so the picture behind can go anywhere.
 - **Closing wash** — the stage dissolves to cream over the last 5%, so the
-  one dark stretch of the site ends on a dissolve instead of a cut.
+  hero hands over to the world on a dissolve instead of a cut.
 
 ## The navigation over a dark hero
 
@@ -119,54 +133,29 @@ dark section can opt in the same way.
 
 The hero renders a mute/unmute toggle **only** if
 `public/assets/hero/ambience.mp3` exists, and never plays it unprompted — the
-toggle is the consent. No such file ships: Higgsfield's audio models generate
-speech only, so a sizzle or restaurant-ambience loop has to be owner-supplied
-or licensed. Drop one in at that path and the toggle appears by itself.
-
-## Streaming fallback (no action needed to go live)
-
-The site does not wait for these files. `src/config/heroMedia.ts` holds the
-public CDN URL of every hero asset, and the home page resolves each one at
-build time: a committed file under `public/assets/hero` wins. Anything
-missing is served through this site's own origin instead of the CDN — the
-film via `/api/hero-film`, the poster via `next/image` — because the CDN
-sends no CORS headers and the film has to be fetchable to be scrubbable.
-The hero is therefore complete on the very first deploy.
-
-## Self-hosting the files (recommended eventually)
-
-Serving from your own domain avoids a third-party dependency and gives the
-scrub a faster, range-request friendly source. On any machine with access to
-`d8j0ntlcm91z4.cloudfront.net` (Higgsfield's CDN), run from the repo root:
-
-```bash
-node scripts/fetch-hero-assets.mjs
-```
-
-Commit the downloaded files afterwards; the next build picks them up
-automatically and stops using the CDN.
+toggle is the consent. No such file ships. Drop one in at that path and the
+toggle appears by itself.
 
 ## Asset map
 
 | File | Purpose | Source |
 | ---- | ------- | ------ |
-| `public/assets/hero/hero-loop.mp4` | The hero film, scrubbed by scroll. 1920×1080, 10s, silent | Kling 3.0 (pro) job `ce158ce6`, from still `5718f989` |
-| `public/assets/hero/hero-poster.webp` | Poster frame, and the still shown on phones and with reduced motion. Identical to the film's first frame | Nano Banana Pro job `5718f989` |
-| `public/assets/hero/ambience.mp3` | Optional ambient sizzle. Owner-supplied; the sound toggle only appears when this exists | not generated |
-| `public/assets/textures/ingredients-scatter.png` | Scattered ingredients, reserved for the brand story section | job `0f7f323e` |
-| `public/assets/textures/spice-dust.webp` | Powder swirl texture, reserved for section transitions | job `ceb80041` |
+| `public/assets/home/kitchen-film.mp4` | The film. Scrubbed by the hero, cut into six segments by the world. 1280×720, 10s, silent | owner-supplied |
+| `public/assets/hero/hero-poster.webp` | The hero's poster, and the still shown on phones and with reduced motion. The film's own frame 0 | pulled from the film |
+| `public/assets/home/kitchen-film-poster.webp` | Poster for the flat layout's ordinary `<video>`. A frame from 9.35s | pulled from the film |
+| `public/assets/hero/ambience.mp3` | Optional ambient sizzle. Owner-supplied; the sound toggle only appears when this exists | not supplied |
+| `public/assets/textures/ingredients-scatter.png` | Scattered ingredients, reserved for the brand story section | generated |
+| `public/assets/textures/spice-dust.webp` | Powder swirl texture, reserved for section transitions | generated |
 
-The hero resolves these at build time and falls back to the CDN for any that
-are missing, so the site builds and runs either way.
+## Verifying a change
 
-### A second take of the film
+Headless Chromium ships without H.264, so the mp4 has to be intercepted and
+served as WebM for a harness run. Redirect that interception at a **static
+file** (`route.continue({url})`), never `route.fulfill` with a buffer: a
+fulfilled response carries no `Accept-Ranges`, the element reports the film
+as unseekable, every seek is silently clamped to zero, and the hero sits on
+frame one while looking, at a glance, like it is working.
 
-Both takes came from the same start frame and prompt. The alternate is
-exported as `heroFilmAlternate` in `src/config/heroMedia.ts` and referenced
-nowhere; if it reads better on a big screen, swap it into `video` there (and
-into `scripts/fetch-hero-assets.mjs`) — job `3c93a0af`.
-
-**The machine that generated these could not reach the CDN to play them
-back, so neither take has been watched.** The scroll choreography was
-verified end to end against a synthetic timecoded film; the footage itself
-still needs a human review before launch.
+The hero's blob fetch is armed by a user gesture, so nudge the wheel before
+probing, then check `video.src` starts with `blob:` — if it still points at
+the mp4, you are measuring the streaming fallback, not the scrub.

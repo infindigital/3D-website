@@ -34,20 +34,16 @@ No other tokens or secrets are required to deploy.
 
 ## Hero media
 
-The cinematic dish video and ambient hero assets were generated on
-Higgsfield and stream directly from its public CDN, so the hero is
-complete on the very first deploy with no extra steps. To self-host the
-files instead (recommended eventually, so the site has no third-party
-media dependency), run on a normal machine:
+Nothing to do. Every image, texture and film the site plays is a committed
+file under `public/`, served from your own origin — there is no CDN to
+configure, no third-party media dependency, and `next.config.ts` allows no
+remote image hosts at all.
 
-```bash
-node scripts/fetch-hero-assets.mjs
-git add public/assets/hero public/assets/textures
-git commit -m "Add hero media" && git push
-```
-
-Committed files win over the CDN automatically on the next build.
-Details: [docs/HERO_ASSETS.md](./HERO_ASSETS.md).
+The one file worth knowing about is `public/assets/home/kitchen-film.mp4`,
+which both the hero and the 3D world play. It has to stay same-origin: the
+hero downloads it into a blob so the scroll can scrub it, and a cross-origin
+host without CORS headers would break that silently. Details:
+[docs/HERO_ASSETS.md](./HERO_ASSETS.md).
 
 ## What is already production-ready
 

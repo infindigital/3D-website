@@ -9,10 +9,9 @@ HTML panels captioning it.
 src/components/home/HomeWorld.tsx        the page: overlay copy + scroll driver
 src/components/home/HomeWorld.module.css the two layouts (see "Two layouts")
 src/three/world/WorldCanvas.tsx          the one canvas, mounted once
-src/three/world/flightPath.ts            camera path, pack slots, ritual rings
+src/three/world/flightPath.ts            camera path, pack slots, travelling light
 src/three/world/film.ts                  which second of the film each beat owns
 src/three/world/FilmDeck.tsx             the film, as tiled geometry
-src/three/world/SpiceField.tsx           the drifting spice
 src/three/world/WorldPack.tsx            one sachet
 src/three/world/bands.ts                 the fade shared by copy and film
 src/three/world/worldState.ts            the one mutable object both sides read
@@ -23,14 +22,14 @@ src/three/world/worldState.ts            the one mutable object both sides read
 **Scroll progress is the only clock.** `worldState.progress` runs 0 → 1 over
 the world's `760vh`, written once per frame by the ScrollTrigger in
 `HomeWorld.tsx`. The camera samples its curve at that value, each pack scales
-against it, the spice gathers against it, and every panel of copy fades
-against it. Nothing is on a timeline of its own, so stopping mid-scroll
+against it, the travelling light runs against it, and every panel of copy
+fades against it. Nothing is on a timeline of its own, so stopping mid-scroll
 leaves a coherent frame and scrolling back retraces exactly.
 
 Two files carry the numbers, and they have to agree:
 
 - `flightPath.ts` — `CAMERA_KEYS` / `TARGET_KEYS` (where the lens is and
-  what it looks at), `PACK_SLOTS`, `RITUAL_RINGS`.
+  what it looks at), `PACK_SLOTS`, `LIGHT_KEYS`.
 - `HomeWorld.tsx` — `BANDS`, the progress range each panel of copy is up for.
 
 Move a camera key without moving the matching band and a panel ends up
@@ -57,7 +56,10 @@ page already told:
 | 5.55–7.4 | into the oil, frying | ritual |
 | 8.75–9.95 | both packs behind both plates | finale |
 
-That mapping is `FILM_SCREENS` in `film.ts`. Each beat owns a *segment* of
+That mapping is `FILM_SCREENS` in `film.ts`. The hero above plays the same
+file, cut differently — see [HERO_ASSETS.md](./HERO_ASSETS.md) — so by the
+time the world's first screen fades up the footage is already decoded and in
+cache. Each beat owns a *segment* of
 seconds and a *band* of progress, and the segment **plays** while its band is
 up — it is not scrubbed. A cooking film scrubbed by a scroll wheel is a
 slideshow; the oil has to actually bubble. Scroll picks the shot, the shot
@@ -82,8 +84,8 @@ vertex shader. So the plate of florets has relief and the dark pan falls away
 behind it. Leaving the beat lets the tiles go again.
 
 That is what makes the film part of the room rather than a background: the
-packs stand in front of it, the spice drifts across it, and the travelling
-light passes over it.
+packs stand in front of it, the camera passes it at an angle, and the
+travelling light and the corridor's fog reach it.
 
 Two things in that shader are load-bearing:
 
@@ -92,13 +94,51 @@ Two things in that shader are load-bearing:
   not `texture2DLod`. GLSL ES 3.00 has no built-in fragment output, so the
   fragment shader declares `pc_fragColor` and `#define`s `gl_FragColor` onto
   it — that alias is what `#include <colorspace_fragment>` writes through.
-- Settled tiles fill their cell **exactly**. Anything less (the obvious
-  `* 0.985` to avoid overlap) shows every tile edge in the wall as a cream
-  seam.
+- Settled tiles **overrun** their cell, by `OVERLAP`, and the uv overruns
+  with the quad so a tile's spill draws its neighbour's own pixels rather
+  than a stretched copy of its own. They have to: the tiles do not share a
+  depth — that is the point of the relief, and the bow adds more of it out
+  at the sides — and two quads at different depths seen through a
+  perspective lens project to different sizes, so cells that abut exactly
+  in the plane pull apart on screen and show the wall as a grid of seams.
+- Overrunning is only half of it. The material is transparent, so a band
+  drawn by two tiles is a band blended twice, and the gap comes back as a
+  *bright* grid instead of a dark one. Each tile therefore carries a weight
+  that falls from 1 to 0 across its overrun while its neighbour's rises, and
+  the weight goes into the **exponent**, not onto the alpha:
+
+  ```glsl
+  float a = 1.0 - pow(1.0 - want, weight);
+  ```
+
+  Transmittance is what multiplies when layers stack, so `(1-a)` composites
+  to exactly `(1-want)` however the band is split — whereas halving the two
+  alphas would compose to three quarters of one tile and read as a dark
+  grid. Once the handover is exact, spilling further is nearly free, which
+  is why `OVERLAP` is set past the worst corner of the worst screen rather
+  than measured against it.
 
 `DEPTH` is deliberately small. Relief is what stops the wall reading as a
 sticker, but past a point the tiles pull apart and it reads as a broken
 mosaic instead of a film.
+
+### The grade, and why nothing is tone-mapped
+
+`WorldCanvas` asks for `THREE.NoToneMapping`. R3F defaults the renderer to
+ACES filmic, and a raw `ShaderMaterial` that does not include
+`<tonemapping_fragment>` — this one — is not tone-mapped regardless, so the
+default has the packs graded one way and the film beside them another: the
+packs come out grey next to footage that was never touched. Turning it off
+is what makes the two agree.
+
+With nothing rolling off the top end, the film's own grade is deliberately
+gentle and both ends are left alone: `SATURATION` swings around the frame's
+luminance so the cream ceiling and the white plates stay neutral while the
+chilli and turmeric come up, and `CONTRAST` swings around mid-grey so the
+oil darkens as the crust brightens. A gamma lift would be the obvious move
+and is the wrong one — the film is an evenly lit kitchen already, and
+lifting it turns most of the frame to milk. For the same reason the rim
+light in `WorldPack.tsx` is held low: nothing is clamping it any more.
 
 ## Two layouts
 
@@ -135,8 +175,12 @@ the 760vh flight is navigable without a scroll wheel.
 ## Assets
 
 The packet artwork and the logo are owner-supplied files, never generated.
-The film is owner-supplied too. `kitchen-film-poster.webp` is a frame pulled
-from the film itself (9.35 s) and is only used by the flat layout's `<video>`.
+The film is owner-supplied too, and it is the only film on the page: the
+hero plays it as well. `kitchen-film-poster.webp` is a frame pulled from the
+film itself (9.35 s) and is only used by the flat layout's `<video>`.
+
+Nothing on this page is fetched from a third-party host. `next.config.ts`
+declares no `remotePatterns` for exactly that reason.
 
 ## Verifying a change
 

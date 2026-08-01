@@ -13,11 +13,20 @@ import {
   targetCurve,
 } from "./flightPath";
 import FilmDeck from "./FilmDeck";
-import SpiceField from "./SpiceField";
 import WorldPack, { createPackGeometry } from "./WorldPack";
 
 /** Fog and clear colour: the page's own cream, so the corridor has no walls */
 const CREAM = "#fff8ee";
+
+/**
+ * How fast the corridor gives way to cream.
+ *
+ * Light rather than atmospheric on purpose. Fog is what tells the eye the
+ * corridor has depth, but every unit of it is a unit of the film washed out,
+ * and the film is the thing worth looking at. Far enough back that a screen
+ * still sits behind the one in front of it, and no further.
+ */
+const FOG_DENSITY = 0.026;
 
 interface WorldCanvasProps {
   packs: StagePack[];
@@ -33,7 +42,7 @@ interface WorldCanvasProps {
  * camera rather than a cursor, and it is time-based so the weight of the
  * move is the same on every display.
  */
-function Rig({ streakRef }: { streakRef: { current: number } }) {
+function Rig() {
   const camera = useThree((state) => state.camera);
   const position = useRef(new THREE.Vector3().copy(cameraCurve.getPoint(0)));
   const target = useRef(new THREE.Vector3().copy(targetCurve.getPoint(0)));
@@ -57,16 +66,6 @@ function Rig({ streakRef }: { streakRef: { current: number } }) {
     targetCurve.getPoint(shown.current, sampled.current);
     target.current.lerp(sampled.current, 1 - Math.exp(-6 * delta));
     camera.lookAt(target.current);
-
-    /* Speed is measured off the eased camera, not the raw scroll, so the
-       streak matches what is actually happening on screen. */
-    const speed = Math.abs(p - shown.current);
-    streakRef.current = THREE.MathUtils.damp(
-      streakRef.current,
-      THREE.MathUtils.clamp(speed * 26, 0, 1),
-      6,
-      delta,
-    );
   });
 
   return null;
@@ -109,11 +108,13 @@ function TravellingLight() {
     l.position.set(camera.position.x, camera.position.y + 1.6, camera.position.z + 1.2);
   });
 
-  return <pointLight ref={light} intensity={9} distance={12} decay={1.6} />;
+  /* Reach rather than punch: it has to wash a whole pack in its beat's
+     colour without burning a hot spot into the middle of the artwork, now
+     that nothing tone-maps the highlights back down. */
+  return <pointLight ref={light} intensity={6} distance={16} decay={1.4} />;
 }
 
 function Scene({ packs, onSelect }: WorldCanvasProps) {
-  const streakRef = useRef(0);
   const geometry = useMemo(() => createPackGeometry(), []);
   useEffect(() => () => geometry.dispose(), [geometry]);
 
@@ -133,14 +134,17 @@ function Scene({ packs, onSelect }: WorldCanvasProps) {
 
   return (
     <>
-      <ambientLight intensity={1.15} />
-      <directionalLight position={[4, 6, 6]} intensity={1.2} />
-      <directionalLight position={[-5, 3, 4]} intensity={0.45} color="#ffe3b8" />
+      {/* A bright, evenly lit room. The packs are printed artwork: the job
+          of the light here is to show the print, not to model a mood on top
+          of it, so the ambient carries most of it and the directionals only
+          give the pillowed film something to catch. */}
+      <ambientLight intensity={1.5} />
+      <directionalLight position={[4, 6, 6]} intensity={1.05} />
+      <directionalLight position={[-5, 3, 4]} intensity={0.5} color="#fff0d8" />
       <TravellingLight />
 
-      <Rig streakRef={streakRef} />
+      <Rig />
       <FilmDeck />
-      <SpiceField streakRef={streakRef} />
 
       {PACK_SLOTS.map((slot) => {
         const pack = packs[slot.product];
@@ -171,13 +175,29 @@ function Scene({ packs, onSelect }: WorldCanvasProps) {
 export default function WorldCanvas({ packs, onSelect }: WorldCanvasProps) {
   return (
     <Canvas
-      /* Capped rather than uncapped: at this particle count the difference
-         between 2x and 1.75x is invisible and the fill cost is not. */
+      /* Capped rather than uncapped: the difference between 2x and 1.75x on
+         a wall of video is invisible and the fill cost is not. */
       dpr={[1, 1.75]}
       camera={{ position: [0, 0.3, 6.6], fov: 38, near: 0.1, far: 120 }}
-      gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+      gl={{
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+        /*
+         * No filmic curve over this world.
+         *
+         * A tone map exists to fit a high dynamic range into a screen, and
+         * it pays for that by rolling off the highlights and pulling the
+         * saturation out of everything. Nothing here has that range to fit:
+         * the film is already graded, the packs are printed artwork, and
+         * the room is cream. Left on, ACES quietly greys the packs down and
+         * puts them at odds with the untone-mapped film standing behind
+         * them; off, both are exactly the colours the files hold.
+         */
+        toneMapping: THREE.NoToneMapping,
+      }}
       onCreated={({ scene }) => {
-        scene.fog = new THREE.FogExp2(CREAM, 0.05);
+        scene.fog = new THREE.FogExp2(CREAM, FOG_DENSITY);
       }}
     >
       <Suspense fallback={null}>

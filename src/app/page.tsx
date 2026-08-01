@@ -4,7 +4,7 @@ import Hero, { type HeroAssets } from "@/components/sections/Hero";
 import HomeWorld from "@/components/home/HomeWorld";
 import type { StagePack } from "@/three/world/types";
 import { products } from "@/config/products";
-import { heroMediaRemote } from "@/config/heroMedia";
+import { FILM_SRC } from "@/three/world/film";
 
 const publicDir = join(process.cwd(), "public");
 
@@ -13,26 +13,21 @@ function has(publicPath: string): boolean {
 }
 
 /**
- * Resolved at build time. A committed file under public/assets/hero always
- * wins, so the hero is complete on the very first deploy either way.
+ * The hero plays the same owner-shot kitchen film the world below it is
+ * built from — one file, served from this origin.
  *
- * Until the film lands in the repo it is served through /api/hero-film
- * rather than straight from the Higgsfield CDN: the CDN sends no CORS
- * headers, which kills the browser-side fetch that makes the film
- * scrubbable. The poster has no such problem — next/image already proxies
- * remote stills through this origin.
+ * Same-origin is not incidental. The hero scrubs the film against the
+ * scroll, which means fetching the whole thing into a blob so every seek is
+ * local; a cross-origin host that sends no CORS headers kills that fetch
+ * and the hero silently degrades to unscrubbable streaming.
+ *
+ * The poster is the film's own first frame, so the still and the video line
+ * up exactly and the dissolve between them is invisible.
  */
-function resolveMedia(localPath: string, remote: string): string {
-  return has(localPath) ? localPath : remote;
-}
-
 function getHeroAssets(): HeroAssets {
   return {
-    videoSrc: resolveMedia("/assets/hero/hero-loop.mp4", "/api/hero-film"),
-    posterSrc: resolveMedia(
-      "/assets/hero/hero-poster.webp",
-      heroMediaRemote.poster,
-    ),
+    videoSrc: FILM_SRC,
+    posterSrc: "/assets/hero/hero-poster.webp",
     /* Optional and owner-supplied. The hero only draws its sound toggle
        when this file exists, and never plays it unprompted either way. */
     ambientSrc: has("/assets/hero/ambience.mp3")

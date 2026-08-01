@@ -27,7 +27,8 @@ const MAX_INLINE_BYTES = 28 * 1024 * 1024;
 const PLAYHEAD_EASE = 0.22;
 
 export interface HeroAssets {
-  /** Local file when committed, the same-origin /api/hero-film route otherwise */
+  /** Same-origin, always: a cross-origin film cannot be fetched into a blob,
+   *  and without the blob it cannot be scrubbed. */
   videoSrc: string;
   posterSrc: string;
   /** Ambient sizzle loop. Absent until the owner drops the file in. */
@@ -37,16 +38,16 @@ export interface HeroAssets {
 /**
  * "A Feast in Motion".
  *
- * One continuous shot of the dishes, and the scroll wheel is the projector.
- * The plate rests, the food bursts upward and hangs in zero gravity, the
- * camera flies through it, and then every piece falls back and lands. Stop
- * scrolling and the food freezes mid-air; scroll back and it rebuilds itself
- * exactly in reverse, because the scroll position *is* the playhead rather
- * than something that merely triggers playback.
+ * The kitchen film, and the scroll wheel is the projector. The gobi hangs
+ * over the plate, the sachet opens, the masala goes on, it fries, and both
+ * packs land behind both finished plates. Stop scrolling and the food
+ * freezes mid-air; scroll back and it runs backwards, because the scroll
+ * position *is* the playhead rather than something that merely triggers
+ * playback.
  *
- * The last quarter of the scroll runs the film backwards on purpose: the
- * reverse of an explosion is a perfect landing, so nothing has to be
- * animated twice and every ingredient returns to precisely where it began.
+ * It is the same file the 3D world below plays, cut differently: here the
+ * whole ten seconds runs once from top to bottom of the hero, so the section
+ * ends on the product at the exact moment the sign-off card fades up.
  *
  * The stage is a real 3D space rather than a stack of flat layers. The film
  * hangs a long way back inside a perspective, so the pointer swings it on
@@ -108,9 +109,9 @@ export default function Hero({
       setWantsVideo(true);
     };
 
-    /* Half a second of stillness is intent enough: a 22MB film takes long
-       enough to arrive that waiting longer to start is what a viewer would
-       later experience as the video "not loading". */
+    /* Half a second of stillness is intent enough. The film is small, but
+       waiting any longer to start fetching it is what a viewer would later
+       experience as the video "not loading". */
     const timer = window.setTimeout(arm, 500);
     events.forEach((type) =>
       window.addEventListener(type, arm, { passive: true }),
@@ -307,8 +308,8 @@ export default function Hero({
   }, [stageRef]);
 
   /*
-   * The storyboard, wired to the scroll bar: scene 1 arrival 0-20%, scene 2
-   * explosion 20-50%, scene 3 rotation 50-75%, scene 4 rebuild 75-100%.
+   * The storyboard, wired to the scroll bar: scene 1 the toss 0-20%, scene 2
+   * the hands 20-50%, scene 3 the fry 50-75%, scene 4 the plates 75-100%.
    *
    * Built once, whether or not the film has landed. The playhead legs write
    * into a ref that nothing reads until the file is scrubbable, so the video
@@ -355,14 +356,21 @@ export default function Hero({
         0,
       );
 
-      /* Arrival: the camera creeps in while the plate sits still */
-      tl.to(playhead, { value: 0.18, duration: 0.2 }, 0);
-      /* Explosion: the food leaves the plate and separates */
-      tl.to(playhead, { value: 0.52, duration: 0.3, ease: "power1.in" }, 0.2);
-      /* Rotation: the camera flies through what is hanging there */
-      tl.to(playhead, { value: 1, duration: 0.25 }, 0.5);
-      /* Rebuild: the same move backwards, easing into the landing */
-      tl.to(playhead, { value: 0.18, duration: 0.25, ease: "power2.out" }, 0.75);
+      /*
+       * The four legs are the film's own four shots. The boundaries are the
+       * cuts in the footage, so a scene of the storyboard never straddles a
+       * cut and the scrub never lands on a frame that belongs to the next
+       * shot. Seconds over the film's ten: 2.35, 5.5, 7.45, 10.
+       */
+      /* The toss: florets and chilli hanging over the plate */
+      tl.to(playhead, { value: 0.235, duration: 0.2 }, 0);
+      /* The hands: the sachet opens, the masala goes on */
+      tl.to(playhead, { value: 0.55, duration: 0.3, ease: "power1.in" }, 0.2);
+      /* Into the oil, and the fry */
+      tl.to(playhead, { value: 0.745, duration: 0.25 }, 0.5);
+      /* Plated, then both packs behind both plates — the film arrives at the
+         product exactly as the sign-off card fades up over it */
+      tl.to(playhead, { value: 1, duration: 0.25, ease: "power2.out" }, 0.75);
 
       /* The title card steps aside as the plate starts to come apart */
       tl.to(`.${styles.storyLine}`, { autoAlpha: 0, y: -30, duration: 0.1 }, 0.14);

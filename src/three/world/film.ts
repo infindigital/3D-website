@@ -33,20 +33,27 @@ export interface FilmScreen {
   rotation: [number, number, number];
   /** Width in world units; the height follows FILM_ASPECT */
   width: number;
-  /** How solid the film is allowed to get here. Beats whose copy sits over
-   *  the screen rather than beside it are held well back. */
+  /** How solid the film is allowed to get here. Full unless copy sits over
+   *  the screen rather than beside it, and even then only eased off. */
   opacity: number;
 }
 
 /**
  * Each screen stands behind whatever that beat is really about — behind the
  * two packs at the lineup, behind the single pack at a flavour beat, behind
- * the turning rings at the ritual — and is angled to face the camera at the
+ * the recipe cards at the ritual — and is angled to face the camera at the
  * moment it matters. The bands touch rather than overlap far, so the cut
  * from one segment to the next always happens under a crossfade.
  *
  * These positions are read against src/three/world/flightPath.ts. Move a
  * camera key and the screen it frames has to move with it.
+ *
+ * The opacities are high throughout: this is the footage, not a texture
+ * behind the footage, and a screen held back to a third of itself reads as
+ * a faded print rather than as a film playing in the room. Where copy sits
+ * over a screen rather than beside it, the copy carries its own pool of
+ * light in HomeWorld.module.css — that is what buys legibility now, rather
+ * than dimming the film for everyone.
  */
 export const FILM_SCREENS: FilmScreen[] = [
   {
@@ -57,7 +64,7 @@ export const FILM_SCREENS: FilmScreen[] = [
     position: [0, 0.85, -4.6],
     rotation: [0, 0, 0],
     width: 8.2,
-    opacity: 0.92,
+    opacity: 1,
   },
   {
     id: "story",
@@ -67,7 +74,7 @@ export const FILM_SCREENS: FilmScreen[] = [
     position: [0, 0.55, -12.8],
     rotation: [0, 0, 0],
     width: 7.4,
-    opacity: 0.5,
+    opacity: 0.86,
   },
   {
     id: "flavour0",
@@ -77,7 +84,7 @@ export const FILM_SCREENS: FilmScreen[] = [
     position: [-0.2, 0.6, -19],
     rotation: [0, -0.26, 0],
     width: 6.4,
-    opacity: 0.88,
+    opacity: 1,
   },
   {
     id: "flavour1",
@@ -87,7 +94,7 @@ export const FILM_SCREENS: FilmScreen[] = [
     position: [0.2, 0.6, -26],
     rotation: [0, 0.26, 0],
     width: 6.4,
-    opacity: 0.88,
+    opacity: 1,
   },
   {
     id: "ritual",
@@ -97,7 +104,7 @@ export const FILM_SCREENS: FilmScreen[] = [
     position: [0, 0.7, -33.6],
     rotation: [0, 0, 0],
     width: 8,
-    opacity: 0.32,
+    opacity: 0.84,
   },
   {
     id: "finale",
@@ -107,7 +114,7 @@ export const FILM_SCREENS: FilmScreen[] = [
     position: [0, 0.8, -40.6],
     rotation: [0, 0, 0],
     width: 8.6,
-    opacity: 0.82,
+    opacity: 1,
   },
 ];
 

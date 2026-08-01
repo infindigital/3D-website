@@ -21,8 +21,9 @@ import {
  * film is at that tile — so the plate of florets has relief and the dark
  * pan falls away behind it. Leaving the beat lets them go again.
  *
- * That is what makes it part of the room: the packs stand in front of it,
- * the spice drifts across it, and the travelling light passes over it.
+ * That is what makes it part of the room rather than a backdrop: the packs
+ * stand in front of it, the camera passes it at an angle, and the fog of
+ * the corridor reaches it.
  */
 
 const COLS = 30;
@@ -37,6 +38,39 @@ const DEPTH = 0.2;
 
 /** The page's cream, mixed in with distance so a far screen sits back */
 const CREAM = new THREE.Color("#fff8ee");
+
+/**
+ * The grade.
+ *
+ * The film is a bright, evenly lit kitchen already, so what it wants is
+ * depth, not exposure: lifting it further only turns the plates and the
+ * ceiling — most of the frame — to milk. Contrast and saturation instead,
+ * both gentle, both around the middle so nothing at either end clips.
+ */
+const CONTRAST = 1.08;
+const SATURATION = 1.18;
+
+/**
+ * How far each tile spills over its own cell.
+ *
+ * Tiles do not all sit at the same depth — that is the whole point of the
+ * relief — and two quads at different depths seen through a perspective
+ * lens project to different sizes, so cells that abut exactly in the plane
+ * pull apart on screen and show the page as a bright grid of seams. The
+ * worst of it is out at the sides, where the bow is steepest and a column
+ * of tiles leans hardest away from its neighbour.
+ *
+ * The uv spills with the quad, so both tiles draw the same picture in the
+ * band they share — but drawing it twice through a transparent material is
+ * how the gap turns into a bright grid instead of a dark one. The fragment
+ * shader carries a matching weight that hands the band from one tile to the
+ * next, so the pair composites to exactly what one tile alone would.
+ *
+ * That is why this is generous rather than measured: once the handover is
+ * exact, spilling further costs a little fill and nothing else, so it is
+ * set past the worst corner of the worst screen instead of against it.
+ */
+const OVERLAP = 1.3;
 
 /** A fixed sequence, so the tiles scatter the same way on every load */
 function makeRandom(seed: number) {
@@ -114,6 +148,9 @@ function createScreenMaterial(
       uTime: { value: 0 },
       uDepth: { value: DEPTH },
       uFog: { value: CREAM },
+      uContrast: { value: CONTRAST },
+      uSaturation: { value: SATURATION },
+      uOverlap: { value: OVERLAP },
     },
     vertexShader: /* glsl */ `
       attribute vec2 aTile;
@@ -126,8 +163,10 @@ function createScreenMaterial(
       uniform float uReveal;
       uniform float uTime;
       uniform float uDepth;
+      uniform float uOverlap;
 
       varying vec2 vUv;
+      varying vec2 vLocal;
       varying float vFog;
 
       void main() {
@@ -157,17 +196,23 @@ function createScreenMaterial(
 
         /* Tiles start small and grow into their cell, so a loose tile
            reads as a speck of the room and not as a torn-off poster.
-           Settled tiles fill the cell exactly — anything less and every
-           tile edge in the wall shows as a cream seam. */
-        vec2 quad = position.xy * cell * mix(0.35, 1.0, ease);
+           Settled tiles overrun it: see OVERLAP. */
+        vec2 quad = position.xy * cell * mix(0.35, uOverlap, ease);
 
         vec4 mv = modelViewMatrix * vec4(pos + vec3(quad, 0.0), 1.0);
         gl_Position = projectionMatrix * mv;
 
-        /* Full cell rather than the drawn 0.985, so neighbouring tiles
-           share an edge exactly and the image has no seams */
-        vUv = (aTile + position.xy + 0.5) / uGrid;
-        vFog = clamp((-mv.z - 7.0) / 26.0, 0.0, 0.55);
+        /* The uv spills by exactly as much as the quad does, so a tile's
+           overrun shows its neighbour's own pixels rather than a stretched
+           copy of its own, and the join has nothing to give itself away */
+        vUv = (aTile + 0.5 + position.xy * uOverlap) / uGrid;
+        /* Where this fragment sits inside the tile's own cell: ±0.5 is the
+           cell edge, anything past it is the overrun. */
+        vLocal = position.xy * uOverlap;
+        /* Starts further back and never gets far: fog is depth, but every
+           point of it is a point of the film turned to cream, and a screen
+           is only ever this far away because you are on your way to it. */
+        vFog = clamp((-mv.z - 11.0) / 30.0, 0.0, 0.22);
       }
     `,
     fragmentShader: /* glsl */ `
@@ -181,12 +226,25 @@ function createScreenMaterial(
       uniform float uOpacity;
       uniform float uReveal;
       uniform vec3 uFog;
+      uniform float uContrast;
+      uniform float uSaturation;
+      uniform float uOverlap;
 
       varying vec2 vUv;
+      varying vec2 vLocal;
       varying float vFog;
 
       void main() {
         vec3 shot = texture(uMap, vUv).rgb;
+
+        /* The grade. Saturation swings around the frame's own luminance so
+           the cream ceiling and the white plates stay neutral while the
+           chilli and turmeric come up; the contrast swings around mid-grey
+           so the oil goes darker as the crust goes brighter, which is what
+           reads as depth rather than as exposure. */
+        float luma = dot(shot, vec3(0.299, 0.587, 0.114));
+        shot = mix(vec3(luma), shot, uSaturation);
+        shot = clamp((shot - 0.5) * uContrast + 0.5, 0.0, 1.0);
 
         /* Feathered rather than cut: the film has no frame around it, it
            just stops being there toward the edges of the wall. Written
@@ -195,7 +253,27 @@ function createScreenMaterial(
         vec2 edge = abs(vUv - 0.5) * 2.0;
         float fade = 1.0 - smoothstep(0.72, 1.0, max(edge.x, edge.y));
 
-        float a = uOpacity * uReveal * fade;
+        /* Hand the shared band over.
+           Each tile owns its cell outright and gives up its overrun across
+           the seam, on a curve whose two halves sum to one — so at every
+           point of the band this tile's weight and its neighbour's are
+           exactly a whole tile between them. */
+        float band = (uOverlap - 1.0) * 0.5;
+        vec2 give = vec2(
+          1.0 - smoothstep(0.5 - band, 0.5 + band, abs(vLocal.x)),
+          1.0 - smoothstep(0.5 - band, 0.5 + band, abs(vLocal.y))
+        );
+        float weight = give.x * give.y;
+
+        /* Weighting the alpha directly would not do: two layers at half
+           strength do not compose to one layer at full, they compose to
+           three quarters of it, and the band would go dark instead of
+           bright. Transmittance is what multiplies, so the weight belongs
+           in the exponent — the pair then leaves exactly (1 - a) behind,
+           whatever the split, and the seam has nothing to show. */
+        float want = min(uOpacity * uReveal * fade, 0.999);
+        float a = 1.0 - pow(1.0 - want, weight);
+
         /* Well above zero: a screen damping out of its beat would
            otherwise leave a field of near-invisible tiles hanging in the
            corridor behind the next one. */

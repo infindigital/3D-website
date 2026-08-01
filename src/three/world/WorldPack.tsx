@@ -95,7 +95,7 @@ export default function WorldPack({
        with it: a shadow under nothing is worse than no shadow at all */
     const shown = eased / slot.scale;
     if (shadowRef.current) shadowRef.current.uniforms.uFade.value = shown;
-    if (rim.current) rim.current.intensity = (hovered ? 8 : 5) * shown;
+    if (rim.current) rim.current.intensity = (hovered ? 5.5 : 3.4) * shown;
   });
 
   /* The cursor lives in the DOM and the pack lives in the canvas, so they
@@ -112,11 +112,13 @@ export default function WorldPack({
 
   return (
     <group position={slot.position}>
-      {/* The pack's own rim light, so each one carries its product's colour */}
+      {/* The pack's own rim light, so each one carries its product's colour.
+          Held down since nothing tone-maps the top end any more: a rim that
+          clips is a white edge, not a coloured one. */}
       <pointLight
         ref={rim}
         position={[0, 1.5, -1.6]}
-        intensity={hovered ? 8 : 5}
+        intensity={hovered ? 5.5 : 3.4}
         distance={7}
         color={accent}
       />

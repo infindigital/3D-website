@@ -431,8 +431,11 @@
     pointer-events: none;
   }
 
+  /* Cream and a good deal more solid than the flat page's glass: the film
+     behind these panels now plays at full strength, and 65% white over a
+     moving kitchen is a panel you have to stop and decipher. */
   .beat .panel {
-    background: var(--surface-glass);
+    background: rgba(255, 248, 238, 0.84);
     border: 1px solid var(--surface-glass-border);
     backdrop-filter: blur(14px);
     border-radius: 1.75rem;
@@ -471,8 +474,10 @@
   }
 
   /* The statements have no card behind them — they are read against the
-     spice itself — so they carry their own pool of light instead, the same
-     trick the hero uses over the film. */
+     film itself — so they carry their own pool of light instead, the same
+     trick the hero uses over its own footage. A pool rather than a card
+     because the film is the point: it stays visible right up to the words
+     and only gives way where a letter actually needs the contrast. */
   .beatCentre .statement {
     position: relative;
     padding: 2rem 3rem;
@@ -484,23 +489,42 @@
     inset: -30% -12%;
     background: radial-gradient(
       ellipse at center,
-      rgba(255, 248, 238, 0.94) 0%,
-      rgba(255, 248, 238, 0.72) 42%,
-      rgba(255, 248, 238, 0) 72%
+      rgba(255, 248, 238, 0.97) 0%,
+      rgba(255, 248, 238, 0.82) 44%,
+      rgba(255, 248, 238, 0) 74%
     );
     z-index: -1;
   }
 
+  /* No card here either: three cards inside a fourth is a stack of boxes,
+     and the fry playing behind them is what the beat is about. */
   .beat[data-beat="ritual"] .panel {
+    position: relative;
     max-width: 62rem;
-    /* No card here: the three step cards float over the three rings the
-       spice has just gathered itself into, so a panel behind them would
-       cover the one thing this beat is about. */
     background: none;
     border: none;
     box-shadow: none;
     backdrop-filter: none;
     padding: 0;
+  }
+
+  .beat[data-beat="ritual"] .panel::before {
+    content: "";
+    position: absolute;
+    inset: -16% -9%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 248, 238, 0.72) 0%,
+      rgba(255, 248, 238, 0.44) 48%,
+      rgba(255, 248, 238, 0) 76%
+    );
+    z-index: -1;
+  }
+
+  /* The three step cards sit inside that pool, so they only have to carry
+     the last of the contrast rather than all of it */
+  .beat[data-beat="ritual"] .step {
+    background: rgba(255, 248, 238, 0.82);
   }
 
   .beat[data-beat="finale"] .panel {
@@ -510,7 +534,7 @@
   }
 
   .panelCard {
-    background: rgba(255, 248, 238, 0.9);
+    background: rgba(255, 248, 238, 0.93);
   }
 
   /* ---- the rail ---- */

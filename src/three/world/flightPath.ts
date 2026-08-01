@@ -23,7 +23,7 @@ import * as THREE from "three";
 const CAMERA_KEYS: [number, number, number][] = [
   [0, 0.25, 8.6], //     0.000  the lineup, seen from across the room
   [0, 0.18, 4.0], //     0.167  pushing in between the two packs
-  [0, 0.1, -5.5], //     0.333  through, into the spice storm
+  [0, 0.1, -5.5], //     0.333  through, down the open corridor
   [-2.6, 0.2, -8.9], //  0.500  swung left, first pack out to the right
   [2.6, 0.2, -15.9], //  0.667  swung right, second pack out to the left
   [0, 0.5, -25.4], //    0.833  lifted, facing the three rings
@@ -80,28 +80,6 @@ export const PACK_SLOTS: PackSlot[] = [
   { id: "finale-0", product: 0, position: [-2.6, 0, -36.6], rotation: [0, 0.24, 0.02], scale: 1.5, revealFrom: 0.88 },
   { id: "finale-1", product: 1, position: [2.6, 0, -36.6], rotation: [0, -0.24, -0.02], scale: 1.5, revealFrom: 0.88 },
 ];
-
-/**
- * Where the drifting spice gathers itself into three rings for the ritual.
- * These are set against where the three step cards actually land on screen
- * at that point of the flight, not spaced by eye in world units: the
- * camera is close enough here that a unit of world is most of a card.
- */
-export const RITUAL_RINGS: [number, number, number][] = [
-  [-0.73, -0.25, -29.8],
-  [0, -0.25, -29.8],
-  [0.73, -0.25, -29.8],
-];
-
-/**
- * Comfortably under half the 0.73 spacing above, thickness included: at
- * anything near that spacing the three rings touch, and three touching
- * rings four units from the lens read as one grey smear.
- */
-export const RITUAL_RING_RADIUS = 0.3;
-
-/** The stretch of corridor whose dust is allowed to gather into the rings */
-export const RITUAL_ZONE: [number, number] = [-33.5, -25.5];
 
 /**
  * Accent colour of the travelling key light, keyed to progress. It carries
