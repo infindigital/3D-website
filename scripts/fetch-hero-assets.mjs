@@ -1,10 +1,10 @@
 /**
- * Downloads the Higgsfield-generated ambient media for the hero section
- * into public/assets. Run from the repo root with: node scripts/fetch-hero-assets.mjs
+ * Downloads the Higgsfield-generated media for the hero section into
+ * public/assets. Run from the repo root with: node scripts/fetch-hero-assets.mjs
  *
- * These are ambient visuals only (backgrounds, spice cutouts, textures).
- * Package artwork and the brand logo are supplied by the owner and are
- * never generated. See docs/HERO_ASSETS.md for the full asset map.
+ * These are dish scenery and textures only. Package artwork and the brand
+ * logo are supplied by the owner and are never generated. See
+ * docs/HERO_ASSETS.md for the full asset map.
  */
 
 import { mkdir, writeFile } from "fs/promises";
@@ -15,23 +15,11 @@ const CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_3G4bnJPvIHipa5YfpqpDWYcQA
 const assets = [
   {
     dest: "public/assets/hero/hero-loop.mp4",
-    url: `${CDN}/hf_20260801_091029_3c59713f-ffe3-4311-9691-a03f6b124a70.mp4`,
+    url: `${CDN}/hf_20260801_093933_87e152a2-bf03-4cbe-a524-908b4d030b34.mp4`,
   },
   {
     dest: "public/assets/hero/hero-poster.webp",
-    url: `${CDN}/hf_20260801_073357_f4e77121-e7e9-4b06-8110-934badbddfa3_min.webp`,
-  },
-  {
-    dest: "public/assets/hero/chilli.png",
-    url: `${CDN}/hf_20260801_072655_43de60c5-4316-4312-bcbb-843518ac891b.png`,
-  },
-  {
-    dest: "public/assets/hero/curry-leaf.png",
-    url: `${CDN}/hf_20260801_072702_56752417-f220-42fe-ab46-066aff8a343f.png`,
-  },
-  {
-    dest: "public/assets/hero/star-anise.png",
-    url: `${CDN}/hf_20260801_072706_e884904a-6b09-44bc-8793-1cbfeb8f5245.png`,
+    url: `${CDN}/hf_20260801_093229_56726257-ad69-4c27-9c60-eb9faa3515ea_min.webp`,
   },
   {
     dest: "public/assets/textures/ingredients-scatter.png",

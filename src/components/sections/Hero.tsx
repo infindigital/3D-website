@@ -1,97 +1,83 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
-import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import BuyButtons from "@/components/ui/BuyButtons";
-import { usePointerParallax } from "@/hooks/usePointerParallax";
 import styles from "./Hero.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* Three.js layer loads client-side only and skips itself without WebGL
-   or with reduced motion, so it never blocks the core hero. */
-const HeroCanvas = dynamic(() => import("@/three/HeroCanvas"), { ssr: false });
-
 const LINE_ONE = ["Authentic", "Flavour."];
 const LINE_TWO = ["Crafted", "to", "Perfection."];
-
-export interface HeroPack {
-  /** Public URL of the owner-supplied package front image */
-  src: string;
-  slug: string;
-  name: string;
-}
 
 export interface HeroAssets {
   /** Local file when committed, Higgsfield CDN URL otherwise */
   videoSrc: string;
   posterSrc: string;
-  chilli: string;
-  curryLeaf: string;
-  starAnise: string;
-  /** Packs whose artwork exists in public/assets/products */
-  packs: HeroPack[];
 }
-
-interface FloatConfig {
-  key: "chilli" | "curryLeaf" | "starAnise";
-  className: string;
-  depth: number;
-  size: number;
-}
-
-const floatConfigs: FloatConfig[] = [
-  { key: "chilli", className: "floatChilli", depth: 34, size: 180 },
-  { key: "curryLeaf", className: "floatLeaf", depth: 22, size: 170 },
-  { key: "starAnise", className: "floatAnise", depth: 46, size: 120 },
-  { key: "chilli", className: "floatChilliSmall", depth: 58, size: 96 },
-];
 
 /**
- * Cinematic hero. A generated 3D camera move over the signature dishes plays
- * as a full-bleed video, with parallax ingredient cutouts floating above it
- * and a masked headline reveal. Scrolling tips the content back in 3D while
- * the video zooms deeper and the cutouts drift at depth-based speeds.
- * Reduced motion and small screens get the poster image instead of the video.
- * Missing media files simply do not render, the layout stays intact until
- * they land in public/assets/hero.
+ * Cinematic hero. The type sits on the cream page and the dish footage lives
+ * in a letterbox window below it, framed like a screen laid on the table.
+ * Nothing is ever printed over the picture.
  *
- * Each animation system owns its own element so they compose instead of
- * fighting: .float (pointer parallax, CSS vars) > .floatDrift (GSAP entrance
- * y + scroll yPercent) > .floatIdle (CSS keyframes).
+ * Scrolling is the projector. The first stretch opens the window to full
+ * bleed and lifts the type away; from there the scroll position drives the
+ * film's own playhead, so the camera move only advances while the visitor
+ * keeps going, and the page moves on to the products the moment the shot
+ * lands. Phones and reduced motion keep the still frame instead.
+ *
+ * Two numbers carry the whole thing. JavaScript writes `--open` (0 at rest,
+ * 1 full bleed) and the stylesheet derives every inset, the corner radius,
+ * the shadow and the pull-back from it; the second is the playhead.
  */
 export default function Hero({ assets }: { assets: HeroAssets }) {
-  const sectionRef = usePointerParallax<HTMLElement>();
-  const scopeRef = useRef<HTMLDivElement>(null);
-  const [showVideo, setShowVideo] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [wantsVideo, setWantsVideo] = useState(false);
+  const [filmReady, setFilmReady] = useState(false);
 
+  /* The file is fetched on the first sign of intent rather than at first
+     paint, with a short fallback so it is buffered before anyone reaches it. */
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const wide = window.matchMedia("(min-width: 768px)");
-    const update = () => setShowVideo(!reduced.matches && wide.matches);
-    update();
-    reduced.addEventListener("change", update);
-    wide.addEventListener("change", update);
+    if (reduced.matches || !wide.matches) return;
+
+    let armed = false;
+    const events = ["scroll", "wheel", "touchmove", "pointerdown"] as const;
+
+    const arm = () => {
+      if (armed) return;
+      armed = true;
+      window.clearTimeout(timer);
+      events.forEach((type) => window.removeEventListener(type, arm));
+      setWantsVideo(true);
+    };
+
+    const timer = window.setTimeout(arm, 1200);
+    events.forEach((type) =>
+      window.addEventListener(type, arm, { passive: true }),
+    );
+
     return () => {
-      reduced.removeEventListener("change", update);
-      wide.removeEventListener("change", update);
+      window.clearTimeout(timer);
+      events.forEach((type) => window.removeEventListener(type, arm));
     };
   }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       const targets = [
-        `.${styles.media}`,
+        `.${styles.frame}`,
         `.${styles.word}`,
         `.${styles.eyebrow}`,
         `.${styles.sub}`,
         `.${styles.ctas}`,
-        `.${styles.floatDrift}`,
-        `.${styles.packetDrift}`,
         `.${styles.cue}`,
       ];
 
@@ -103,197 +89,137 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
       const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
       tl.fromTo(
-        `.${styles.media}`,
-        { scale: 1.12, opacity: 0.001 },
-        { scale: 1, opacity: 1, duration: 2.4, ease: "power2.out" },
-        0,
-      );
-
-      tl.fromTo(
         `.${styles.eyebrow}`,
-        { y: 26, opacity: 0.001, letterSpacing: "0.6em" },
+        { y: 24, opacity: 0.001, letterSpacing: "0.6em" },
         { y: 0, opacity: 1, letterSpacing: "0.34em", duration: 1.2 },
-        0.4,
+        0.15,
       );
 
       tl.fromTo(
         `.${styles.word}`,
-        { yPercent: 120, rotate: 5, opacity: 0.001 },
-        {
-          yPercent: 0,
-          rotate: 0,
-          opacity: 1,
-          duration: 1.25,
-          stagger: 0.09,
-        },
-        0.55,
+        { yPercent: 118, rotate: 4, opacity: 0.001 },
+        { yPercent: 0, rotate: 0, opacity: 1, duration: 1.3, stagger: 0.08 },
+        0.3,
       );
 
       tl.fromTo(
         `.${styles.sub}`,
-        { y: 32, opacity: 0.001 },
+        { y: 28, opacity: 0.001 },
         { y: 0, opacity: 1, duration: 1 },
-        "-=0.75",
+        "-=0.8",
       );
 
       tl.fromTo(
         `.${styles.ctas}`,
-        { y: 26, opacity: 0.001 },
+        { y: 24, opacity: 0.001 },
         { y: 0, opacity: 1, duration: 0.9 },
-        "-=0.65",
+        "-=0.7",
       );
 
-      if (document.querySelector(`.${styles.packetDrift}`)) {
-        tl.fromTo(
-          `.${styles.packetDrift}`,
-          {
-            y: 90,
-            opacity: 0.001,
-            rotateY: (index: number) => (index === 0 ? 32 : -32),
-            transformPerspective: 900,
-          },
-          {
-            y: 0,
-            opacity: 1,
-            rotateY: 0,
-            duration: 1.5,
-            stagger: 0.14,
-            ease: "power3.out",
-          },
-          0.75,
-        );
-      }
-
-      if (document.querySelector(`.${styles.floatDrift}`)) {
-        tl.fromTo(
-          `.${styles.floatDrift}`,
-          { y: 70, opacity: 0.001, rotate: 14 },
-          {
-            y: 0,
-            opacity: 1,
-            rotate: 0,
-            duration: 1.7,
-            stagger: 0.12,
-            ease: "power3.out",
-          },
-          0.85,
-        );
-      }
+      /* The window slides up into place like a plate set down on the table */
+      tl.fromTo(
+        `.${styles.frame}`,
+        { yPercent: 12, opacity: 0.001 },
+        { yPercent: 0, opacity: 1, duration: 1.8, ease: "power3.out" },
+        0.45,
+      );
 
       tl.fromTo(
         `.${styles.cue}`,
         { opacity: 0.001 },
         { opacity: 1, duration: 0.8 },
-        "-=0.5",
+        "-=0.6",
       );
-
-      /*
-       * Scroll choreography, scrubbed against the hero's own height.
-       * The content plane tips away from the viewer while the video zooms
-       * deeper and each cutout drifts by its depth, which is what sells the
-       * dimensionality on scroll. Entrance animates y, scroll animates
-       * yPercent, so the two never overwrite each other.
-       */
-      const scrollTl = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: scopeRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-
-      scrollTl.to(`.${styles.mediaZoom}`, { yPercent: 14, scale: 1.18 }, 0);
-
-      scrollTl.to(
-        `.${styles.content}`,
-        {
-          yPercent: -20,
-          scale: 0.92,
-          rotateX: 16,
-          opacity: 0,
-          transformPerspective: 1100,
-          transformOrigin: "center 20%",
-        },
-        0,
-      );
-
-      gsap.utils
-        .toArray<HTMLElement>(`.${styles.floatDrift}`)
-        .forEach((el) => {
-          const depth = Number(el.dataset.depth) || 20;
-          scrollTl.to(el, { yPercent: -depth * 1.4, rotate: depth * 0.35 }, 0);
-        });
-
-      scrollTl.fromTo(
-        `.${styles.cue}`,
-        { opacity: 1 },
-        { opacity: 0, duration: 0.18, immediateRender: false },
-        0,
-      );
-    }, scopeRef);
+    }, stageRef);
 
     return () => ctx.revert();
   }, []);
 
-  const floats = floatConfigs;
+  /*
+   * Scroll choreography, rebuilt when the film arrives because the hero grows
+   * to make room for it. The stage is sticky, so all of this plays while the
+   * page appears to hold still: the letterbox opens first, then the rest of
+   * the hero's height is the film itself, one scrolled second at a time.
+   */
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const ctx = gsap.context(() => {
+      const frame = frameRef.current;
+      const open = { value: 0 };
+      const playhead = { value: 0 };
+
+      const seek = () => {
+        const video = videoRef.current;
+        if (!video) return;
+        const length = video.duration;
+        if (!Number.isFinite(length) || length === 0) return;
+        /* Clear of the very end, which some browsers refuse to seek to */
+        const target = Math.min(playhead.value * length, length - 0.05);
+        if (Math.abs(video.currentTime - target) > 0.03) {
+          video.currentTime = target;
+        }
+      };
+
+      /* With a film loaded the window opens in the first fifth and the rest
+         is playback; without one, opening is all the hero has to do. */
+      const openSpan = filmReady ? 0.2 : 1;
+
+      const scrollTl = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.3,
+        },
+      });
+
+      scrollTl.to(
+        open,
+        {
+          value: 1,
+          duration: openSpan,
+          ease: "power2.inOut",
+          onUpdate: () => frame?.style.setProperty("--open", `${open.value}`),
+        },
+        0,
+      );
+
+      scrollTl.to(
+        `.${styles.copy}`,
+        {
+          yPercent: -14,
+          opacity: 0,
+          ease: "power2.in",
+          duration: openSpan * 0.65,
+        },
+        0,
+      );
+
+      scrollTl.to(
+        `.${styles.cue}`,
+        { opacity: 0, duration: openSpan * 0.2 },
+        0,
+      );
+
+      if (filmReady) {
+        scrollTl.to(playhead, { value: 1, duration: 0.8, onUpdate: seek }, 0.2);
+      }
+    }, stageRef);
+
+    return () => ctx.revert();
+  }, [filmReady]);
 
   return (
-    <section ref={sectionRef} className={styles.hero} aria-label="RS Chef'z">
-      <div ref={scopeRef} className={styles.scope}>
-        <div className={styles.media} aria-hidden="true">
-          <div className={styles.mediaZoom}>
-            {showVideo ? (
-              <video
-                className={styles.video}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                poster={assets.posterSrc}
-              >
-                <source src={assets.videoSrc} type="video/mp4" />
-              </video>
-            ) : (
-              <Image
-                className={styles.video}
-                src={assets.posterSrc}
-                alt=""
-                fill
-                priority
-                sizes="100vw"
-              />
-            )}
-          </div>
-          <div className={styles.veil} />
-        </div>
-
-        <HeroCanvas className={styles.canvasLayer} />
-
-        {floats.map((float, index) => (
-          <div
-            key={`${float.className}-${index}`}
-            className={`${styles.float} ${styles[float.className]}`}
-            style={{ "--depth": float.depth } as React.CSSProperties}
-            aria-hidden="true"
-          >
-            <div className={styles.floatDrift} data-depth={float.depth}>
-              <div className={styles.floatIdle}>
-                <Image
-                  src={assets[float.key]}
-                  alt=""
-                  width={float.size}
-                  height={float.size}
-                  sizes={`${float.size}px`}
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-
-        <div className={styles.content}>
+    <section
+      ref={sectionRef}
+      className={styles.hero}
+      data-film={filmReady ? "true" : "false"}
+      aria-label="RS Chef'z"
+    >
+      <div ref={stageRef} className={styles.stage}>
+        <div className={styles.copy}>
           <p className={styles.eyebrow}>RS Chef&apos;z Masalas</p>
           <h1 className={styles.headline}>
             <span className={styles.line}>
@@ -318,44 +244,46 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
             </span>
           </h1>
           <p className={styles.sub}>
-            Bring restaurant-style taste to your kitchen with premium RS
-            Chef&apos;z masalas.
+            Gobi Manchurian, Chicken 65 and fish fry, cooked at home the way the
+            restaurant does it. Two masalas, no shortcuts.
           </p>
-          {assets.packs.length > 0 && (
-            <div className={styles.packRow}>
-              {assets.packs.map((pack, index) => (
-                <Link
-                  key={pack.slug}
-                  href={`/products/${pack.slug}`}
-                  className={`${styles.packet} ${
-                    index === 0 ? styles.packetLeft : styles.packetRight
-                  }`}
-                  style={{ "--depth": 24 } as React.CSSProperties}
-                  aria-label={`Explore ${pack.name}`}
-                >
-                  <div className={styles.packetDrift}>
-                    <div className={styles.packetIdle}>
-                      <Image
-                        className={styles.packetImg}
-                        src={pack.src}
-                        alt={`${pack.name} pack`}
-                        width={400}
-                        height={560}
-                        priority
-                        sizes="(max-width: 560px) 40vw, 200px"
-                      />
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
           <BuyButtons className={styles.ctas} />
+        </div>
+
+        <div ref={frameRef} className={styles.frame} aria-hidden="true">
+          <div className={styles.film}>
+            <Image
+              className={styles.plate}
+              src={assets.posterSrc}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+            />
+            {wantsVideo && (
+              <video
+                ref={videoRef}
+                className={`${styles.plate} ${styles.video}`}
+                data-ready={filmReady ? "true" : "false"}
+                muted
+                playsInline
+                preload="auto"
+                onLoadedData={(event) => {
+                  /* A nudge off zero forces the first frame to decode and
+                     paint while the element is still paused. */
+                  event.currentTarget.currentTime = 0.01;
+                  setFilmReady(true);
+                }}
+              >
+                <source src={assets.videoSrc} type="video/mp4" />
+              </video>
+            )}
+          </div>
         </div>
 
         <div className={styles.cue} aria-hidden="true">
           <span className={styles.cueDot} />
-          <span className={styles.cueLabel}>Scroll</span>
+          <span className={styles.cueLabel}>Scroll to play</span>
         </div>
       </div>
     </section>

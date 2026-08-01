@@ -1,7 +1,6 @@
 /**
- * Ambient hero media generated on Higgsfield (backgrounds, dish video,
- * spice cutouts). Package artwork and the brand logo are owner-supplied
- * and never generated.
+ * Hero film and poster frame, generated on Higgsfield. Package artwork and
+ * the brand logo are owner-supplied and never generated.
  *
  * Local files under public/assets/hero always win. Until they are
  * committed (run scripts/fetch-hero-assets.mjs on a machine with CDN
@@ -14,10 +13,8 @@ const CDN =
   "https://d8j0ntlcm91z4.cloudfront.net/user_3G4bnJPvIHipa5YfpqpDWYcQAig";
 
 export const heroMediaRemote = {
-  /** 8s toss-and-settle dish shot: Gobi Manchurian, Chicken 65, fish fry */
-  video: `${CDN}/hf_20260801_091029_3c59713f-ffe3-4311-9691-a03f6b124a70.mp4`,
-  poster: `${CDN}/hf_20260801_073357_f4e77121-e7e9-4b06-8110-934badbddfa3_min.webp`,
-  chilli: `${CDN}/hf_20260801_072655_43de60c5-4316-4312-bcbb-843518ac891b.png`,
-  curryLeaf: `${CDN}/hf_20260801_072702_56752417-f220-42fe-ab46-066aff8a343f.png`,
-  starAnise: `${CDN}/hf_20260801_072706_e884904a-6b09-44bc-8793-1cbfeb8f5245.png`,
+  /** The scrubbed hero film, 1080p: wide table down to a macro on the Gobi Manchurian */
+  video: `${CDN}/hf_20260801_093933_87e152a2-bf03-4cbe-a524-908b4d030b34.mp4`,
+  /** The film's opening frame, so the still and the video line up exactly */
+  poster: `${CDN}/hf_20260801_093229_56726257-ad69-4c27-9c60-eb9faa3515ea_min.webp`,
 } as const;

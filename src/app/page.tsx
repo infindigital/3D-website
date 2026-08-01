@@ -1,6 +1,6 @@
 import { existsSync } from "fs";
 import { join } from "path";
-import Hero, { type HeroAssets, type HeroPack } from "@/components/sections/Hero";
+import Hero, { type HeroAssets } from "@/components/sections/Hero";
 import ProductStage from "@/components/sections/ProductStage";
 import StoryReel from "@/components/sections/StoryReel";
 import FlavourScene from "@/components/sections/FlavourScene";
@@ -26,30 +26,12 @@ function resolveMedia(localPath: string, remote: string): string {
 }
 
 function getHeroAssets(): HeroAssets {
-  const packs: HeroPack[] = products
-    .filter((product) => has(product.images.front))
-    .map((product) => ({
-      src: product.images.front,
-      slug: product.slug,
-      name: product.name,
-    }));
-
   return {
     videoSrc: resolveMedia("/assets/hero/hero-loop.mp4", heroMediaRemote.video),
     posterSrc: resolveMedia(
       "/assets/hero/hero-poster.webp",
       heroMediaRemote.poster,
     ),
-    chilli: resolveMedia("/assets/hero/chilli.png", heroMediaRemote.chilli),
-    curryLeaf: resolveMedia(
-      "/assets/hero/curry-leaf.png",
-      heroMediaRemote.curryLeaf,
-    ),
-    starAnise: resolveMedia(
-      "/assets/hero/star-anise.png",
-      heroMediaRemote.starAnise,
-    ),
-    packs,
   };
 }
 

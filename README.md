@@ -49,7 +49,7 @@ src/
     sections/          Page sections (hero, story, reveal, cards)
     ui/                Buttons, cards, micro-interactions
   animations/          GSAP timelines and scroll choreography
-  three/               R3F scenes, particles, materials, cameras
+  three/               R3F scenes, materials, cameras
   hooks/               Shared hooks (viewport, mouse, scroll)
   utils/               Helpers
   config/              Site + product configuration
@@ -58,7 +58,7 @@ public/
   assets/
     brand/             Logo files (supplied by owner)
     products/          Package artwork (supplied by owner, never generated)
-    textures/          3D textures and particle sprites
+    textures/          3D textures
 docs/                  Environment and integration documentation
 ```
 
@@ -67,8 +67,8 @@ docs/                  Environment and integration documentation
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | 1 | Project setup | Done |
-| 2 | Navigation + Hero (dish video, scroll 3D, pack showcase) | Done, media fetch pending (see docs/HERO_ASSETS.md) |
-| 3 | 3D Hero (R3F spice particles + interactive pack stage) | Done, real package artwork committed |
+| 2 | Navigation + Hero (scroll-played dish film) | Done, streams from the CDN until the file is self-hosted (see docs/HERO_ASSETS.md) |
+| 3 | Interactive 3D pack stage | Done, real package artwork committed |
 | 4 | Scroll storytelling (story reel, flavour scenes, ritual, promise, footer) | Done |
 | 5 | Product pages (pinned 3D pack flip, dish parade, blend story, cross-link) | Done |
 | 6 | Responsive (phone/tablet audit, flip + reel pacing, balanced pack artwork) | Done |
