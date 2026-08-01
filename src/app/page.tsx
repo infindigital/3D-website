@@ -2,6 +2,10 @@ import { existsSync } from "fs";
 import { join } from "path";
 import Hero, { type HeroAssets, type HeroPack } from "@/components/sections/Hero";
 import ProductStage from "@/components/sections/ProductStage";
+import StoryReel from "@/components/sections/StoryReel";
+import FlavourScene from "@/components/sections/FlavourScene";
+import Ritual from "@/components/sections/Ritual";
+import PromiseBand from "@/components/sections/PromiseBand";
 import type { StagePack } from "@/three/PackStage";
 import { products } from "@/config/products";
 
@@ -59,6 +63,17 @@ export default function HomePage() {
     <main id="main">
       <Hero assets={getHeroAssets()} />
       {stagePacks.length > 0 && <ProductStage packs={stagePacks} />}
+      <StoryReel />
+      {products.map((product, index) => (
+        <FlavourScene
+          key={product.slug}
+          product={product}
+          flip={index % 2 === 1}
+          hasFront={has(product.images.front)}
+        />
+      ))}
+      <Ritual />
+      <PromiseBand />
     </main>
   );
 }

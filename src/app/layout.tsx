@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Poppins, Manrope } from "next/font/google";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import Navigation from "@/components/layout/Navigation";
+import Footer from "@/components/layout/Footer";
 import { siteConfig, getSiteUrl } from "@/config/site";
 import "./globals.css";
 
@@ -67,6 +68,7 @@ export default function RootLayout({
         <SmoothScroll>
           <Navigation hasLogo={hasLogo} />
           {children}
+          <Footer />
         </SmoothScroll>
       </body>
     </html>
