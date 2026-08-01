@@ -27,7 +27,7 @@ const MAX_INLINE_BYTES = 28 * 1024 * 1024;
 const PLAYHEAD_EASE = 0.22;
 
 export interface HeroAssets {
-  /** Local file when committed, Higgsfield CDN URL otherwise */
+  /** Local file when committed, the same-origin /api/hero-film route otherwise */
   videoSrc: string;
   posterSrc: string;
   /** Ambient sizzle loop. Absent until the owner drops the file in. */
@@ -108,7 +108,10 @@ export default function Hero({
       setWantsVideo(true);
     };
 
-    const timer = window.setTimeout(arm, 1200);
+    /* Half a second of stillness is intent enough: a 22MB film takes long
+       enough to arrive that waiting longer to start is what a viewer would
+       later experience as the video "not loading". */
+    const timer = window.setTimeout(arm, 500);
     events.forEach((type) =>
       window.addEventListener(type, arm, { passive: true }),
     );
@@ -215,7 +218,18 @@ export default function Hero({
       if (video.seeking) return;
 
       /* Clear of the very end, which some browsers refuse to seek to */
-      const target = Math.min(shown * length, length - 0.05);
+      let target = Math.min(shown * length, length - 0.05);
+
+      /* In the streaming fallback a seek past what has arrived parks the
+         decoder until the network catches up, which reads as a freeze. Hold
+         at the newest loaded frame instead and the scrub keeps moving; on a
+         blob everything is buffered and this changes nothing. */
+      const { buffered } = video;
+      if (buffered.length > 0) {
+        const loaded = buffered.end(buffered.length - 1) - 0.1;
+        if (loaded > 0 && target > loaded) target = loaded;
+      }
+
       if (Math.abs(video.currentTime - target) < 0.02) return;
       video.currentTime = target;
     };

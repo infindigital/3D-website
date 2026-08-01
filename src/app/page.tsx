@@ -18,8 +18,13 @@ function has(publicPath: string): boolean {
 
 /**
  * Resolved at build time. A committed file under public/assets/hero always
- * wins; until it lands the browser streams the same media straight from
- * the Higgsfield CDN, so the hero is complete on the very first deploy.
+ * wins, so the hero is complete on the very first deploy either way.
+ *
+ * Until the film lands in the repo it is served through /api/hero-film
+ * rather than straight from the Higgsfield CDN: the CDN sends no CORS
+ * headers, which kills the browser-side fetch that makes the film
+ * scrubbable. The poster has no such problem — next/image already proxies
+ * remote stills through this origin.
  */
 function resolveMedia(localPath: string, remote: string): string {
   return has(localPath) ? localPath : remote;
@@ -27,7 +32,7 @@ function resolveMedia(localPath: string, remote: string): string {
 
 function getHeroAssets(): HeroAssets {
   return {
-    videoSrc: resolveMedia("/assets/hero/hero-loop.mp4", heroMediaRemote.video),
+    videoSrc: resolveMedia("/assets/hero/hero-loop.mp4", "/api/hero-film"),
     posterSrc: resolveMedia(
       "/assets/hero/hero-poster.webp",
       heroMediaRemote.poster,

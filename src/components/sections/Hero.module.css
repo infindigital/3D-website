@@ -62,7 +62,11 @@
   inset: 0;
   z-index: 0;
   perspective: 1200px;
-  perspective-origin: 50% 46%;
+  /* The pointer moves the camera, not just the picture: shifting the
+     vanishing point re-projects everything in the space at once, which is
+     what makes the depth read as real rather than as layers sliding. */
+  perspective-origin: calc(50% + var(--parallax-x, 0) * 3%)
+    calc(46% + var(--parallax-y, 0) * 2%);
 }
 
 /*
@@ -96,14 +100,22 @@
   object-fit: cover;
 }
 
-/* Fades in over the poster frame the moment it can play */
+/*
+ * The film arrives on a breath, not a switch: it dissolves in over its own
+ * poster frame while settling from fractionally too large down to exact
+ * registration, so the cut from still to moving is never visible.
+ */
 .video {
   opacity: 0;
-  transition: opacity 1.1s var(--ease-soft);
+  transform: scale(1.04);
+  transition:
+    opacity 1.6s var(--ease-soft),
+    transform 2.2s var(--ease-soft);
 }
 
 .video[data-ready="true"] {
   opacity: 1;
+  transform: scale(1);
 }
 
 /* ---------- Atmosphere ---------- */

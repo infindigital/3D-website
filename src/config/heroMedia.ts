@@ -5,10 +5,12 @@
  *
  * Local files under public/assets/hero always win. Until they are
  * committed (run scripts/fetch-hero-assets.mjs on a machine with CDN
- * access), the browser streams the same files straight from the
- * Higgsfield CDN below. These are public, unsigned asset URLs, not
- * secrets, so like the Amazon store link they live in source rather
- * than in environment variables.
+ * access), the same files reach the browser through this site's own
+ * origin instead: the film via /api/hero-film (the CDN sends no CORS
+ * headers, so a direct browser fetch of it fails), the poster via
+ * next/image. These are public, unsigned asset URLs, not secrets, so
+ * like the Amazon store link they live in source rather than in
+ * environment variables.
  */
 const CDN =
   "https://d8j0ntlcm91z4.cloudfront.net/user_3G4bnJPvIHipa5YfpqpDWYcQAig";

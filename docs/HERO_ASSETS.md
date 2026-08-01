@@ -57,12 +57,18 @@ faster than the network can answer, so the picture sticks on whichever frame
 arrived last. Three things in `Hero.tsx` prevent that, and all three matter.
 
 - **The file is downloaded once, not streamed.** It is fetched into a blob
-  on the first scroll, wheel, touch or pointer event (with a 1.2s fallback)
+  on the first scroll, wheel, touch or pointer event (with a 0.5s fallback)
   and the element is handed the object URL, after which every seek is local.
-  If the host will not serve it to a `fetch` — no CORS header — or the file
-  is heavier than 28MB, this falls back to streaming the URL directly.
-  Self-hosting the file, below, makes the fetch same-origin and removes the
-  question entirely.
+  This is why the film is never fetched from the CDN directly: Higgsfield's
+  CDN sends no CORS headers, so a cross-origin `fetch` of it dies in the
+  browser and the hero silently degrades to unscrubbable streaming — which
+  is exactly "the video doesn't load when I scroll". Instead
+  `src/app/api/hero-film/route.ts` proxies the film through this site's own
+  origin (CORS does not bind server-to-server requests), so the blob fetch
+  is same-origin and works everywhere. If the fetch still fails, or the
+  file is heavier than 28MB, the element streams from the same route, and
+  the seek loop clamps to the buffered end so the scrub follows the
+  downloaded footage instead of freezing.
 - **The playhead is handed over on `canplaythrough`**, or once `buffered`
   covers the duration — not on `loadeddata`, which only means a first frame
   turned up.
@@ -121,9 +127,11 @@ or licensed. Drop one in at that path and the toggle appears by itself.
 
 The site does not wait for these files. `src/config/heroMedia.ts` holds the
 public CDN URL of every hero asset, and the home page resolves each one at
-build time: a committed file under `public/assets/hero` wins, anything
-missing streams straight from the CDN. The hero is therefore complete on
-the very first deploy.
+build time: a committed file under `public/assets/hero` wins. Anything
+missing is served through this site's own origin instead of the CDN — the
+film via `/api/hero-film`, the poster via `next/image` — because the CDN
+sends no CORS headers and the film has to be fetchable to be scrubbable.
+The hero is therefore complete on the very first deploy.
 
 ## Self-hosting the files (recommended eventually)
 
