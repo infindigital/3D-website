@@ -102,7 +102,9 @@ export default function ProductHero({
             scrub: 0.5,
             ...(pinned
               ? { start: "top top", end: "+=160%", pin: true }
-              : { start: "top 55%", end: "bottom 30%" }),
+              : // The hero already sits at the top of the page, so the flip
+                // must begin at zero and finish while the pack is on screen
+                { start: "top top", end: "+=90%" }),
             onUpdate: (self) => {
               progressRef.current = self.progress;
             },

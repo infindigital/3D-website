@@ -26,7 +26,13 @@ export default function StoryReel() {
   useEffect(() => {
     const mm = gsap.matchMedia(sectionRef);
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add(
+      {
+        roomy: "(prefers-reduced-motion: no-preference) and (min-width: 769px)",
+        tight: "(prefers-reduced-motion: no-preference) and (max-width: 768px)",
+      },
+      (context) => {
+      const tight = Boolean((context.conditions as { tight?: boolean }).tight);
       const statements = gsap.utils.toArray<HTMLElement>(
         `.${styles.statement}`,
       );
@@ -47,7 +53,8 @@ export default function StoryReel() {
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: "+=260%",
+          // Phones get a shorter hold so the reel stays a moment, not a trek
+          end: tight ? "+=190%" : "+=260%",
           scrub: 0.6,
           pin: true,
         },
@@ -79,7 +86,8 @@ export default function StoryReel() {
         gsap.set(`.${styles.reel}`, { clearProps: "height" });
         gsap.set(statements, { clearProps: "all" });
       };
-    });
+      },
+    );
 
     return () => mm.revert();
   }, []);

@@ -65,7 +65,7 @@ docs/                  Environment and integration documentation
 | 3 | 3D Hero (R3F spice particles + interactive pack stage) | Done, real package artwork committed |
 | 4 | Scroll storytelling (story reel, flavour scenes, ritual, promise, footer) | Done |
 | 5 | Product pages (pinned 3D pack flip, dish parade, blend story, cross-link) | Done |
-| 6 | Responsive | Pending |
+| 6 | Responsive (phone/tablet audit, flip + reel pacing, balanced pack artwork) | Done |
 | 7 | Optimization | Pending |
 | 8 | Deployment | Pending |
 
