@@ -114,25 +114,41 @@ export default function Hero({
   }, [cinematic]);
 
   /*
+   * Keeping the picture moving.
+   *
    * A muted, looping film needs nothing from us to run, and the element's
-   * own `autoplay` covers the ordinary case. This is for the two it does
-   * not: a browser that refused the first attempt but will take one after
-   * the gesture that armed the fetch, and the stretch of page after the
-   * hero — a decoder running behind a section nobody is looking at is a
-   * battery bill for a picture that is not on screen.
+   * own `autoplay` covers the ordinary case. Three cases it does not:
+   *
+   *  - a browser that refused the first attempt but will take one after the
+   *    gesture that armed the fetch;
+   *  - the stretch of page after the hero, where a decoder running behind a
+   *    section nobody is looking at is a battery bill for a picture that is
+   *    not on screen;
+   *  - and a film that has quietly stopped. A video element does not report
+   *    that. It goes on saying it is playing while the frame on screen is
+   *    the same one it was a second ago, whether the pipeline lost its
+   *    decoder, the network went quiet mid-buffer, or the machine simply
+   *    ran out of room for both this and the world below. So rather than
+   *    trust the element, watch the clock it is supposed to be advancing.
    */
   useEffect(() => {
     const video = videoRef.current;
     const section = sectionRef.current;
     if (!video || !section) return;
 
+    /* React writes `muted` as an attribute, which an element already in the
+       document ignores — and without the property, autoplay is refused and
+       the hero holds its poster forever. */
+    video.muted = true;
+
+    const play = () => void video.play().catch(() => {});
+
+    let onScreen = true;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          void video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
+        onScreen = entry.isIntersecting;
+        if (onScreen) play();
+        else video.pause();
       },
       /* A sliver is enough: the sticky stage is on screen for the whole
          section, so this only ever fires at the two ends of it. */
@@ -140,7 +156,43 @@ export default function Hero({
     );
     observer.observe(section);
 
-    return () => observer.disconnect();
+    /* Escalating, because the cheap fix works far more often than the
+       expensive one and the expensive one costs the viewer a visible
+       hitch: ask it to play, then jog the playhead to make the decoder
+       build a fresh frame, then finally start the whole element over. */
+    let mark = -1;
+    let stuck = 0;
+    const watchdog = window.setInterval(() => {
+      if (!onScreen || document.hidden) return;
+
+      if (video.paused) {
+        play();
+        return;
+      }
+
+      if (Math.abs(video.currentTime - mark) > 0.02) {
+        mark = video.currentTime;
+        stuck = 0;
+        return;
+      }
+
+      stuck += 1;
+      if (stuck === 2) {
+        play();
+      } else if (stuck === 4) {
+        video.currentTime = (video.currentTime + 0.06) % (video.duration || 10);
+        play();
+      } else if (stuck >= 6) {
+        video.load();
+        play();
+        stuck = 0;
+      }
+    }, 700);
+
+    return () => {
+      observer.disconnect();
+      window.clearInterval(watchdog);
+    };
   }, [wantsVideo]);
 
   /*

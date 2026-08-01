@@ -286,10 +286,9 @@ function createScreenMaterial(
   });
 }
 
-export default function FilmDeck() {
+export default function FilmDeck({ awake }: { awake: boolean }) {
   const video = useMemo(() => {
     const element = document.createElement("video");
-    element.src = FILM_SRC;
     element.muted = true;
     element.defaultMuted = true;
     element.loop = false;
@@ -336,12 +335,25 @@ export default function FilmDeck() {
   const playerRef = useRef<HTMLVideoElement | null>(null);
   const screenRefs = useRef<(THREE.ShaderMaterial | null)[]>([]);
 
+  /*
+   * The deck asks for the film only once the world is awake, and the hero
+   * has been playing the same URL since long before that — so this is a
+   * read from the cache rather than a second download of the same file
+   * across the hero's own connection.
+   *
+   * Nothing plays it here: the frame loop below owns that, and the frame
+   * loop only runs while the world is awake, so a sleeping world holds a
+   * decoder that is doing nothing at all.
+   */
+  useEffect(() => {
+    if (!awake || video.getAttribute("src")) return;
+    /* Through the attribute, as the teardown below takes it away again */
+    video.setAttribute("src", FILM_SRC);
+    video.load();
+  }, [awake, video]);
+
   useEffect(() => {
     playerRef.current = video;
-    void video.play().catch(() => {
-      /* Autoplay of a muted video is allowed everywhere that matters; if
-         a browser still says no, the wall simply stays on one frame. */
-    });
     return () => {
       playerRef.current = null;
       video.pause();

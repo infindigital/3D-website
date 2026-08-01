@@ -89,6 +89,40 @@ it needed — the same-origin blob fetch, the size cap, the single-seek-in-
 flight loop, the Safari priming play/pause — existed only to make seeking
 survivable, and nothing seeks any more.
 
+## Keeping it moving
+
+A film that starts and then freezes halfway is worse than one that never
+starts, and three separate things were letting that happen. All three are
+fixed, and they are worth knowing about before anything here is changed
+back.
+
+- **Nothing blurs the picture any more.** The pool of shade under the copy
+  used to carry `backdrop-filter: blur(5px)`. A backdrop filter is not a
+  layer drawn over the film — it is the film read back out of the frame
+  buffer, blurred and composited again, *for every frame of it*, across
+  most of the screen. It is the most expensive thing that can sit over a
+  playing video. The pool is now shade alone, a little deeper to make up
+  for the lost softening. Do not put a backdrop filter back over the stage.
+
+- **The world below does not draw while the hero is up.** `WorldCanvas`
+  takes an `awake` prop and runs `frameloop="never"` until an
+  IntersectionObserver in `HomeWorld` says the world is within a third of a
+  screen. The canvas, the context and the textures are all built and
+  waiting; not one frame is rendered. Before this, six walls of tiles and a
+  video texture were being redrawn sixty times a second behind a hero
+  nobody had scrolled to yet, and the film in front was what gave way.
+  `FilmDeck` does not even fetch the film until it is awake — by then the
+  hero has long since downloaded the same URL, so it comes from the cache
+  instead of competing for the hero's bandwidth.
+
+- **A watchdog watches the clock, not the element.** A `<video>` does not
+  report having stopped: `paused` stays false while the frame on screen
+  goes stale, whether the decoder was lost, the network went quiet
+  mid-buffer, or the machine simply ran out of room. So `Hero.tsx` samples
+  `currentTime` every 700ms and escalates only as far as it has to — ask it
+  to play, then jog the playhead so the decoder builds a fresh frame, then
+  reload the element. In the ordinary case it never fires at all.
+
 ## Depth
 
 The stage is a space rather than a stack of flat layers. `.scene` carries a
@@ -109,8 +143,10 @@ when the film is frozen.
   middle distance. This is what stops a paused scroll from looking like a
   stalled video.
 - **Vignette and scrim** — both deepen with scroll progress. The scrim is a
-  feathered pool of shade with a slight backdrop blur; it is the readability
-  floor for the type, so the picture behind can go anywhere.
+  wide, soft pool of shade under the words and nothing more; it is the
+  readability floor for the type, so the picture behind can go anywhere. It
+  used to blur the picture as well, which is why the film used to stall —
+  see below.
 - **Closing wash** — the stage dissolves to cream over the last 5%, so the
   hero hands over to the world on a dissolve instead of a cut.
 
@@ -154,6 +190,18 @@ probing. Then read `currentTime` at two stops far enough apart to tell the
 two failure modes apart: a film that is genuinely playing gives different
 times that wrap around ten seconds, while a frozen one repeats itself.
 `paused` should be false anywhere inside the hero and true below it.
+
+Sitting still is the test that matters for stalling, though, and it is the
+one a stop-by-stop sweep will not do: park in the hero and sample
+`currentTime` once a second for ten or twelve seconds. It should advance by
+almost exactly one second each time and wrap at ten. Any sample that repeats
+the one before it is the film stopping — the watchdog will pick it back up,
+but that it had to is the bug.
+
+The world's own player is `document.createElement`d and never enters the
+DOM, so a harness has to hook `createElement` to reach it. Two things to
+check on it: it has no `src` at all while the page is in the hero, and it is
+playing once the world is on screen.
 
 `next start` snapshots `/public` at build time, and it holds its build
 manifest in memory — deleting `.next` under a running server leaves it

@@ -8,7 +8,7 @@ HTML panels captioning it.
 ```
 src/components/home/HomeWorld.tsx        the page: overlay copy + scroll driver
 src/components/home/HomeWorld.module.css the two layouts (see "Two layouts")
-src/three/world/WorldCanvas.tsx          the one canvas, mounted once
+src/three/world/WorldCanvas.tsx          the one canvas, mounted once, asleep until near
 src/three/world/flightPath.ts            camera path, pack slots, travelling light
 src/three/world/film.ts                  which second of the film each beat owns
 src/three/world/FilmDeck.tsx             the film, as tiled geometry
@@ -74,6 +74,22 @@ full strength, so the single decoder is always showing the shot the screen in
 front of you is asking for. It pauses whenever `worldState.active` is false —
 the world scrolled off — which is the difference between decoding for the
 whole visit and decoding while watched.
+
+## Asleep until it is nearly on screen
+
+`HomeWorld` watches the world section with an IntersectionObserver and hands
+`WorldCanvas` an `awake` flag; the canvas runs `frameloop="never"` until it
+is set, and `FilmDeck` does not so much as ask for the film before then. A
+third of a screen of warning is enough for the wall to be standing by the
+time it is looked at.
+
+This is not a saving in the abstract. The hero above is a 720p film playing
+inside a CSS perspective, and a canvas drawing six walls of tiles at sixty
+frames a second behind it was taking enough of the machine to make that film
+stutter and stop. Mounted and drawing are separate things here, and they
+need to stay separate: the scene is a pure function of scroll progress, so
+the first frame after waking is simply the frame that belongs to where the
+page is — there is no state to catch up on.
 
 ### Why it is geometry and not a video plane
 

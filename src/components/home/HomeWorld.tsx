@@ -105,6 +105,8 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
   const worldRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const [canvasOn, setCanvasOn] = useState(false);
+  /* Whether the world is close enough to be worth drawing. See below. */
+  const [awake, setAwake] = useState(false);
   /* Only relevant to the flat layout: whether the film may play itself */
   const [filmPlays, setFilmPlays] = useState(false);
   const filmRef = useRef<HTMLVideoElement>(null);
@@ -125,6 +127,33 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
     query.addEventListener("change", decide);
     return () => query.removeEventListener("change", decide);
   }, []);
+
+  /*
+   * The world sleeps until it is nearly on screen.
+   *
+   * It is one canvas for the whole page below the hero, and it used to start
+   * drawing the moment it mounted — six walls of tiles, a video texture
+   * re-uploaded every frame and a second copy of the film decoding, all of
+   * it behind a hero nobody has scrolled past yet. The hero is a 720p film
+   * playing inside a perspective with blur and blend over it, so the two
+   * were spending the same GPU on the same frame and the picture the viewer
+   * was actually looking at was the one that stuttered.
+   *
+   * A third of a screen of warning is enough to have the wall standing by
+   * the time it is looked at, and it costs the hero nothing before that.
+   */
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world || !canvasOn) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setAwake(entry.isIntersecting),
+      { rootMargin: "35% 0px 35% 0px" },
+    );
+    observer.observe(world);
+
+    return () => observer.disconnect();
+  }, [canvasOn]);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: no-preference)");
@@ -255,6 +284,7 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
           <div className={styles.canvas}>
             <WorldCanvas
               packs={packs}
+              awake={awake}
               onSelect={(slug) => router.push(`/products/${slug}`)}
             />
           </div>

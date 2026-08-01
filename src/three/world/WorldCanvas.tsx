@@ -30,6 +30,8 @@ const FOG_DENSITY = 0.026;
 
 interface WorldCanvasProps {
   packs: StagePack[];
+  /** Whether the world is near enough to be worth drawing at all */
+  awake: boolean;
   onSelect: (slug: string) => void;
 }
 
@@ -114,7 +116,7 @@ function TravellingLight() {
   return <pointLight ref={light} intensity={6} distance={16} decay={1.4} />;
 }
 
-function Scene({ packs, onSelect }: WorldCanvasProps) {
+function Scene({ packs, awake, onSelect }: WorldCanvasProps) {
   const geometry = useMemo(() => createPackGeometry(), []);
   useEffect(() => () => geometry.dispose(), [geometry]);
 
@@ -144,7 +146,7 @@ function Scene({ packs, onSelect }: WorldCanvasProps) {
       <TravellingLight />
 
       <Rig />
-      <FilmDeck />
+      <FilmDeck awake={awake} />
 
       {PACK_SLOTS.map((slot) => {
         const pack = packs[slot.product];
@@ -171,10 +173,19 @@ function Scene({ packs, onSelect }: WorldCanvasProps) {
  * once and never unmounted while the world is on screen, which is the point:
  * the sections do not each own a scene, they are captions over a single
  * continuous flight.
+ *
+ * Mounted is not the same as drawing, though. Until the world is nearly on
+ * screen the loop does not run at all — the context, the geometry and the
+ * textures are all built and standing by, and not one frame is rendered.
+ * Everything above this canvas gets the whole machine to itself.
  */
-export default function WorldCanvas({ packs, onSelect }: WorldCanvasProps) {
+export default function WorldCanvas({ packs, awake, onSelect }: WorldCanvasProps) {
   return (
     <Canvas
+      /* Nothing is drawn behind the hero. The scene is still here, and the
+         first frame after waking is a frame of the same continuous flight —
+         the camera is a pure function of scroll, so it has not drifted. */
+      frameloop={awake ? "always" : "never"}
       /* Capped rather than uncapped: the difference between 2x and 1.75x on
          a wall of video is invisible and the fill cost is not. */
       dpr={[1, 1.75]}
@@ -201,7 +212,7 @@ export default function WorldCanvas({ packs, onSelect }: WorldCanvasProps) {
       }}
     >
       <Suspense fallback={null}>
-        <Scene packs={packs} onSelect={onSelect} />
+        <Scene packs={packs} awake={awake} onSelect={onSelect} />
       </Suspense>
     </Canvas>
   );

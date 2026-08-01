@@ -250,6 +250,16 @@
 /*
  * A soft pool of shade under the words. It is the readability floor for the
  * type: the picture behind can go anywhere and the copy still holds.
+ *
+ * Shade alone, deliberately. This used to blur the picture behind it as
+ * well, and a backdrop blur is not a layer drawn over a film — it is the
+ * film read back out of the frame buffer, blurred and composited again, for
+ * every one of its frames, across most of the screen. That is the single
+ * most expensive thing that can sit over a playing video, and it is what
+ * the hero was spending its frame budget on. The pool is a wide, soft
+ * gradient with no edge of its own, so it never needed the blur to hide a
+ * boundary — a touch more depth in the shade reads the same and costs
+ * nothing per frame.
  */
 .copy::before {
   content: "";
@@ -263,19 +273,9 @@
   pointer-events: none;
   background: radial-gradient(
     closest-side,
-    rgba(8, 5, 3, calc(0.5 + 0.16 * var(--p))) 0%,
-    rgba(8, 5, 3, 0.28) 52%,
+    rgba(8, 5, 3, calc(0.58 + 0.16 * var(--p))) 0%,
+    rgba(8, 5, 3, 0.34) 52%,
     transparent 100%
-  );
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  /* Feathered, so the blur has no edge to give itself away */
-  mask-image: radial-gradient(closest-side, #000 0%, #000 42%, transparent 92%);
-  -webkit-mask-image: radial-gradient(
-    closest-side,
-    #000 0%,
-    #000 42%,
-    transparent 92%
   );
 }
 
