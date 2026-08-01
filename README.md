@@ -66,7 +66,7 @@ docs/                  Environment and integration documentation
 | 4 | Scroll storytelling (story reel, flavour scenes, ritual, promise, footer) | Done |
 | 5 | Product pages (pinned 3D pack flip, dish parade, blend story, cross-link) | Done |
 | 6 | Responsive (phone/tablet audit, flip + reel pacing, balanced pack artwork) | Done |
-| 7 | Optimization | Pending |
+| 7 | Optimization (off-screen render pausing, texture preload, lighter artwork) | Done |
 | 8 | Deployment | Pending |
 
 Each phase ships only after explicit approval of the previous one.

@@ -4,6 +4,7 @@ import { Suspense, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Float } from "@react-three/drei";
 import * as THREE from "three";
+import { useInView } from "@/hooks/useInView";
 import PackModel from "./PackModel";
 
 interface PackFlipCanvasProps {
@@ -51,9 +52,13 @@ export default function PackFlipCanvas({
   accent,
   progress,
 }: PackFlipCanvasProps) {
+  const { ref, inView } = useInView<HTMLDivElement>();
+
   return (
+    <div ref={ref} style={{ width: "100%", height: "100%" }}>
     <Canvas
       dpr={[1, 2]}
+      frameloop={inView ? "always" : "never"}
       camera={{ position: [0, 0.1, 5], fov: 38 }}
       gl={{ alpha: true, antialias: true }}
     >
@@ -84,5 +89,6 @@ export default function PackFlipCanvas({
         />
       </Suspense>
     </Canvas>
+    </div>
   );
 }

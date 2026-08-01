@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { preload } from "react-dom";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import gsap from "gsap";
@@ -46,6 +47,13 @@ export default function ProductHero({
     reduced.addEventListener("change", update);
     return () => reduced.removeEventListener("change", update);
   }, []);
+
+  // The texture loader fetches the raw artwork files, so warm them up as
+  // soon as we know the 3D flip will mount instead of waiting for three.js
+  if (show3D && hasFront) {
+    preload(product.images.front, { as: "image" });
+    if (hasBack) preload(product.images.back, { as: "image" });
+  }
 
   useEffect(() => {
     const mm = gsap.matchMedia(sectionRef);

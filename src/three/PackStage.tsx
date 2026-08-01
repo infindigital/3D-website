@@ -4,6 +4,7 @@ import { Suspense, useRef, type ReactNode } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Float, PresentationControls } from "@react-three/drei";
 import * as THREE from "three";
+import { useInView } from "@/hooks/useInView";
 import PackModel from "./PackModel";
 
 export interface StagePack {
@@ -51,10 +52,13 @@ function Rig({
  */
 export default function PackStage({ packs, progress, onSelect }: PackStageProps) {
   const spread = packs.length > 1 ? 1.35 : 0;
+  const { ref, inView } = useInView<HTMLDivElement>();
 
   return (
+    <div ref={ref} style={{ width: "100%", height: "100%" }}>
     <Canvas
       dpr={[1, 2]}
+      frameloop={inView ? "always" : "never"}
       camera={{ position: [0, 0.15, 5.4], fov: 40 }}
       gl={{ alpha: true, antialias: true }}
     >
@@ -109,5 +113,6 @@ export default function PackStage({ packs, progress, onSelect }: PackStageProps)
         />
       </Suspense>
     </Canvas>
+    </div>
   );
 }
