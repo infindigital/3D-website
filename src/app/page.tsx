@@ -1,7 +1,15 @@
 import { existsSync } from "fs";
 import { join } from "path";
 import Hero, { type HeroAssets, type HeroPack } from "@/components/sections/Hero";
+import ProductStage from "@/components/sections/ProductStage";
+import type { StagePack } from "@/three/PackStage";
 import { products } from "@/config/products";
+
+const publicDir = join(process.cwd(), "public");
+
+function has(publicPath: string): boolean {
+  return existsSync(join(publicDir, ...publicPath.split("/").filter(Boolean)));
+}
 
 /**
  * Checked at build time so the hero renders cleanly while the generated
@@ -9,10 +17,6 @@ import { products } from "@/config/products";
  * owner-supplied package artwork into public/assets/products.
  */
 function getHeroAssets(): HeroAssets {
-  const publicDir = join(process.cwd(), "public");
-  const has = (publicPath: string) =>
-    existsSync(join(publicDir, ...publicPath.split("/").filter(Boolean)));
-
   const packs: HeroPack[] = products
     .filter((product) => has(product.images.front))
     .map((product) => ({
@@ -31,10 +35,30 @@ function getHeroAssets(): HeroAssets {
   };
 }
 
+/**
+ * The 3D pack stage needs at least the front artwork. The back face reuses
+ * the front until the back scan lands. Package artwork is owner-supplied,
+ * never generated, so the whole section stays hidden until it exists.
+ */
+function getStagePacks(): StagePack[] {
+  return products
+    .filter((product) => has(product.images.front))
+    .map((product) => ({
+      slug: product.slug,
+      name: product.name,
+      front: product.images.front,
+      back: has(product.images.back) ? product.images.back : undefined,
+      accent: product.accentColor,
+    }));
+}
+
 export default function HomePage() {
+  const stagePacks = getStagePacks();
+
   return (
     <main id="main">
       <Hero assets={getHeroAssets()} />
+      {stagePacks.length > 0 && <ProductStage packs={stagePacks} />}
     </main>
   );
 }

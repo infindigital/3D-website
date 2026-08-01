@@ -1,0 +1,118 @@
+.stage {
+  position: relative;
+  padding: clamp(70px, 10vh, 120px) 24px clamp(60px, 8vh, 100px);
+  background: linear-gradient(
+    180deg,
+    var(--color-cream) 0%,
+    var(--color-white) 45%,
+    var(--color-cream-deep) 100%
+  );
+  overflow: hidden;
+}
+
+.inner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-orange);
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.1;
+}
+
+.sub {
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 52ch;
+}
+
+/* The R3F canvas fills this box, height tuned so packs read large */
+.canvasWrap {
+  width: 100%;
+  height: clamp(420px, 62vh, 620px);
+  position: relative;
+  touch-action: pan-y;
+}
+
+/* Flat artwork fallback for reduced motion or missing WebGL */
+.fallbackRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(24px, 6vw, 64px);
+  padding: clamp(24px, 5vh, 48px) 0;
+}
+
+.fallbackItem {
+  display: block;
+  border-radius: 18px;
+}
+
+.fallbackItem:focus-visible {
+  outline: 3px solid var(--color-turmeric);
+  outline-offset: 6px;
+}
+
+.fallbackImg {
+  width: clamp(150px, 22vw, 240px);
+  height: auto;
+  filter: drop-shadow(0 34px 44px rgba(120, 60, 20, 0.24));
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.linkCard {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border: 1.5px solid rgba(107, 90, 78, 0.28);
+  border-radius: 999px;
+  transition:
+    border-color 0.35s var(--ease-soft),
+    color 0.35s var(--ease-soft),
+    transform 0.35s var(--ease-soft),
+    box-shadow 0.35s var(--ease-soft);
+}
+
+.linkCard:hover,
+.linkCard:focus-visible {
+  border-color: var(--accent, var(--color-orange));
+  color: var(--accent, var(--color-orange));
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(120, 60, 20, 0.14);
+}
+
+.linkCard:focus-visible {
+  outline: 3px solid var(--color-turmeric);
+  outline-offset: 4px;
+}
+
+@media (max-width: 560px) {
+  .canvasWrap {
+    height: clamp(340px, 55vh, 460px);
+  }
+}

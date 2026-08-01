@@ -43,6 +43,14 @@
     linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 100%);
 }
 
+/* Transparent R3F canvas carrying the spice particle field */
+.canvasLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
 /* Keeps the center readable over the moving background */
 .veil {
   position: absolute;

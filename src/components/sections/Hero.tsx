@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
@@ -10,6 +11,10 @@ import { usePointerParallax } from "@/hooks/usePointerParallax";
 import styles from "./Hero.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
+
+/* Three.js layer loads client-side only and skips itself without WebGL
+   or with reduced motion, so it never blocks the core hero. */
+const HeroCanvas = dynamic(() => import("@/three/HeroCanvas"), { ssr: false });
 
 const HERO_VIDEO = "/assets/hero/hero-loop.mp4";
 const HERO_POSTER = "/assets/hero/hero-poster.webp";
@@ -293,6 +298,8 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
           </div>
           <div className={styles.veil} />
         </div>
+
+        <HeroCanvas className={styles.canvasLayer} />
 
         {floats.map((float, index) => (
           <div

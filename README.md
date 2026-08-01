@@ -62,7 +62,7 @@ docs/                  Environment and integration documentation
 | ----- | ----- | ------ |
 | 1 | Project setup | Done |
 | 2 | Navigation + Hero (dish video, scroll 3D, pack showcase) | Done, media fetch pending (see docs/HERO_ASSETS.md) |
-| 3 | 3D Hero | Pending |
+| 3 | 3D Hero (R3F spice particles + interactive pack stage) | Done, pack stage appears when package artwork lands |
 | 4 | Scroll animations | Pending |
 | 5 | Product pages | Pending |
 | 6 | Responsive | Pending |
