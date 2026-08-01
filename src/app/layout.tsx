@@ -1,3 +1,5 @@
+import { existsSync } from "fs";
+import { join } from "path";
 import type { Metadata } from "next";
 import { Poppins, Manrope } from "next/font/google";
 import SmoothScroll from "@/components/layout/SmoothScroll";
@@ -54,11 +56,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // The owner-supplied logo replaces the styled wordmark once it lands
+  const hasLogo = existsSync(
+    join(process.cwd(), "public", "assets", "brand", "logo.png"),
+  );
+
   return (
     <html lang="en" className={`${poppins.variable} ${manrope.variable}`}>
       <body>
         <SmoothScroll>
-          <Navigation />
+          <Navigation hasLogo={hasLogo} />
           {children}
         </SmoothScroll>
       </body>

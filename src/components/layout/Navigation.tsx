@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,10 +21,11 @@ const links = [
 
 /**
  * Floating glass navigation. Sticky, minimal, blurs the content behind it.
- * The wordmark switches to the brand logo image once it lands in
- * public/assets/brand/logo.png.
+ * The wordmark echoes the logo identity, white RS in green pentagons and
+ * Chef'z in the logo red, and switches to the real brand logo image once
+ * it lands in public/assets/brand/logo.png (gated in layout.tsx).
  */
-export default function Navigation() {
+export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -61,11 +63,30 @@ export default function Navigation() {
         aria-label="Main"
         className={`${styles.bar} ${scrolled ? styles.scrolled : ""}`}
       >
-        <Link href="/" className={styles.brand} onClick={closeMenu}>
-          <span className={styles.brandBadge} aria-hidden="true">
-            RS
-          </span>
-          <span className={styles.brandName}>{siteConfig.name}</span>
+        <Link
+          href="/"
+          className={styles.brand}
+          onClick={closeMenu}
+          aria-label={`${siteConfig.name}, home`}
+        >
+          {hasLogo ? (
+            <Image
+              className={styles.brandLogo}
+              src="/assets/brand/logo.png"
+              alt=""
+              width={172}
+              height={81}
+              priority
+            />
+          ) : (
+            <span className={styles.brandMark} aria-hidden="true">
+              <span className={styles.brandPents}>
+                <span className={styles.brandPent}>R</span>
+                <span className={styles.brandPent}>S</span>
+              </span>
+              <span className={styles.brandName}>Chef&apos;z</span>
+            </span>
+          )}
         </Link>
 
         <ul className={styles.links}>

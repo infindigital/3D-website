@@ -9,11 +9,13 @@
   --color-cream: #fff8ee;
   --color-cream-deep: #fdefd8;
 
-  /* Brand */
+  /* Brand, reds and greens sampled from the RS Chef'z logo */
   --color-turmeric: #f5b301;
   --color-chilli: #e63324;
-  --color-green: #1e9e46;
+  --color-green: #009b4c;
   --color-orange: #f2860d;
+  --color-logo-red: #e8252a;
+  --color-logo-green: #009b4c;
 
   /* Soft tints for gradients and section washes */
   --tint-turmeric: #fff3d0;
