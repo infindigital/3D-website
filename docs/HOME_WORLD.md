@@ -147,5 +147,10 @@ know before you do:
 
 - The bundled Chromium has no H.264, so the mp4 has to be intercepted and
   served as WebM for the harness. Real browsers get the mp4 untouched.
+- Redirect that interception at a **static file** (`route.continue({url})`),
+  never `route.fulfill` with a buffer. A fulfilled response carries no
+  `Accept-Ranges`, so the element reports the film as unseekable, every
+  segment cue is silently clamped to zero, and all six screens sit on frame
+  one while looking, at a glance, like they are working.
 - `document.querySelector("video")` finds the hero's element, not the film
   deck's — the deck's video is never in the DOM.

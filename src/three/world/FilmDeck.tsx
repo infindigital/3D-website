@@ -247,6 +247,8 @@ export default function FilmDeck() {
 
   /** Which segment is playing, so a beat only cues its shot once */
   const playing = useRef(-1);
+  /** Seconds since the last seek, so a refused one is not asked again at 60Hz */
+  const sinceCue = useRef(0);
   /** Held at nothing until a frame has actually been decoded */
   const ready = useRef(0);
 
@@ -293,15 +295,30 @@ export default function FilmDeck() {
 
     if (player && decoded) {
       const [from, to] = FILM_SCREENS[index].segment;
+      sinceCue.current += delta;
+
+      const cue = () => {
+        player.playbackRate = segmentRate(FILM_SCREENS[index].segment);
+        player.currentTime = from;
+        sinceCue.current = 0;
+      };
 
       if (playing.current !== index) {
         playing.current = index;
-        player.playbackRate = segmentRate(FILM_SCREENS[index].segment);
-        player.currentTime = from;
-      } else if (!player.seeking && (player.currentTime >= to || player.currentTime < from - 0.1)) {
+        cue();
+      } else if (player.seeking) {
+        /* Leave it alone while it is working */
+      } else if (player.currentTime >= to) {
         /* Each beat loops its own stretch rather than running on into the
            next beat's shot */
-        player.currentTime = from;
+        cue();
+      } else if (sinceCue.current > 0.6 && player.currentTime < from - 0.25) {
+        /* The seek did not take — a decoder can refuse one until enough of
+           the file is buffered, and it reports itself as not seeking while
+           it does. Ask again, but at walking pace: asking every frame is
+           how a film ends up pinned to its first frame, each request
+           cancelling the one before it. */
+        cue();
       }
 
       /* Paused while the world is off screen: a decoder running behind a
