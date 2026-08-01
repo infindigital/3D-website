@@ -1,0 +1,115 @@
+/* ============================================================
+   RS Chef'z - Global styles and design tokens
+   Bright, fresh, food-inspired palette. No dark backgrounds.
+   ============================================================ */
+
+:root {
+  /* Base */
+  --color-white: #ffffff;
+  --color-cream: #fff8ee;
+  --color-cream-deep: #fdefd8;
+
+  /* Brand */
+  --color-turmeric: #f5b301;
+  --color-chilli: #e63324;
+  --color-green: #1e9e46;
+  --color-orange: #f2860d;
+
+  /* Soft tints for gradients and section washes */
+  --tint-turmeric: #fff3d0;
+  --tint-chilli: #ffe5e0;
+  --tint-green: #e4f7ea;
+  --tint-orange: #ffedd8;
+
+  /* Text */
+  --text-primary: #2b1d16;
+  --text-secondary: #6b5a4e;
+  --text-on-accent: #ffffff;
+
+  /* Surfaces */
+  --surface-glass: rgba(255, 255, 255, 0.65);
+  --surface-glass-border: rgba(255, 255, 255, 0.8);
+  --shadow-soft: 0 20px 60px rgba(230, 120, 30, 0.12);
+  --shadow-lift: 0 30px 80px rgba(230, 120, 30, 0.2);
+
+  /* Type */
+  --font-heading: var(--font-poppins), sans-serif;
+  --font-body: var(--font-manrope), sans-serif;
+
+  /* Motion */
+  --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+
+  /* Layout */
+  --nav-height: 76px;
+  --page-max-width: 1280px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis owns scrolling */
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--text-primary);
+  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 100%);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::selection {
+  background: var(--color-turmeric);
+  color: var(--text-primary);
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
