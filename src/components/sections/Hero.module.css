@@ -52,27 +52,39 @@
 
 /* ---------- The shot ---------- */
 
+/*
+ * The stage is a space, not a stack. Everything the camera sees lives
+ * inside this perspective, and the layers are separated by where they sit
+ * in it rather than by how far a script slides them sideways.
+ */
 .scene {
   position: absolute;
   inset: 0;
   z-index: 0;
+  perspective: 1200px;
+  perspective-origin: 50% 46%;
 }
 
 /*
- * Overscanned so the pointer parallax can slide the picture without ever
- * exposing an edge. The scale is the extra dolly the page adds on top of
- * the camera move already in the footage.
+ * The film hangs a long way back. The pointer swings it on two axes, and
+ * because it is genuinely deep inside the perspective the swing reads as a
+ * plane turning in space rather than a picture sliding about — the near
+ * edge grows, the far edge shrinks, on its own.
+ *
+ * The scroll then walks it forward through that same space. A dolly is a
+ * change of distance, so this is a change of distance: the perspective
+ * divide does the enlarging, which keeps the near-field motion ahead of
+ * the far-field the whole way in. Overscanned to a third again its size so
+ * neither the turn nor the walk can ever expose an edge.
  */
 .film {
   position: absolute;
-  inset: -5%;
+  inset: -6%;
   transform:
-    scale(calc(1.04 + 0.09 * var(--p)))
-    translate3d(
-      calc(var(--parallax-x, 0) * -14px),
-      calc(var(--parallax-y, 0) * -10px),
-      0
-    );
+    translateZ(calc(-240px + 130px * var(--p)))
+    rotateY(calc(var(--parallax-x, 0) * -2.4deg))
+    rotateX(calc(var(--parallax-y, 0) * 1.6deg))
+    scale(1.3);
   will-change: transform;
 }
 
@@ -108,6 +120,13 @@
   mix-blend-mode: screen;
   opacity: 0.45;
   pointer-events: none;
+  /* Mid-depth: it trails the film and leads the type, which is what puts
+     it between them without any of the three ever touching */
+  transform: translate3d(
+    calc(var(--parallax-x, 0) * -7px),
+    calc(var(--parallax-y, 0) * -5px),
+    0
+  );
 }
 
 .plume {
@@ -200,14 +219,6 @@
     rgba(6, 4, 2, 0.92) 100%
   );
   opacity: calc(0.72 + 0.28 * var(--p));
-}
-
-.dustBack {
-  z-index: 1;
-}
-
-.dustFront {
-  z-index: 4;
 }
 
 /* ---------- Copy ---------- */

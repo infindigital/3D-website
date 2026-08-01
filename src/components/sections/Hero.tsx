@@ -5,7 +5,6 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import BuyButtons from "@/components/ui/BuyButtons";
-import SpiceDust from "@/components/ui/SpiceDust";
 import { scrollToElement } from "@/components/layout/SmoothScroll";
 import { usePointerParallax } from "@/hooks/usePointerParallax";
 import styles from "./Hero.module.css";
@@ -20,6 +19,12 @@ const HEADLINE = ["Where", "Every", "Dish", "Comes", "Alive"];
  * two must stay in step.
  */
 const CINEMATIC = "(min-width: 768px) and (prefers-reduced-motion: no-preference)";
+
+/** Beyond this the film is not worth holding in memory, so it is streamed. */
+const MAX_INLINE_BYTES = 28 * 1024 * 1024;
+
+/** How fast the picture closes on where the scroll says it should be. */
+const PLAYHEAD_EASE = 0.22;
 
 export interface HeroAssets {
   /** Local file when committed, Higgsfield CDN URL otherwise */
@@ -43,10 +48,10 @@ export interface HeroAssets {
  * reverse of an explosion is a perfect landing, so nothing has to be
  * animated twice and every ingredient returns to precisely where it began.
  *
- * The type is layered into the scene rather than printed over it. Spice
- * motes drift on both sides of the headline, steam keeps rising whether or
- * not anyone is scrolling, and a vignette plus a soft scrim hold the words
- * readable against the moving picture underneath.
+ * The stage is a real 3D space rather than a stack of flat layers. The film
+ * hangs a long way back inside a perspective, so the pointer swings it on
+ * two axes while the type stays put in front of it, and the scroll walks it
+ * forward through that space instead of merely scaling it up.
  *
  * Two numbers carry the whole thing. The stage gets `--p`, the raw scroll
  * progress, and the stylesheet derives the dolly, the vignette and the scrim
@@ -71,8 +76,11 @@ export default function Hero({
   const stageRef = usePointerParallax<HTMLDivElement>();
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  /** Where the scroll says the film should be, 0-1. Written every frame. */
+  const playheadRef = useRef({ value: 0 });
   const [cinematic, setCinematic] = useState(false);
   const [wantsVideo, setWantsVideo] = useState(false);
+  const [source, setSource] = useState<string | null>(null);
   const [filmReady, setFilmReady] = useState(false);
   const [ambient, setAmbient] = useState(false);
 
@@ -110,6 +118,111 @@ export default function Hero({
       events.forEach((type) => window.removeEventListener(type, arm));
     };
   }, [cinematic]);
+
+  /*
+   * Scrubbing needs random access to the whole film, and a stream cannot
+   * give it: every seek becomes a range request, a scroll asks for them far
+   * faster than the network can answer, and the picture ends up stuck on
+   * whichever frame arrived last. So the file is pulled down once and the
+   * element is handed a blob, after which every seek is local and instant.
+   *
+   * If the host will not serve it to a fetch, or the file is too heavy to
+   * keep in memory, this falls back to streaming the URL directly — slower
+   * to become scrubbable, but never worse than before.
+   */
+  useEffect(() => {
+    if (!wantsVideo) return;
+
+    const direct = assets.videoSrc;
+    const controller = new AbortController();
+    let objectUrl: string | null = null;
+    let live = true;
+
+    fetch(direct, { signal: controller.signal, credentials: "omit" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const bytes = Number(response.headers.get("content-length") ?? 0);
+        if (bytes > MAX_INLINE_BYTES) throw new Error("too large to hold");
+        return response.blob();
+      })
+      .then((blob) => {
+        if (!live) return;
+        objectUrl = URL.createObjectURL(blob);
+        setSource(objectUrl);
+      })
+      .catch(() => {
+        if (live) setSource(direct);
+      });
+
+    return () => {
+      live = false;
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [wantsVideo, assets.videoSrc]);
+
+  /*
+   * Ready means the whole film can be seeked without the network in the
+   * loop, not merely that a first frame turned up. Handing the playhead
+   * over at `loadeddata`, as this used to, is what left the picture stuck
+   * part of the way down the page.
+   */
+  const checkReady = useCallback((video: HTMLVideoElement) => {
+    if (video.readyState >= video.HAVE_ENOUGH_DATA) {
+      setFilmReady(true);
+      return;
+    }
+    const { buffered, duration } = video;
+    if (!Number.isFinite(duration) || duration === 0) return;
+    if (buffered.length === 0) return;
+    if (buffered.start(0) <= 0.05 && buffered.end(0) >= duration - 0.25) {
+      setFilmReady(true);
+    }
+  }, []);
+
+  /* Safari will not seek a video that has never played. Start it and stop
+     it again immediately, while it is still muted and showing frame zero. */
+  const prime = useCallback((video: HTMLVideoElement) => {
+    void video
+      .play()
+      .then(() => video.pause())
+      .catch(() => {});
+  }, []);
+
+  /*
+   * The scroll says where the film should be; this is what actually moves
+   * it, and it is deliberately not wired straight into the scroll handler.
+   * Only one seek is ever in flight, because a decoder cannot answer them
+   * as fast as a scroll can ask and the backlog is what looks like a frozen
+   * video. And it eases toward the target rather than snapping to it, which
+   * is what turns a scrubbed file into a camera move.
+   */
+  useEffect(() => {
+    if (!filmReady) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    let raf = 0;
+    let shown = playheadRef.current.value;
+
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+
+      const length = video.duration;
+      if (!Number.isFinite(length) || length === 0) return;
+
+      shown += (playheadRef.current.value - shown) * PLAYHEAD_EASE;
+      if (video.seeking) return;
+
+      /* Clear of the very end, which some browsers refuse to seek to */
+      const target = Math.min(shown * length, length - 0.05);
+      if (Math.abs(video.currentTime - target) < 0.02) return;
+      video.currentTime = target;
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [filmReady]);
 
   /*
    * Tells the floating navigation to switch to dark glass while this section
@@ -183,30 +296,19 @@ export default function Hero({
    * The storyboard, wired to the scroll bar: scene 1 arrival 0-20%, scene 2
    * explosion 20-50%, scene 3 rotation 50-75%, scene 4 rebuild 75-100%.
    *
-   * This is built as soon as the layout is cinematic, with or without the
-   * film. The poster alone already carries the dolly, the vignette and every
-   * copy beat, so the hero is never a dead stretch of scrolling while the
-   * video downloads; the playhead legs are simply added once it lands.
+   * Built once, whether or not the film has landed. The playhead legs write
+   * into a ref that nothing reads until the file is scrubbable, so the video
+   * arriving never tears this timeline down and rebuilds it mid-scroll. The
+   * poster alone already carries the dolly, the vignette and every copy
+   * beat, so the hero is never a dead stretch while the video downloads.
    */
   useEffect(() => {
     if (!cinematic) return;
 
     const ctx = gsap.context(() => {
       const stage = stageRef.current;
-      const playhead = { value: 0 };
+      const playhead = playheadRef.current;
       const progress = { value: 0 };
-
-      const seek = () => {
-        const video = videoRef.current;
-        if (!video) return;
-        const length = video.duration;
-        if (!Number.isFinite(length) || length === 0) return;
-        /* Clear of the very end, which some browsers refuse to seek to */
-        const target = Math.min(playhead.value * length, length - 0.05);
-        if (Math.abs(video.currentTime - target) > 0.03) {
-          video.currentTime = target;
-        }
-      };
 
       const tl = gsap.timeline({
         defaults: { ease: "none" },
@@ -214,7 +316,9 @@ export default function Hero({
           trigger: sectionRef.current,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.35,
+          /* Long enough that the picture glides rather than tracks the
+             wheel notch for notch, short enough to still feel driven. */
+          scrub: 0.55,
         },
       });
 
@@ -237,24 +341,14 @@ export default function Hero({
         0,
       );
 
-      if (filmReady) {
-        /* Arrival: the camera creeps in while the plate sits still */
-        tl.to(playhead, { value: 0.18, duration: 0.2, onUpdate: seek }, 0);
-        /* Explosion: the food leaves the plate and separates */
-        tl.to(
-          playhead,
-          { value: 0.52, duration: 0.3, onUpdate: seek, ease: "power1.in" },
-          0.2,
-        );
-        /* Rotation: the camera flies through what is hanging there */
-        tl.to(playhead, { value: 1, duration: 0.25, onUpdate: seek }, 0.5);
-        /* Rebuild: the same move backwards, easing into the landing */
-        tl.to(
-          playhead,
-          { value: 0.18, duration: 0.25, onUpdate: seek, ease: "power2.out" },
-          0.75,
-        );
-      }
+      /* Arrival: the camera creeps in while the plate sits still */
+      tl.to(playhead, { value: 0.18, duration: 0.2 }, 0);
+      /* Explosion: the food leaves the plate and separates */
+      tl.to(playhead, { value: 0.52, duration: 0.3, ease: "power1.in" }, 0.2);
+      /* Rotation: the camera flies through what is hanging there */
+      tl.to(playhead, { value: 1, duration: 0.25 }, 0.5);
+      /* Rebuild: the same move backwards, easing into the landing */
+      tl.to(playhead, { value: 0.18, duration: 0.25, ease: "power2.out" }, 0.75);
 
       /* The title card steps aside as the plate starts to come apart */
       tl.to(`.${styles.storyLine}`, { autoAlpha: 0, y: -30, duration: 0.1 }, 0.14);
@@ -290,7 +384,7 @@ export default function Hero({
     ScrollTrigger.refresh();
 
     return () => ctx.revert();
-  }, [cinematic, filmReady, stageRef]);
+  }, [cinematic, stageRef]);
 
   /* Muted by default and never autoplayed: the toggle is the consent. */
   const toggleAmbient = useCallback(() => {
@@ -324,7 +418,7 @@ export default function Hero({
       aria-label="RS Chef'z"
     >
       <div ref={stageRef} className={styles.stage}>
-        {/* The shot, full bleed and always underneath everything else */}
+        {/* The shot, hung deep inside the stage's perspective */}
         <div className={styles.scene} aria-hidden="true">
           <div className={styles.film}>
             <Image
@@ -335,23 +429,19 @@ export default function Hero({
               priority
               sizes="100vw"
             />
-            {wantsVideo && (
+            {source && (
               <video
                 ref={videoRef}
                 className={`${styles.plate} ${styles.video}`}
                 data-ready={filmReady ? "true" : "false"}
+                src={source}
                 muted
                 playsInline
                 preload="auto"
-                onLoadedData={(event) => {
-                  /* A nudge off zero forces the first frame to decode and
-                     paint while the element is still paused. */
-                  event.currentTarget.currentTime = 0.01;
-                  setFilmReady(true);
-                }}
-              >
-                <source src={assets.videoSrc} type="video/mp4" />
-              </video>
+                onLoadedMetadata={(event) => prime(event.currentTarget)}
+                onProgress={(event) => checkReady(event.currentTarget)}
+                onCanPlayThrough={(event) => checkReady(event.currentTarget)}
+              />
             )}
           </div>
 
@@ -365,9 +455,6 @@ export default function Hero({
           <div className={styles.flare} />
           <div className={styles.vignette} />
         </div>
-
-        {/* Motes that pass behind the words */}
-        <SpiceDust className={styles.dustBack} density={46} alpha={0.5} />
 
         <div className={styles.copy}>
           <p className={styles.eyebrow}>RS Chef&apos;z Masalas</p>
@@ -422,14 +509,6 @@ export default function Hero({
           )}
           <BuyButtons className={styles.finaleCtas} />
         </div>
-
-        {/* A few motes cross in front of the type, for depth */}
-        <SpiceDust
-          className={styles.dustFront}
-          density={9}
-          size={1.5}
-          alpha={0.26}
-        />
 
         <div className={styles.cue} aria-hidden="true">
           <span className={styles.cueDot} />

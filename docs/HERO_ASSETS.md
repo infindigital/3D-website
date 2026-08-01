@@ -49,23 +49,52 @@ on screen moves to accommodate it. The poster alone already carries the
 dolly, the vignette and every copy beat, so the hero is never a dead stretch
 of scrolling while the video downloads.
 
-Because the film is scrubbed rather than played, the browser needs it
-buffered. It starts downloading on the first scroll, wheel, touch or pointer
-event, with a 1.2s fallback.
+## Getting the film scrubbable
+
+Scrubbing needs random access to the whole file, and streaming cannot give
+it: every seek becomes a range request, and a scroll asks for them far
+faster than the network can answer, so the picture sticks on whichever frame
+arrived last. Three things in `Hero.tsx` prevent that, and all three matter.
+
+- **The file is downloaded once, not streamed.** It is fetched into a blob
+  on the first scroll, wheel, touch or pointer event (with a 1.2s fallback)
+  and the element is handed the object URL, after which every seek is local.
+  If the host will not serve it to a `fetch` — no CORS header — or the file
+  is heavier than 28MB, this falls back to streaming the URL directly.
+  Self-hosting the file, below, makes the fetch same-origin and removes the
+  question entirely.
+- **The playhead is handed over on `canplaythrough`**, or once `buffered`
+  covers the duration — not on `loadeddata`, which only means a first frame
+  turned up.
+- **Only one seek is ever in flight.** The scroll writes a target; a
+  separate frame loop eases toward it and assigns `currentTime` only when
+  the previous seek has finished. The easing is also what turns a scrubbed
+  file into a camera move rather than something that tracks the wheel notch
+  for notch.
+
+Safari additionally refuses to seek a video that has never played, so the
+element is played and paused once on `loadedmetadata` while it is still
+muted and showing frame zero.
+
+## Depth
+
+The stage is a space rather than a stack of flat layers. `.scene` carries a
+`1200px` perspective; the film hangs deep inside it and the type sits at the
+front, so the pointer turns the picture on two axes — near edge growing, far
+edge shrinking, by projection rather than by script — while the words stay
+still and sharp. The scroll then walks the film *forward* through that same
+space instead of scaling it up, which is what a dolly actually is and what
+keeps the near field moving ahead of the far field the whole way in.
 
 ## Atmosphere
 
 None of this is in the footage; it is drawn over it so it keeps moving even
 when the film is frozen.
 
-- **Spice dust** — `components/ui/SpiceDust.tsx`, a canvas field of warm
-  motes. The hero runs two: a dense layer behind the type and a sparse,
-  dimmer one in front, so motes pass on both sides of the headline. The
-  wheel shoves the field and the shove decays over about a second. The loop
-  stops when the hero is off screen or the tab is hidden, and reduced motion
-  gets one still frame.
-- **Steam** — three blurred plumes rising on a CSS loop, never scroll-bound.
-  This is what stops a paused scroll from looking like a stalled video.
+- **Steam** — three blurred plumes rising on a CSS loop, never scroll-bound,
+  drifting at a rate between the film's and the type's so it reads as the
+  middle distance. This is what stops a paused scroll from looking like a
+  stalled video.
 - **Vignette and scrim** — both deepen with scroll progress. The scrim is a
   feathered pool of shade with a slight backdrop blur; it is the readability
   floor for the type, so the picture behind can go anywhere.
