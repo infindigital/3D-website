@@ -61,13 +61,18 @@ function getStagePacks(): StagePack[] {
  * a stack of separate sections.
  */
 export default function HomePage() {
+  const stagePacks = getStagePacks();
+
   return (
     <main id="main">
       <Hero
         assets={getHeroAssets()}
+        /* The same packs, in the same order, so the pair standing in the
+           hero's room is the pair waiting at the head of the world below */
+        packs={stagePacks.map((pack) => pack.front)}
         hasLogo={has("/assets/brand/logo.png")}
       />
-      <HomeWorld packs={getStagePacks()} products={products} />
+      <HomeWorld packs={stagePacks} products={products} />
     </main>
   );
 }

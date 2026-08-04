@@ -37,14 +37,20 @@ export interface HeroAssets {
  * should be performing it.
  *
  * The scroll still does plenty; it just does it to the room rather than to
- * the footage. The stage is a real 3D space rather than a stack of flat
- * layers: the film hangs a long way back inside a perspective, so the
- * pointer swings it on two axes while the type stays put in front of it,
- * and the scroll walks it forward through that space instead of merely
- * scaling it up. One number carries all of it — the stage gets `--p`, the
- * raw scroll progress, and the stylesheet derives the dolly, the vignette,
- * the scrim and the closing wash from it, while the copy beats hand over
- * along the same timeline.
+ * the footage. And the room is a room: the film is the far wall of a
+ * corridor with walls of its own either side, a floor catching its spill,
+ * both packs standing in the middle distance and dust hanging at three
+ * separate depths. All of it is one perspective with everything fixed at
+ * its own distance inside it, so the pointer swings the whole space at once
+ * and the scroll flies the camera down it — the walls sweeping out past the
+ * lens as the picture grows to fill the frame. Nothing is a layer sliding
+ * at a scripted speed; the perspective divide does the work.
+ *
+ * One number carries all of it — the stage gets `--p`, the raw scroll
+ * progress, and the stylesheet derives the dolly, the vignette, the scrim
+ * and the closing wash from it, while the copy beats hand over along the
+ * same timeline. The room costs transforms and nothing else: one video
+ * decoder, no second canvas, and not a single per-frame readback.
  *
  * The tiled wall of this same film is the world below the hero, not this
  * section: here it is the footage itself, played whole.
@@ -59,9 +65,17 @@ export interface HeroAssets {
  */
 export default function Hero({
   assets,
+  packs = [],
   hasLogo = false,
 }: {
   assets: HeroAssets;
+  /**
+   * Front artwork for the packs that stand in the room, in the same order
+   * they hold at the head of the world below. Owner-supplied and never
+   * generated, so this is empty until the files land and the room is
+   * correct either way.
+   */
+  packs?: string[];
   hasLogo?: boolean;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -379,34 +393,69 @@ export default function Hero({
       aria-label="RS Chef'z"
     >
       <div ref={stageRef} className={styles.stage}>
-        {/* The shot, hung deep inside the stage's perspective */}
+        {/* The room, hung inside the stage's perspective */}
         <div className={styles.scene} aria-hidden="true">
-          <div className={styles.film}>
-            <Image
-              className={styles.plate}
-              src={assets.posterSrc}
-              alt=""
-              fill
-              priority
-              sizes="100vw"
-            />
-            {wantsVideo && (
-              <video
-                ref={videoRef}
-                className={`${styles.plate} ${styles.video}`}
-                data-ready={filmReady ? "true" : "false"}
-                src={assets.videoSrc}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                /* Not `canplaythrough`: the picture is only crossfading up
-                   over its own frame zero, so the moment there is a frame to
-                   show is the moment to start showing it. */
-                onLoadedData={() => setFilmReady(true)}
+          <div className={styles.room}>
+            {/* The far wall: the shot itself, and the one photograph here */}
+            <div className={styles.film}>
+              <Image
+                className={styles.plate}
+                src={assets.posterSrc}
+                alt=""
+                fill
+                priority
+                sizes="100vw"
               />
-            )}
+              {wantsVideo && (
+                <video
+                  ref={videoRef}
+                  className={`${styles.plate} ${styles.video}`}
+                  data-ready={filmReady ? "true" : "false"}
+                  src={assets.videoSrc}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  /* Not `canplaythrough`: the picture is only crossfading up
+                     over its own frame zero, so the moment there is a frame to
+                     show is the moment to start showing it. */
+                  onLoadedData={() => setFilmReady(true)}
+                />
+              )}
+            </div>
+
+            {/* The corridor that runs back to it */}
+            <div className={`${styles.wall} ${styles.wallLeft}`} />
+            <div className={`${styles.wall} ${styles.wallRight}`} />
+            <div className={styles.floor} />
+
+            {/* Both packs, standing in the middle distance in the poses they
+                hold at the head of the world below. Owner artwork only, so a
+                pack whose file has not been supplied simply is not there. */}
+            {packs.slice(0, 2).map((src, index) => (
+              <div
+                key={src}
+                className={`${styles.cameo} ${
+                  index === 0 ? styles.cameoLeft : styles.cameoRight
+                }`}
+              >
+                <Image
+                  className={styles.cameoArt}
+                  src={src}
+                  alt=""
+                  width={640}
+                  height={900}
+                  sizes="22vw"
+                />
+              </div>
+            ))}
+
+            <div className={styles.motes}>
+              <span className={styles.mote} />
+              <span className={styles.mote} />
+              <span className={styles.mote} />
+            </div>
           </div>
 
           {/* Steam keeps rising whether or not anyone is scrolling */}
