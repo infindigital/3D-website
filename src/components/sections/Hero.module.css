@@ -69,7 +69,10 @@
   gap: clamp(6px, 1.6vh, 26px);
   pointer-events: none;
   transform: rotate(-7deg);
-  opacity: 0.085;
+  /* Held low enough to stay scenery. Orange on warm paper is a quieter
+     pairing than ink on paper was, so it can carry a little more of itself
+     than the 8.5% the ink version needed. */
+  opacity: 0.16;
 }
 
 .band {
@@ -92,14 +95,37 @@
 }
 
 .bandRun {
+  display: flex;
   padding-right: 0.28em;
   font-family: var(--font-display), var(--font-heading);
   font-size: clamp(3.2rem, 11vw, 10rem);
   line-height: 1;
   letter-spacing: 0.012em;
   text-transform: uppercase;
+}
+
+/*
+ * The words run in the room's own orange, and alternate between drawn and
+ * plain. Outline throughout is a wireframe; solid throughout is a poster
+ * behind the film. Alternating gives the band a beat, and gives the eye a
+ * reason to read it as depth rather than as one printed sheet.
+ */
+.bandWord {
+  padding-right: 0.22em;
+  white-space: nowrap;
+}
+
+.bandWord[data-ink="line"] {
   color: transparent;
-  -webkit-text-stroke: 2px var(--text-primary);
+  -webkit-text-stroke: 2px var(--ember);
+}
+
+.bandWord[data-ink="plain"] {
+  color: var(--ember);
+  -webkit-text-stroke-width: 0;
+  /* A filled glyph covers several times the area an outlined one does, so
+     at matched alpha it would shout over its neighbours */
+  opacity: 0.55;
 }
 
 /* Two identical runs, so half the band's width is exactly one run */
@@ -249,8 +275,9 @@
 
 .ring {
   position: absolute;
-  width: 62vmin;
-  height: 42vmin;
+  /* Sized off the film, so they read as the shape pushing outward */
+  width: 52vmin;
+  height: 35vmin;
   border: 2px solid rgba(255, 244, 232, 0.6);
   /* The same organic outline the film is cut to, so the rings read as the
      shape pushing outward rather than as decoration around it */
@@ -326,8 +353,11 @@
 
 .mask {
   position: relative;
-  width: min(86vw, 1080px);
-  height: min(62vh, 620px);
+  /* Held back from the edges of the room. The film is the subject, not the
+     backdrop: paper around it is what makes it read as an object standing
+     in the hero rather than as a window cut into it. */
+  width: min(70vw, 860px);
+  height: min(52vh, 510px);
   overflow: hidden;
   background: var(--color-cream-deep);
   /* Organic, and never the same shape twice */
@@ -455,12 +485,15 @@
     padding: calc(var(--nav-height) + 8px) 0 clamp(104px, 20vh, 170px);
   }
 
+  /* A tall frame around a landscape shot is a crop, not a composition: the
+     plate fills it and the kitchen it was shot in disappears. So on a
+     portrait screen the shape stays wider than it is tall. */
   .mask {
-    width: 90vw;
-    height: min(58vh, 500px);
+    width: 88vw;
+    height: min(38vh, 320px);
   }
 
-  .bandRun {
+  .bandWord[data-ink="line"] {
     -webkit-text-stroke-width: 1.4px;
   }
 
@@ -474,8 +507,8 @@
   }
 
   .ring {
-    width: 78vmin;
-    height: 54vmin;
+    width: 68vmin;
+    height: 46vmin;
   }
 }
 
@@ -483,8 +516,8 @@
    film floats in a field of paper, so it takes more of the height. */
 @media (min-width: 641px) and (max-width: 1023px) and (orientation: portrait) {
   .mask {
-    width: 88vw;
-    height: min(66vh, 800px);
+    width: 80vw;
+    height: min(42vh, 520px);
   }
 }
 

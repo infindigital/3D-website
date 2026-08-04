@@ -139,8 +139,20 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
    * were spending the same GPU on the same frame and the picture the viewer
    * was actually looking at was the one that stuttered.
    *
-   * A third of a screen of warning is enough to have the wall standing by
-   * the time it is looked at, and it costs the hero nothing before that.
+   * How much warning it gets has to be read against the height of the hero
+   * standing in front of it. A third of a screen was right while the hero
+   * was several screens tall; against a hero that is exactly one screen
+   * tall, the world's own top edge sits at the fold, so a third of a screen
+   * of margin means the world is awake — canvas drawing, second decoder
+   * running — from the moment the page loads, behind a hero nobody has
+   * scrolled yet. That is the stutter this comment was written to prevent,
+   * reintroduced by the hero shrinking.
+   *
+   * So the margin now pulls the other way: the world sleeps until it has
+   * genuinely come into view. There is still a full screen of scrolling
+   * before any of its content has to be right, which is all the warning it
+   * ever needed, and while the hero is the whole picture the hero has the
+   * GPU to itself.
    */
   useEffect(() => {
     const world = worldRef.current;
@@ -148,7 +160,7 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
 
     const observer = new IntersectionObserver(
       ([entry]) => setAwake(entry.isIntersecting),
-      { rootMargin: "35% 0px 35% 0px" },
+      { rootMargin: "0px 0px -6% 0px" },
     );
     observer.observe(world);
 

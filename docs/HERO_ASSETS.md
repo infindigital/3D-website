@@ -14,194 +14,187 @@ generated. So is the film. Nothing on this page comes from a third-party
 host — `next.config.ts` declares no `remotePatterns`, and there is no CDN
 fallback to fail over to, because there is nothing to fall back from.
 
-## The film plays; the scroll moves the room
+## The page opens on the film
 
-The film runs on its own clock, muted and looping, from the moment it has a
-frame to show. It is not scrubbed, and it is not waiting to be triggered: a
-cooking film is a performance, and a wheel is not what should be performing
-it — the toss hangs, the oil bubbles and the fry crisps at the speed they
-were shot at, whether the page is moving or not.
+There is no title card in front of the hero and no cut into it. The page
+opens on a sheet of restaurant orange with the film already running inside a
+small organic shape, thin outline rings pushing outward past it. The shape
+creeps, then opens out, and the orange collapses inward behind it until
+there is none of it left — and what is standing there is the hero.
 
-The scroll still drives the hero, it just drives everything around the
-footage. One number does it: the stage carries `--p`, the raw scroll
-progress through the section, and `Hero.module.css` derives the dolly, the
-vignette, the readability scrim and the closing wash from it, while the same
-timeline hands the copy from one beat to the next.
+The whole of that is one element being grown. `Hero.tsx` holds the beats:
 
-| Scroll | What moves |
-| ------ | ---------- |
-| 0–14% | The opening card holds; the scroll cue fades. |
-| 14–56% | The title card steps aside, the room walks forward. |
-| 56–72% | The subheadline steps back so the food can fill the screen. |
-| 72–95% | The copy lifts and the sign-off card fades up over the film. |
-| 95–100% | The wash to cream, into the world below. |
+| Second | What happens |
+| ------ | ------------ |
+| 0.0 | Orange sheet, film small in the middle, rings rippling outward. |
+| 0.8 | The shape starts to creep — slowly, so the open reads as a break. |
+| 2.4 | It opens out to full size. |
+| 2.5 | The orange starts collapsing into it. |
+| 2.95 | The room is the hero's; the header is told it may come down. |
+| 3.05 | The buttons rise into place. |
+| 3.7 | Scroll is unlocked and everything the intro owned is unmounted. |
 
-The film pauses when the section leaves the viewport, and picks up again
-when it comes back. A decoder running behind a page nobody is looking at is
-a battery bill for a picture that is not on screen.
+**The film lives in the hero, not in the intro.** An intro that owns its own
+video has to hand over to a second one at the join, and a second one is a
+second decoder, a second buffer and a visible jump. Here the intro only
+*grows* the hero's own shape, so the frame playing at 0.0 is the frame
+playing at 3.7 — "the video does not restart" is a structural fact rather
+than two players being resynchronised.
 
-## Two layouts, decided by a media query
+**The orange collapses rather than fades.** `.wash` and `.rings` are clipped
+to `circle(var(--wipe) at 50% 50%)`, and the timeline closes `--wipe` on the
+centre. Everything still visible is the part of the sheet *outside* the
+film; once the circle is smaller than the film there is no orange left. No
+crossfade happens at any point, which is why there is no moment where two
+pictures are on screen at half strength.
 
-A media query in `Hero.module.css` decides the hero's shape, and `CINEMATIC`
-in `Hero.tsx` repeats it verbatim to decide whether to build the scroll
-timeline. **The two must stay in step.**
+## The stylesheet is the finished hero; the script is the opening frame
 
-- `(min-width: 768px) and (prefers-reduced-motion: no-preference)` — the
-  cinematic hero, several screens tall with a sticky stage.
-- Anything else — one screen tall, the poster frame, every line of copy at
-  once. No video is fetched at all.
+`Hero.module.css` describes the **finished** hero and nothing else. The
+intro's opening frame — small shape, buttons parked below their line — is
+written by `gsap.set()` in a layout effect, before the browser has painted.
 
-Because the stylesheet alone decides this, the hero is in its final shape on
-the first paint. The film then arrives into a stage that is already the right
-size: it fades in over its own poster and starts running, and nothing on
-screen moves to accommodate it. The poster alone already carries the
-dolly, the vignette and every copy beat, so the hero is never a dead stretch
-of scrolling while the video downloads.
+That split is the whole no-JS and reduced-motion story. A visitor whose
+bundle never arrives, or who has asked for less motion, gets an ordinary
+still hero rather than an intro frozen at frame one. `mode` decides which,
+and it is resolved before first paint:
 
-`public/assets/hero/hero-poster.webp` is the film's own frame 0, pulled
-straight out of the mp4. That is not a nicety: the still and the video are
-registered to the same pixel, so the dissolve between them has nothing to
-give away.
+- `"still"` — reduced motion. No intro is mounted, and **no `<video>` is
+  mounted at all**; the poster is the hero.
+- `"intro"` — everything above.
 
-## Getting the film on screen
+The `<video>` is rendered only in `"intro"`, so the still hero never costs a
+download.
 
-It is an ordinary muted, looping, autoplaying `<video>` served from
-`/public`. There is no blob, no proxy and no fetch of our own, because
-nothing here needs random access to the file: playing forward is exactly
-what a stream is good at, and the browser starts as soon as it has enough
-to go on.
+## The room around the film
 
-Two details are deliberate.
+All of it is transform and opacity on layers the compositor already owns.
+No canvas, no per-frame readback, nothing measured during a scroll.
 
-- **The element is not mounted at first paint.** It arrives on the first
-  scroll, wheel, touch or pointer event, with a half-second fallback so it
-  always arrives — the poster is a priority image, and the opening second
-  belongs to it and the fonts rather than to a video download.
-- **The crossfade is armed on `loadeddata`, not `canplaythrough`.** The
-  picture is only dissolving up over its own frame zero, so the moment
-  there is a frame to show is the moment to show it. Waiting for the whole
-  file would hold the still frame long after the film is moving underneath
-  it.
+- **Words** — three bands of huge display type crossing the room at
+  different speeds, the middle one running the other way. Each band prints
+  its words twice and travels exactly `-50%`, so the loop has no seam. The
+  words are in the room's own orange and alternate drawn/plain: outline
+  throughout is a wireframe, solid throughout is a poster behind the film.
+- **Herbs** — curry leaf, chilli and peppercorn at three depths. Each bit
+  drifts on its own clock (`.bit`), and the whole depth layer swings with
+  the pointer (`.airLayer`). Two transforms on two elements — never both on
+  one, or they fight. The nearest layer is defocused, which is what puts the
+  film at the depth the eye is meant to read.
+- **The shape** — an eight-value `border-radius` morphing on a 26s loop, so
+  the film's outline is never the same twice and never an oval.
+- **The picture** — a slow scale inside the shape, so it is never perfectly
+  still.
 
-An earlier version of this hero pulled the file into a blob and drove
-`currentTime` from the scroll position. All of that is gone: the machinery
-it needed — the same-origin blob fetch, the size cap, the single-seek-in-
-flight loop, the Safari priming play/pause — existed only to make seeking
-survivable, and nothing seeks any more.
+`.shape` is the script's (the intro grows it) and `.shift` is the pointer's.
+Keeping them on separate elements is why the growth and the parallax never
+overwrite each other.
 
 ## Keeping it moving
 
 A film that starts and then freezes halfway is worse than one that never
-starts, and three separate things were letting that happen. All three are
-fixed, and they are worth knowing about before anything here is changed
-back.
+starts. Four things are in place for that, and they are worth knowing about
+before any of them is changed back.
 
-- **Nothing blurs the picture any more.** The pool of shade under the copy
-  used to carry `backdrop-filter: blur(5px)`. A backdrop filter is not a
-  layer drawn over the film — it is the film read back out of the frame
-  buffer, blurred and composited again, *for every frame of it*, across
-  most of the screen. It is the most expensive thing that can sit over a
-  playing video. The pool is now shade alone, a little deeper to make up
-  for the lost softening. Do not put a backdrop filter back over the stage.
+- **The file is encoded for this.** 1280×720, 10s, **no audio track**, and a
+  keyframe every twelve frames. The audio was dead weight — every consumer
+  plays it muted — and the dense keyframes are for the world below, whose
+  six screens each cue their own segment by seeking. A seek that has to walk
+  from a distant keyframe is a stall. Re-encode with:
+
+  ```
+  ffmpeg -i in.mp4 -an -c:v libx264 -profile:v main -pix_fmt yuv420p \
+    -crf 26 -preset veryslow -tune film \
+    -g 12 -keyint_min 12 -sc_threshold 0 -movflags +faststart \
+    public/assets/home/kitchen-film.mp4
+  ```
+
+- **Nothing blurs the picture.** A `backdrop-filter` is not a layer drawn
+  over the film — it is the film read back out of the frame buffer, blurred
+  and composited again, for every frame. It is the most expensive thing that
+  can sit over a playing video. Do not put one over the stage.
 
 - **The world below does not draw while the hero is up.** `WorldCanvas`
   takes an `awake` prop and runs `frameloop="never"` until an
-  IntersectionObserver in `HomeWorld` says the world is within a third of a
-  screen. The canvas, the context and the textures are all built and
-  waiting; not one frame is rendered. Before this, six walls of tiles and a
-  video texture were being redrawn sixty times a second behind a hero
-  nobody had scrolled to yet, and the film in front was what gave way.
-  `FilmDeck` does not even fetch the film until it is awake — by then the
-  hero has long since downloaded the same URL, so it comes from the cache
-  instead of competing for the hero's bandwidth.
+  IntersectionObserver in `HomeWorld` says the world has come into view;
+  `FilmDeck` does not even fetch the film until then. **That observer's
+  `rootMargin` has to be read against the height of the hero in front of
+  it.** It used to wake the world a third of a screen early, which was right
+  while the hero was several screens tall and wrong the moment the hero
+  became exactly one screen tall — the world's top edge then sits at the
+  fold, so a positive margin means the world is awake, canvas drawing and
+  second decoder running, from page load. It is `0px 0px -6% 0px` now: the
+  world sleeps until it is genuinely on screen, and there is still a full
+  screen of scrolling before any of its content has to be right.
 
-- **A watchdog watches the clock, not the element.** A `<video>` does not
-  report having stopped: `paused` stays false while the frame on screen
-  goes stale, whether the decoder was lost, the network went quiet
-  mid-buffer, or the machine simply ran out of room. So `Hero.tsx` samples
-  `currentTime` every 700ms and escalates only as far as it has to — ask it
-  to play, then jog the playhead so the decoder builds a fresh frame, then
-  reload the element. In the ordinary case it never fires at all.
+- **The hero's own player stands down early.** It pauses below 40% of the
+  hero being on screen rather than waiting to leave entirely, so the overlap
+  with the waking world is as short as it can be.
 
-## Depth
+**What the watchdog does not do.** It asks a *paused* element to play, once
+a second and on `visibilitychange`, and nothing else. An earlier version
+sampled `currentTime` and escalated to jogging the playhead and reloading
+the element. Both of those are worse than the stall they were written for: a
+seek throws away the decoder's work, and a reload starts the download again.
+A watchdog that fires on a healthy film is indistinguishable from the fault.
 
-The stage is a space rather than a stack of flat layers. `.scene` carries a
-`1200px` perspective; the film hangs deep inside it and the type sits at the
-front, so the pointer turns the picture on two axes — near edge growing, far
-edge shrinking, by projection rather than by script — while the words stay
-still and sharp. The scroll then walks the film *forward* through that same
-space instead of scaling it up, which is what a dolly actually is and what
-keeps the near field moving ahead of the far field the whole way in.
+## The header
 
-## Atmosphere
+The hero owns when the bar arrives. At `2.95s` it fires
+`HERO_OPEN_EVENT` (`src/utils/heroOpen.ts`); `Navigation.tsx` listens on the
+home page only, with `HERO_OPEN_FALLBACK_MS` behind it so a hero that never
+mounts still cannot leave the site without navigation. Everywhere but the
+home page the bar comes down immediately.
 
-None of this is in the footage; it is drawn over it so it keeps moving even
-when the film is frozen.
-
-- **Steam** — three blurred plumes rising on a CSS loop, never scroll-bound,
-  drifting at a rate between the film's and the type's so it reads as the
-  middle distance. This is what stops a paused scroll from looking like a
-  stalled video.
-- **Vignette and scrim** — both deepen with scroll progress. The scrim is a
-  wide, soft pool of shade under the words and nothing more; it is the
-  readability floor for the type, so the picture behind can go anywhere. It
-  used to blur the picture as well, which is why the film used to stall —
-  see below.
-- **Closing wash** — the stage dissolves to cream over the last 5%, so the
-  hero hands over to the world on a dissolve instead of a cut.
-
-## The navigation over a dark hero
-
-The floating bar switches to dark glass while a section marked
-`data-dark-section="true"` covers the band it sits in. The hero sets that
-attribute on mount and clears it just before the closing wash turns the stage
-cream underneath the bar, so the switch back happens on its own. Any future
-dark section can opt in the same way.
-
-## Ambient sound (optional, not supplied)
-
-The hero renders a mute/unmute toggle **only** if
-`public/assets/hero/ambience.mp3` exists, and never plays it unprompted — the
-toggle is the consent. No such file ships. Drop one in at that path and the
-toggle appears by itself.
+The bar is transparent at the top of every page and takes its glass only
+once the page has moved.
 
 ## Asset map
 
 | File | Purpose | Source |
 | ---- | ------- | ------ |
-| `public/assets/home/kitchen-film.mp4` | The film. Played whole by the hero, cut into six segments by the world. 1280×720, 10s, silent | owner-supplied |
-| `public/assets/hero/hero-poster.webp` | The hero's poster, and the still shown on phones and with reduced motion. The film's own frame 0 | pulled from the film |
-| `public/assets/home/kitchen-film-poster.webp` | Poster for the flat layout's ordinary `<video>`. A frame from 9.35s | pulled from the film |
-| `public/assets/hero/ambience.mp3` | Optional ambient sizzle. Owner-supplied; the sound toggle only appears when this exists | not supplied |
+| `public/assets/home/kitchen-film.mp4` | The film. Played whole by the hero, cut into six segments by the world. 1280×720, 10s, silent, 0.5s keyframes | owner-supplied, re-encoded |
+| `public/assets/hero/hero-poster.webp` | The hero's poster, and the whole picture under reduced motion. The film's own frame 0 | pulled from the film |
+| `public/assets/home/kitchen-film-poster.webp` | Poster for the flat layout's ordinary `<video>`. Also frame 0 | pulled from the film |
 | `public/assets/textures/ingredients-scatter.png` | Scattered ingredients, reserved for the brand story section | generated |
 | `public/assets/textures/spice-dust.webp` | Powder swirl texture, reserved for section transitions | generated |
 
+Both posters are the film's own frame 0, pulled straight out of the mp4.
+That is not a nicety: the still and the video are registered to the same
+pixel, so the dissolve between them has nothing to give away. Re-pull them
+whenever the film is re-encoded:
+
+```
+ffmpeg -i public/assets/home/kitchen-film.mp4 -frames:v 1 \
+  -c:v libwebp -quality 84 public/assets/home/kitchen-film-poster.webp
+```
+
 ## Verifying a change
 
-Headless Chromium ships without H.264, so the mp4 has to be intercepted and
-served as WebM for a harness run. Redirect that interception at a **static
-file** (`route.continue({url})`), never `route.fulfill` with a buffer: a
-fulfilled response carries no `Accept-Ranges`, and the world's six screens
-each cue their own segment by seeking, which a body served without ranges
-silently clamps to zero.
+Headless Chromium ships without H.264, so **screenshots show the poster
+frame and real playback cannot be confirmed in this environment.** To probe
+playback the mp4 has to be intercepted and served as WebM. Redirect that
+interception at a **static file** (`route.continue({url})`), never
+`route.fulfill` with a buffer: a fulfilled response carries no
+`Accept-Ranges`, and the world's six screens each cue their own segment by
+seeking, which a body served without ranges silently clamps to zero.
 
-The hero's element is mounted on a user gesture, so nudge the wheel before
-probing. Then read `currentTime` at two stops far enough apart to tell the
-two failure modes apart: a film that is genuinely playing gives different
-times that wrap around ten seconds, while a frozen one repeats itself.
-`paused` should be false anywhere inside the hero and true below it.
-
-Sitting still is the test that matters for stalling, though, and it is the
-one a stop-by-stop sweep will not do: park in the hero and sample
-`currentTime` once a second for ten or twelve seconds. It should advance by
-almost exactly one second each time and wrap at ten. Any sample that repeats
-the one before it is the film stopping — the watchdog will pick it back up,
-but that it had to is the bug.
+Sitting still is the test that matters for stalling, and it is the one a
+stop-by-stop sweep will not do: park in the hero and sample `currentTime`
+once a second for ten or twelve seconds. It should advance by almost exactly
+one second each time and wrap at ten. Any sample that repeats the one before
+it is the film stopping.
 
 The world's own player is `document.createElement`d and never enters the
 DOM, so a harness has to hook `createElement` to reach it. Two things to
-check on it: it has no `src` at all while the page is in the hero, and it is
-playing once the world is on screen.
+check on it: it has no `src` at all while the page is sitting in the hero,
+and it is playing once the world is on screen. The first of those is the
+regression test for the `rootMargin` above.
+
+Worth checking on every hero change, because each has broken once: the hero
+is exactly one viewport tall at 1440×900, 1180×820, 820×1180 and 390×844;
+`scrollWidth === clientWidth` on all four; scroll is unlocked after the
+intro; and reduced motion mounts zero `<video>` elements.
 
 `next start` snapshots `/public` at build time, and it holds its build
 manifest in memory — deleting `.next` under a running server leaves it

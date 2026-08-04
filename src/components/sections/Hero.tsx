@@ -83,6 +83,30 @@ const AIR = [
 ];
 
 /**
+ * One pass of a band's words. Printed twice per row, so half the row's
+ * width is exactly one pass and the loop has no seam.
+ *
+ * The words alternate between drawn and plain, and the row's own index
+ * shifts which of the two a row opens on, so no two rows sit their solid
+ * words in a column.
+ */
+function BandRun({ row, offset }: { row: string[]; offset: number }) {
+  return (
+    <span className={styles.bandRun} aria-hidden="true">
+      {row.map((word, index) => (
+        <span
+          key={word}
+          className={styles.bandWord}
+          data-ink={(index + offset) % 2 ? "plain" : "line"}
+        >
+          {word} —
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
  * The opening film.
  *
  * The page does not begin on the hero. It begins on a sheet of restaurant
@@ -138,13 +162,22 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
    * Keeping the picture moving.
    *
    * A muted, looping film needs nothing from us to run, and the element's
-   * own `autoplay` covers the ordinary case. Two cases it does not: a
-   * browser that refused the first attempt, and a film that has quietly
-   * stopped. A video element does not report the second — it goes on
-   * saying it is playing while the frame on screen is the one it was a
-   * second ago. So rather than trust it, watch the clock it is supposed to
-   * be advancing, and escalate: ask it to play, then jog the playhead so
-   * the decoder has to build a fresh frame, then start the element over.
+   * own `autoplay` covers the ordinary case. What it does not cover is a
+   * browser that refused the first attempt, or one that suspended the
+   * element while the tab was in the background. Both leave it paused, and
+   * both are answered by asking it to play again.
+   *
+   * Nothing here touches the playhead, and nothing reloads the element. A
+   * film that is buffering resumes on its own; seeking it, or loading it
+   * out from under itself, throws away the decoder's work and freezes the
+   * picture for longer than the stall being cured — a watchdog that fires
+   * on a healthy film is indistinguishable from the fault it was written
+   * for.
+   *
+   * The film also stands down before the hero has fully left. The world
+   * below wakes while some of the hero is still on screen, and a second
+   * 720p decoder feeding a video texture at 60Hz is exactly what makes the
+   * picture in front of the viewer start dropping frames.
    */
   useEffect(() => {
     const video = videoRef.current;
@@ -161,45 +194,24 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
     let onScreen = true;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        onScreen = entry.isIntersecting;
+        onScreen = entry.intersectionRatio > 0.4;
         if (onScreen) play();
         else video.pause();
       },
-      { threshold: 0 },
+      { threshold: [0, 0.4, 0.95] },
     );
     observer.observe(section);
 
-    let mark = -1;
-    let stuck = 0;
-    const watchdog = window.setInterval(() => {
-      if (!onScreen || document.hidden) return;
+    const resume = () => {
+      if (onScreen && !document.hidden && video.paused) play();
+    };
 
-      if (video.paused) {
-        play();
-        return;
-      }
-
-      if (Math.abs(video.currentTime - mark) > 0.02) {
-        mark = video.currentTime;
-        stuck = 0;
-        return;
-      }
-
-      stuck += 1;
-      if (stuck === 2) {
-        play();
-      } else if (stuck === 4) {
-        video.currentTime = (video.currentTime + 0.06) % (video.duration || 10);
-        play();
-      } else if (stuck >= 6) {
-        video.load();
-        play();
-        stuck = 0;
-      }
-    }, 700);
+    document.addEventListener("visibilitychange", resume);
+    const watchdog = window.setInterval(resume, 1000);
 
     return () => {
       observer.disconnect();
+      document.removeEventListener("visibilitychange", resume);
       window.clearInterval(watchdog);
     };
   }, [mode, sectionRef]);
@@ -314,8 +326,8 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
       <div className={styles.bands} aria-hidden="true">
         {BANDS.map((row, index) => (
           <div key={index} className={styles.band} data-row={index}>
-            <span className={styles.bandRun}>{row.join(" — ")} — </span>
-            <span className={styles.bandRun}>{row.join(" — ")} — </span>
+            <BandRun row={row} offset={index} />
+            <BandRun row={row} offset={index} />
           </div>
         ))}
       </div>
