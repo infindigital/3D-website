@@ -32,12 +32,13 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   /*
-   * The bar floats over whatever is beneath it, and the home page now opens
-   * on the one dark section of the site. A section marks itself with
+   * The bar floats over whatever is beneath it. A section marks itself with
    * data-dark-section="true" while it is showing something the light glass
-   * would sit badly on; the bar switches to dark glass for as long as that
-   * section covers the band it occupies, and switches back on its own when
-   * the hero washes out to cream at the end.
+   * would sit badly on, and the bar switches to dark glass for as long as
+   * that section covers the band it occupies. Nothing claims it today — the
+   * site is bright throughout, the hero included — but the switch stays
+   * because the cost is one querySelector and the alternative is a bar that
+   * cannot survive the first dark section anyone adds.
    */
   useEffect(() => {
     const update = () => {

@@ -36,21 +36,35 @@ export interface HeroAssets {
  * driven — a cooking film is a performance, and the scroll is not what
  * should be performing it.
  *
- * The scroll still does plenty; it just does it to the room rather than to
- * the footage. And the room is a room: the film is the far wall of a
- * corridor with walls of its own either side, a floor catching its spill,
- * both packs standing in the middle distance and dust hanging at three
- * separate depths. All of it is one perspective with everything fixed at
- * its own distance inside it, so the pointer swings the whole space at once
- * and the scroll flies the camera down it — the walls sweeping out past the
- * lens as the picture grows to fill the frame. Nothing is a layer sliding
- * at a scripted speed; the perspective divide does the work.
+ * The film is not the background. It is a screen standing in a room: a
+ * bounded, bezelled panel with a far wall behind it, two side walls running
+ * past it, a floor under it catching the pool of light it drops, both packs
+ * standing beside it and dust hanging at three separate depths. All of it is
+ * one perspective with everything fixed at its own distance inside it, so
+ * the pointer swings the whole space at once and the scroll flies the camera
+ * down it — the side walls sweeping out past the lens as the panel grows.
+ * Nothing is a layer sliding at a scripted speed; the perspective divide
+ * does the work.
+ *
+ * On a wide screen the panel starts off to one side and turned away, with
+ * the copy holding the other half of the page; the scroll walks the camera
+ * across and around until it is square on. Both the offset and the turn are
+ * written into the panel's own transform against the same progress number,
+ * so no script touches it per frame.
+ *
+ * The room is daylit in the site's own white and cream, so the hero is a
+ * bright room with a screen in it rather than a dark box bolted onto a
+ * bright page. The panel is the darkest thing in frame, which is what makes
+ * it read as the light source: the wall beside it warms where it stands,
+ * the floor under it catches what it drops, and the shade in the corners is
+ * warm brown rather than black.
  *
  * One number carries all of it — the stage gets `--p`, the raw scroll
- * progress, and the stylesheet derives the dolly, the vignette, the scrim
- * and the closing wash from it, while the copy beats hand over along the
- * same timeline. The room costs transforms and nothing else: one video
- * decoder, no second canvas, and not a single per-frame readback.
+ * progress, and the stylesheet derives the dolly, the vignette, the light
+ * pool under the copy and the closing wash from it, while the copy beats
+ * hand over along the same timeline. The room costs transforms and nothing
+ * else: one video decoder, no second canvas, and not a single per-frame
+ * readback.
  *
  * The tiled wall of this same film is the world below the hero, not this
  * section: here it is the footage itself, played whole.
@@ -59,9 +73,14 @@ export interface HeroAssets {
  * stylesheet, not by this component, so the hero is already in its final
  * shape on the very first paint. The film then arrives into a stage that is
  * already the right size: it fades in over its own poster frame and starts
- * running, and nothing on screen moves to accommodate it. Phones and
- * readers who ask for reduced motion get the still frame, all the copy at
- * once, and a hero one screen tall.
+ * running, and nothing on screen moves to accommodate it.
+ *
+ * A phone gets the room and the running film both — the room is static
+ * gradients on planes the compositor draws once, and the panel is the same
+ * one decoder — in a hero one screen tall with all the copy at once. Only a
+ * reader who has asked for reduced motion is served the still frame, and
+ * they get the panel alone rather than a room with a camera that cannot move
+ * through it.
  */
 export default function Hero({
   assets,
@@ -98,9 +117,13 @@ export default function Hero({
   /* The film is asked for on the first sign of intent rather than at first
      paint, so it is not competing with the fonts and the poster for the
      opening second — with a short fallback, because a hero that waits for a
-     gesture that never comes is a hero nobody sees move. */
+     gesture that never comes is a hero nobody sees move.
+
+     Every width gets it. The screen is the section, and a phone showing a
+     still of it is a phone that has been handed the trailer's poster; only a
+     reader who has asked for less motion is served the frozen frame. */
   useEffect(() => {
-    if (!cinematic) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let armed = false;
     const events = ["scroll", "wheel", "touchmove", "pointerdown"] as const;
@@ -125,7 +148,7 @@ export default function Hero({
       window.clearTimeout(timer);
       events.forEach((type) => window.removeEventListener(type, arm));
     };
-  }, [cinematic]);
+  }, []);
 
   /*
    * Keeping the picture moving.
@@ -208,15 +231,6 @@ export default function Hero({
       window.clearInterval(watchdog);
     };
   }, [wantsVideo]);
-
-  /*
-   * Tells the floating navigation to switch to dark glass while this section
-   * is under it. Set imperatively rather than in JSX so the scroll timeline
-   * can flip it off for the closing wash without a re-render putting it back.
-   */
-  useEffect(() => {
-    sectionRef.current?.setAttribute("data-dark-section", "true");
-  }, []);
 
   /* Opening beat, on load: scene one settles into place. */
   useEffect(() => {
@@ -306,21 +320,14 @@ export default function Hero({
         },
       });
 
-      /* Raw progress for the stylesheet: dolly, vignette, scrim, wash */
+      /* Raw progress for the stylesheet: dolly, vignette, light pool, wash */
       tl.to(
         progress,
         {
           value: 1,
           duration: 1,
-          onUpdate: () => {
-            stage?.style.setProperty("--p", progress.value.toFixed(4));
-            /* Hand the navigation back to its light glass just before the
-               wash turns this section cream underneath it */
-            sectionRef.current?.setAttribute(
-              "data-dark-section",
-              progress.value < 0.93 ? "true" : "false",
-            );
-          },
+          onUpdate: () =>
+            stage?.style.setProperty("--p", progress.value.toFixed(4)),
         },
         0,
       );
@@ -396,15 +403,23 @@ export default function Hero({
         {/* The room, hung inside the stage's perspective */}
         <div className={styles.scene} aria-hidden="true">
           <div className={styles.room}>
-            {/* The far wall: the shot itself, and the one photograph here */}
-            <div className={styles.film}>
+            {/* The room itself: far wall, two side walls, floor */}
+            <div className={styles.backdrop} />
+            <div className={`${styles.wall} ${styles.wallLeft}`} />
+            <div className={`${styles.wall} ${styles.wallRight}`} />
+            <div className={styles.floor} />
+
+            {/* The screen standing in it. Bounded, bezelled, throwing its own
+                light onto the surfaces around it — a thing in the room, not
+                the surface the room is painted on. */}
+            <div className={styles.screen}>
               <Image
                 className={styles.plate}
                 src={assets.posterSrc}
                 alt=""
                 fill
                 priority
-                sizes="100vw"
+                sizes="(min-width: 1024px) 54vw, 92vw"
               />
               {wantsVideo && (
                 <video
@@ -423,16 +438,13 @@ export default function Hero({
                   onLoadedData={() => setFilmReady(true)}
                 />
               )}
+              <span className={styles.glass} />
             </div>
 
-            {/* The corridor that runs back to it */}
-            <div className={`${styles.wall} ${styles.wallLeft}`} />
-            <div className={`${styles.wall} ${styles.wallRight}`} />
-            <div className={styles.floor} />
-
-            {/* Both packs, standing in the middle distance in the poses they
-                hold at the head of the world below. Owner artwork only, so a
-                pack whose file has not been supplied simply is not there. */}
+            {/* Both packs, standing on the floor beside the screen in the
+                poses they hold at the head of the world below. Owner artwork
+                only, so a pack whose file has not been supplied is not
+                there. */}
             {packs.slice(0, 2).map((src, index) => (
               <div
                 key={src}
