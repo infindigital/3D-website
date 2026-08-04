@@ -2,10 +2,14 @@
    Hero — the opening film.
 
    This stylesheet describes the FINISHED hero and nothing else. The
-   intro's opening frame (small shape, buttons below their line) is
-   written from script in a layout effect before the first paint, so a
-   visitor whose script never runs, or who has asked for less motion,
-   gets an ordinary still hero rather than an intro frozen at frame one.
+   intro's opening frame — the orange sheet, the buttons parked below
+   their line, the logo standing in the middle of the film — is written
+   from script in a layout effect before the first paint, so a visitor
+   whose script never runs, or who has asked for less motion, gets an
+   ordinary still hero rather than an intro frozen at frame one.
+
+   The film is the same size in both. The intro does not grow it; the
+   only thing that changes between the two is the room around it.
    ============================================================ */
 
 .hero {
@@ -23,6 +27,31 @@
      and outline in here answers to. */
   --ember: #d95a1a;
 
+  /*
+   * The film's footprint, and the only place it is decided.
+   *
+   * The rings are concentric offsets of the film's own outline, so they are
+   * cut from these two values as well — that is what makes them read as the
+   * shape pushing outward rather than as ovals drawn around it. A breakpoint
+   * changes the picture and the rings together by changing these, and there
+   * is no second place for them to fall out of agreement.
+   *
+   * Only the width is ever chosen. The height follows the ratio, so no
+   * breakpoint can turn the frame into a crop. The third term is the
+   * short-window guard: below roughly 230px of room for the bar above and
+   * the buttons below, the width gives way rather than the ratio.
+   */
+  --film-w: min(58vw, 700px, calc((100svh - 230px) * 16 / 9));
+  --film-ar: 16 / 9;
+
+  /*
+   * The outline both are cut to: a rounded rectangle with no two corners
+   * alike. Rectangular enough to be a frame around a film, uneven enough
+   * never to look like a box — which is the shape the reference hero uses
+   * and the reason it reads as hand-cut rather than as a border-radius.
+   */
+  --film-cut: 11% 13% 10% 12% / 19% 22% 18% 21%;
+
   background: var(--paper);
 }
 
@@ -33,7 +62,7 @@
 .hero::after {
   content: "";
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   left: 0;
   right: 0;
   bottom: 0;
@@ -155,7 +184,7 @@
 
 .air {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   inset: 0;
   pointer-events: none;
 }
@@ -247,7 +276,7 @@
 
 .intro {
   position: absolute;
-  z-index: 4;
+  z-index: 5;
   inset: 0;
   pointer-events: none;
   /* How much of the sheet is still on screen. Script closes this on the
@@ -267,57 +296,93 @@
   );
 }
 
-.rings {
+/* ------------------------------------------------------------
+   The rings
+
+   Two layers of the same rings, running on the same clock and differing
+   only in ink. `.ringsUnder` belongs to the hero and is always here;
+   `.ringsOver` is painted on the orange sheet and clipped to whatever is
+   left of it. As the sheet collapses, every ring is drawn light where
+   there is still orange behind it and ember where there is not, and the
+   rings themselves neither move nor fade nor restart across the join.
+
+   That is the whole of "only the rings cross over": there is nothing to
+   animate, because they were never two sets of rings.
+   ------------------------------------------------------------ */
+
+.ringsUnder,
+.ringsOver {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
+  pointer-events: none;
+}
+
+.ringsUnder {
+  z-index: 2;
+  /* Held well back: these run under the whole hero forever, and a line
+     that competes with the film is a line nobody stops seeing. */
+  --ring-ink: rgba(217, 90, 26, 0.26);
+}
+
+.ringsOver {
   clip-path: circle(var(--wipe) at 50% 50%);
+  --ring-ink: rgba(255, 244, 232, 0.62);
 }
 
 .ring {
   position: absolute;
-  /* Sized off the film, so they read as the shape pushing outward */
-  width: 44vmin;
-  height: 30vmin;
-  border: 2px solid rgba(255, 244, 232, 0.6);
-  /* The same organic outline the film is cut to, so the rings read as the
-     shape pushing outward rather than as decoration around it */
-  border-radius: 27% 30% 25% 28% / 34% 28% 33% 30%;
+  /* Cut from the film's own footprint and outline, so each ring is the
+     shape itself pushed outward rather than an oval drawn around it */
+  width: var(--film-w);
+  aspect-ratio: var(--film-ar);
+  border: 1.5px solid var(--ring-ink);
+  border-radius: var(--film-cut);
   opacity: 0;
   will-change: transform, opacity;
-  animation: ripple 6.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  /* Even steps, evenly spaced: the reference holds five or six rings on
+     screen at once, not a burst that bunches at the outside. Linear is
+     what keeps the gaps regular. */
+  animation: ripple 7.5s linear infinite;
 }
 
 .ring:nth-child(2) {
-  animation-delay: -1.28s;
+  animation-delay: -1.5s;
 }
 
 .ring:nth-child(3) {
-  animation-delay: -2.56s;
+  animation-delay: -3s;
 }
 
 .ring:nth-child(4) {
-  animation-delay: -3.84s;
+  animation-delay: -4.5s;
 }
 
 .ring:nth-child(5) {
-  animation-delay: -5.12s;
+  animation-delay: -6s;
 }
 
+/*
+ * How far out they go, and the one number in here with a cost attached.
+ * These layers run for as long as the page is open, and every one of them
+ * is a translucent sheet the compositor blends over everything behind it —
+ * so the outermost is set to just clear the widest room the film is sized
+ * for and no further. Past that it is paying to draw off-screen.
+ */
 @keyframes ripple {
   0% {
-    transform: scale(0.5);
+    transform: scale(1.06);
     opacity: 0;
   }
-  12% {
-    opacity: 0.85;
+  9% {
+    opacity: 1;
   }
-  62% {
-    opacity: 0.5;
+  74% {
+    opacity: 0.72;
   }
   100% {
-    transform: scale(2.7);
+    transform: scale(2.25);
     opacity: 0;
   }
 }
@@ -328,7 +393,7 @@
 
 .stage {
   position: absolute;
-  z-index: 5;
+  z-index: 6;
   inset: 0;
   display: grid;
   place-items: center;
@@ -338,14 +403,11 @@
   pointer-events: none;
 }
 
-/* Script owns this one: the intro's whole job is to grow it */
-.shape {
-  will-change: transform;
-}
-
-/* Pointer parallax, kept off .shape so the swing and the growth never
-   write to the same transform */
+/* Pointer parallax. The film's own box carries nothing else: it opens at
+   the size it keeps, and the intro grows the room around it rather than
+   it. */
 .shift {
+  will-change: transform;
   transform: translate3d(
     calc(var(--parallax-x, 0) * 16px),
     calc(var(--parallax-y, 0) * 11px),
@@ -360,39 +422,35 @@
    * the backdrop: paper around it is what makes it read as an object
    * standing in the hero rather than as a window cut into it.
    *
-   * Only the width is chosen — the height follows the film's own 16:9, so
-   * the shape can never become a frame that crops the shot. Setting the two
-   * separately is how a landscape kitchen turns into a close-up of a plate
-   * on the first narrow screen it meets.
-   *
-   * The third term is the short-window guard: below roughly 230px of room
-   * for the bar above and the buttons below, the width gives way rather
-   * than the ratio.
+   * The size and the outline both come from the hero — see `--film-w` and
+   * `--film-cut` at the top of this file. The rings are cut from the same
+   * two, which is the whole reason they sit concentric with this.
    */
-  width: min(58vw, 700px, calc((100svh - 230px) * 16 / 9));
-  aspect-ratio: 16 / 9;
+  width: var(--film-w);
+  aspect-ratio: var(--film-ar);
   overflow: hidden;
   background: var(--color-cream-deep);
-  /* Organic, and never the same shape twice */
-  border-radius: 26% 30% 24% 28% / 34% 28% 32% 30%;
+  border-radius: var(--film-cut);
   box-shadow:
     0 34px 84px rgba(122, 62, 20, 0.2),
     0 8px 22px rgba(122, 62, 20, 0.12);
+  /* The corners wander, slowly and never far. A rounded rectangle that is
+     exactly the same rounded rectangle for ten minutes is a box. */
   animation: morph 26s ease-in-out infinite;
 }
 
 @keyframes morph {
   0% {
-    border-radius: 26% 30% 24% 28% / 34% 28% 32% 30%;
+    border-radius: 11% 13% 10% 12% / 19% 22% 18% 21%;
   }
   34% {
-    border-radius: 30% 24% 29% 23% / 27% 34% 27% 35%;
+    border-radius: 13% 10% 12% 11% / 22% 18% 21% 19%;
   }
   67% {
-    border-radius: 23% 28% 31% 26% / 32% 25% 35% 29%;
+    border-radius: 10% 12% 11% 13% / 18% 21% 19% 22%;
   }
   100% {
-    border-radius: 26% 30% 24% 28% / 34% 28% 32% 30%;
+    border-radius: 11% 13% 10% 12% / 19% 22% 18% 21%;
   }
 }
 
@@ -442,7 +500,7 @@
 
 .actions {
   position: absolute;
-  z-index: 6;
+  z-index: 7;
   left: 0;
   right: 0;
   bottom: clamp(28px, 5.5vh, 66px);
@@ -490,6 +548,58 @@
 }
 
 /* ------------------------------------------------------------
+   The travelling mark
+
+   Standing in the middle of the film while the orange is up, and in the
+   navigation bar once it has gone. One element, one uniform scale, both
+   ends measured from the things it has to agree with — see Hero.tsx.
+
+   It is portalled to the body: the bar is not inside the hero's stacking
+   context, so nothing rendered in here can land on top of it.
+   ------------------------------------------------------------ */
+
+.brandFly {
+  position: fixed;
+  z-index: 120;
+  top: 0;
+  left: 0;
+  /* The one number script needs to be able to scale from. Nothing sees it
+     at this size; it is the unit both ends are expressed in. */
+  width: 240px;
+  pointer-events: none;
+  /* Standing on a kitchen film, the artwork needs to be lifted off it. The
+     shadow is tweened away over the flight, so what lands in the bar is
+     the same mark the bar draws itself. */
+  filter: drop-shadow(0 10px 26px rgba(58, 28, 10, 0.34));
+  will-change: transform, opacity;
+}
+
+.brandArt {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * A pool of light under the mark rather than a plate behind it. The logo is
+ * red, green and near-black on nothing, and a kitchen is dark — it needs
+ * something bright under it or half of it disappears. A hard panel would
+ * read as a sticker on the film and would have to be explained away at the
+ * other end; a soft pool reads as light and simply stops being there.
+ */
+.brandGlow {
+  position: absolute;
+  inset: -52% -20%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 250, 243, 0.95) 0%,
+    rgba(255, 250, 243, 0.74) 48%,
+    rgba(255, 250, 243, 0) 100%
+  );
+}
+
+/* ------------------------------------------------------------
    Narrow screens
    ------------------------------------------------------------ */
 
@@ -505,10 +615,18 @@
    * A phone has width to spare and height to save, and 3:2 costs the shot
    * an eighth of its sides — the pan stays in frame, which is all the
    * earlier near-square crop threw away.
+   *
+   * The rings follow, because they are cut from the same two values — and
+   * they are also what stops this going any wider. A film across the whole
+   * width of a phone leaves the rings nowhere to be rings: every one of
+   * them is wider than the screen, so all that shows of them is their top
+   * and bottom edges, and the room reads as a set of horizontal stripes.
+   * At 84vw the first ring closes on both sides inside the screen, which is
+   * enough for the eye to read the rest as rings running off it.
    */
-  .mask {
-    width: min(92vw, calc((100svh - 290px) * 3 / 2));
-    aspect-ratio: 3 / 2;
+  .hero {
+    --film-w: min(84vw, calc((100svh - 290px) * 3 / 2));
+    --film-ar: 3 / 2;
   }
 
   /* A phone shows one word of a band at a time, so the type has to be
@@ -547,18 +665,13 @@
     font-size: 0.74rem;
     letter-spacing: 0.09em;
   }
-
-  .ring {
-    width: 62vmin;
-    height: 40vmin;
-  }
 }
 
 /* A portrait tablet is a tall room, and the film would float in it at the
    landscape width */
 @media (min-width: 641px) and (max-width: 1023px) and (orientation: portrait) {
-  .mask {
-    width: min(84vw, 620px, calc((100svh - 280px) * 16 / 9));
+  .hero {
+    --film-w: min(84vw, 620px, calc((100svh - 280px) * 16 / 9));
   }
 }
 

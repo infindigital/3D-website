@@ -18,3 +18,20 @@ export const HERO_OPEN_EVENT = "rschefz:hero-open";
  * able to strand the navigation off screen.
  */
 export const HERO_OPEN_FALLBACK_MS = 4200;
+
+/**
+ * The brand has landed in the bar.
+ *
+ * The intro opens with the logo standing in the middle of the film, the way
+ * the reference hero does, and flies it into the navigation as the orange
+ * leaves. Two copies of the same mark on screen at once would give the trick
+ * away, so the bar holds its own until the flying one is standing on it.
+ */
+export const HERO_BRAND_EVENT = "rschefz:hero-brand-landed";
+
+/**
+ * How long the bar will hold its mark before showing it anyway. Longer than
+ * the flight, and for the same reason as the one above: nothing the hero
+ * does may be able to leave the site without its own name on it.
+ */
+export const HERO_BRAND_FALLBACK_MS = 5200;

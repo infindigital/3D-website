@@ -7,7 +7,12 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { siteConfig } from "@/config/site";
 import { products } from "@/config/products";
-import { HERO_OPEN_EVENT, HERO_OPEN_FALLBACK_MS } from "@/utils/heroOpen";
+import {
+  HERO_BRAND_EVENT,
+  HERO_BRAND_FALLBACK_MS,
+  HERO_OPEN_EVENT,
+  HERO_OPEN_FALLBACK_MS,
+} from "@/utils/heroOpen";
 import styles from "./Navigation.module.css";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -32,6 +37,7 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
   const [onDark, setOnDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [heroOpen, setHeroOpen] = useState(false);
+  const [brandLanded, setBrandLanded] = useState(false);
   const [openOn, setOpenOn] = useState(pathname);
 
   /*
@@ -48,28 +54,46 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
    */
   const revealed = pathname !== "/" || heroOpen;
 
+  /*
+   * And when the mark on it arrives. On the home page the mark is not the
+   * bar's to begin with: the intro opens with the logo standing in the
+   * middle of the film and flies it up here, so the bar keeps its own place
+   * empty until that one has landed on it. Two of the same mark on screen at
+   * once is the one thing that would show the join.
+   */
+  const branded = pathname !== "/" || brandLanded;
+
   /* Leaving the home page arms the wait again: come back to it and the
      hero replays its intro, so the bar has to go back up for it. */
   if (openOn !== pathname) {
     setOpenOn(pathname);
     setHeroOpen(false);
+    setBrandLanded(false);
   }
 
   useEffect(() => {
     if (pathname !== "/") return;
 
     const reveal = () => setHeroOpen(true);
+    const land = () => setBrandLanded(true);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     window.addEventListener(HERO_OPEN_EVENT, reveal);
+    window.addEventListener(HERO_BRAND_EVENT, land);
     const timer = window.setTimeout(
       reveal,
       reduced ? 0 : HERO_OPEN_FALLBACK_MS,
     );
+    const brandTimer = window.setTimeout(
+      land,
+      reduced ? 0 : HERO_BRAND_FALLBACK_MS,
+    );
 
     return () => {
       window.removeEventListener(HERO_OPEN_EVENT, reveal);
+      window.removeEventListener(HERO_BRAND_EVENT, land);
       window.clearTimeout(timer);
+      window.clearTimeout(brandTimer);
     };
   }, [pathname]);
 
@@ -128,7 +152,9 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
       >
         <Link
           href="/"
-          className={styles.brand}
+          className={`${styles.brand} ${branded ? "" : styles.brandHeld}`}
+          /* Where the hero's flying logo is aiming. */
+          data-brand-anchor="true"
           onClick={closeMenu}
           aria-label={`${siteConfig.name}, home`}
         >

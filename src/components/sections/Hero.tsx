@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
@@ -17,7 +18,7 @@ import {
   setScrollLocked,
 } from "@/components/layout/SmoothScroll";
 import { usePointerParallax } from "@/hooks/usePointerParallax";
-import { HERO_OPEN_EVENT } from "@/utils/heroOpen";
+import { HERO_BRAND_EVENT, HERO_OPEN_EVENT } from "@/utils/heroOpen";
 import styles from "./Hero.module.css";
 
 /**
@@ -32,6 +33,9 @@ const useIsoLayoutEffect =
 export interface HeroAssets {
   videoSrc: string;
   posterSrc: string;
+  /** The brand mark, if it has been supplied. Absent, the intro simply has
+      no logo in it and the bar keeps its wordmark from the start. */
+  logoSrc?: string;
 }
 
 /**
@@ -50,21 +54,80 @@ function releaseWarmFilm() {
 
 /**
  * The intro's beats, in seconds.
+ *
+ * The film does not grow. It opens at the size it will keep, because that
+ * size is the composition — the shape, the rings around it and the logo
+ * standing in the middle of it are the picture the page opens on, and a
+ * picture that swells for three seconds is not that picture. What crosses
+ * from the intro into the hero is the rings: they never stop, never change
+ * their spacing and never change their shape, and the orange simply leaves
+ * from around them.
  */
 const BEAT = {
-  /** the shape starts to creep outward */
-  creep: 0.8,
-  /** it stops creeping and opens out */
-  open: 2.4,
-  /** the orange sheet starts collapsing behind it */
-  wipe: 2.5,
-  /** the room is the hero's; the bar may come down */
-  handover: 2.95,
+  /** the orange sheet starts collapsing */
+  wipe: 1.6,
+  /** the room is the hero's; the bar may come down, the logo sets off */
+  handover: 2.2,
   /** the buttons arrive */
-  actions: 3.05,
+  actions: 2.4,
   /** everything the intro owned can go */
   end: 3.7,
 } as const;
+
+/** How long the logo is in the air, in seconds. */
+const FLIGHT = 1.15;
+
+/**
+ * The rings. Concentric offsets of the film's own outline, pushing outward
+ * past the edges of the room forever.
+ *
+ * There are two of these layers and they are identical in every way except
+ * their ink. One is painted over the orange sheet and clipped to whatever is
+ * left of it; the other lies under everything in the hero's own colour. As
+ * the sheet collapses, each ring is drawn in the light ink where there is
+ * still orange under it and in the ember where there is not — so the rings
+ * themselves never move, never fade and never restart across the join. They
+ * are the same rings the whole way through; only the room behind them
+ * changes.
+ */
+const RING_COUNT = 5;
+
+function Rings({ className }: { className: string }) {
+  return (
+    <div className={className} aria-hidden="true">
+      {Array.from({ length: RING_COUNT }, (_, index) => (
+        <span key={index} className={styles.ring} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Where an element in the header will be standing once the bar has finished
+ * coming down.
+ *
+ * The bar enters from above, so its brand's box during the intro is
+ * wherever the slide has got to. Taking the bar's own translation back off
+ * gives the box it is heading for, whether it has not started moving yet or
+ * is halfway through — which is what the flying logo has to aim at.
+ */
+function restingBox(el: HTMLElement): DOMRect {
+  const box = el.getBoundingClientRect();
+  const bar = el.closest("header");
+  const applied = bar ? getComputedStyle(bar).transform : "none";
+  if (!applied || applied === "none") return box;
+  try {
+    const matrix = new DOMMatrixReadOnly(applied);
+    return new DOMRect(
+      box.left - matrix.e,
+      box.top - matrix.f,
+      box.width,
+      box.height,
+    );
+  } catch {
+    return box;
+  }
+}
 
 /**
  * Words that drift across the room behind the film. Three rows, each read
@@ -131,13 +194,18 @@ function BandRun({ row, offset }: { row: string[]; offset: number }) {
  * The opening film.
  *
  * The page does not begin on the hero. It begins on a sheet of restaurant
- * orange with the kitchen film already running inside a small organic
- * shape, thin outline rings pushing outward past it. Over three seconds the
- * shape creeps, then opens out, and the orange collapses inward behind it
- * until there is none of it left to see — and what is standing there is the
- * hero. No fade and no cut: the same element, grown, and the same decoder,
- * never restarted, so the film that was playing through the intro is still
- * playing at the same frame when the hero arrives.
+ * orange with the kitchen film already running inside an organic shape, the
+ * brand mark standing in the middle of it, and thin outline rings pushing
+ * outward past it to the edges of the room. Then the orange collapses
+ * inward, the logo flies up into the navigation bar, and what is left
+ * standing there is the hero.
+ *
+ * Nothing in that is a fade or a cut. The film is one element at one size
+ * throughout — the intro does not grow it and does not hand over to a second
+ * player, so the frame playing at 0.0 is the frame playing at the end. The
+ * rings run on one clock from first paint to forever. The logo is one
+ * element that travels. The only thing that actually happens is that the
+ * orange leaves.
  *
  * That is why the film lives in the hero rather than in the intro. An intro
  * that owns its own video has to hand over to a second one, and a second
@@ -160,9 +228,11 @@ function BandRun({ row, offset }: { row: string[]; offset: number }) {
  */
 export default function Hero({ assets }: { assets: HeroAssets }) {
   const sectionRef = usePointerParallax<HTMLElement>();
-  const shapeRef = useRef<HTMLDivElement>(null);
+  const maskRef = useRef<HTMLDivElement>(null);
   const introRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const flyRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLSpanElement>(null);
   const [filmReady, setFilmReady] = useState(false);
   const [introDone, setIntroDone] = useState(false);
   /**
@@ -248,9 +318,9 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
   useIsoLayoutEffect(() => {
     if (mode !== "intro") return;
 
-    const shape = shapeRef.current;
+    const mask = maskRef.current;
     const intro = introRef.current;
-    if (!shape || !intro) return;
+    if (!mask || !intro) return;
 
     /* A reload restores the old scroll position, and an intro that opens
        halfway down the page is an intro nobody sees. */
@@ -260,16 +330,9 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
     const wipe = { value: 118 };
 
     const ctx = gsap.context(() => {
-      gsap.set(shape, { scale: 0.3 });
       gsap.set(`.${styles.action}`, { y: 30, autoAlpha: 0 });
 
       const tl = gsap.timeline();
-
-      /* Creep, then open. Two moves rather than one, because a shape that
-         grows at a steady rate for three seconds reads as a progress bar,
-         and one that sits still and then bursts reads as a reveal. */
-      tl.to(shape, { scale: 0.46, duration: 1.6, ease: "power1.inOut" }, BEAT.creep);
-      tl.to(shape, { scale: 1, duration: 0.95, ease: "power3.inOut" }, BEAT.open);
 
       /* The orange collapses into the shape rather than fading off it. The
          sheet is a circle closing on the centre, and every part of it still
@@ -292,6 +355,78 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         () => window.dispatchEvent(new Event(HERO_OPEN_EVENT)),
         BEAT.handover,
       );
+
+      /*
+       * The brand reveal.
+       *
+       * The logo opens standing in the middle of the film, at a size read
+       * off the film itself, and lands in the bar's own brand slot, at a
+       * size read off that. Both ends are measured rather than written
+       * down: the film's box is whatever the breakpoint made it, and the
+       * bar's mark is whatever it is set in. Nothing here can drift out of
+       * agreement with either of them.
+       *
+       * The light behind it goes first, over the opening half of the
+       * flight, so what arrives in the bar is the artwork on its own.
+       *
+       * Everything is one uniform scale on one element, so the mark never
+       * distorts and never re-rasterises mid-flight. It is composited, the
+       * bar is composited, and the film underneath is untouched by all of
+       * it.
+       */
+      const fly = flyRef.current;
+      const glow = glowRef.current;
+      const slot = document.querySelector<HTMLElement>("[data-brand-anchor]");
+      const film = mask.getBoundingClientRect();
+      let landed = BEAT.handover;
+
+      if (fly && slot) {
+        const wide = fly.offsetWidth;
+        const tall = fly.offsetHeight;
+        /* Roughly the proportion the reference gives its wordmark: a little
+           under half the width of the picture it stands on. */
+        const from = (film.width * 0.44) / wide;
+        const rest = restingBox(slot);
+        const to = rest.width / wide;
+
+        gsap.set(fly, {
+          transformOrigin: "0 0",
+          x: film.left + (film.width - wide * from) / 2,
+          y: film.top + (film.height - tall * from) / 2,
+          scale: from,
+        });
+
+        landed = BEAT.handover + FLIGHT;
+
+        tl.to(
+          fly,
+          {
+            x: rest.left + (rest.width - wide * to) / 2,
+            y: rest.top + (rest.height - tall * to) / 2,
+            scale: to,
+            filter: "drop-shadow(0px 0px 0px rgba(58, 28, 10, 0))",
+            duration: FLIGHT,
+            ease: "power3.inOut",
+          },
+          BEAT.handover,
+        );
+
+        if (glow) {
+          tl.to(
+            glow,
+            { autoAlpha: 0, duration: FLIGHT * 0.55, ease: "power2.in" },
+            BEAT.handover,
+          );
+        }
+
+        /* The bar's own mark comes up as this one goes down, both standing
+           on the same box at the same size. A hard swap would show every
+           sub-pixel of disagreement between them; a third of a second of
+           overlap shows none. */
+        tl.to(fly, { autoAlpha: 0, duration: 0.3, ease: "none" }, landed);
+      }
+
+      tl.add(() => window.dispatchEvent(new Event(HERO_BRAND_EVENT)), landed);
 
       tl.to(
         `.${styles.action}`,
@@ -357,6 +492,11 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         ))}
       </div>
 
+      {/* The rings, in the hero's own ink. Always here, always running: the
+          intro's light copy is painted over the top of these while there is
+          still orange to paint it on. */}
+      <Rings className={styles.ringsUnder} />
+
       {/* Herbs and seed at three depths, each drifting on its own and the
           whole layer swinging with the pointer */}
       <div className={styles.air} aria-hidden="true">
@@ -378,52 +518,45 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
       {mode === "intro" && !introDone && (
         <div ref={introRef} className={styles.intro} aria-hidden="true">
           <div className={styles.wash} />
-          <div className={styles.rings}>
-            <span className={styles.ring} />
-            <span className={styles.ring} />
-            <span className={styles.ring} />
-            <span className={styles.ring} />
-            <span className={styles.ring} />
-          </div>
+          <Rings className={styles.ringsOver} />
         </div>
       )}
 
-      {/* The film. One element for the whole three seconds and everything
-          after them — the intro grows this, it does not hand over to it. */}
+      {/* The film. One element at one size for the intro and everything
+          after it — the intro never touches this, it only takes the orange
+          away from around it. */}
       <div className={styles.stage}>
-        <div ref={shapeRef} className={styles.shape}>
-          <div className={styles.shift}>
-            <div className={styles.mask}>
-              <Image
-                className={styles.frame}
-                src={assets.posterSrc}
-                alt=""
-                fill
-                priority
-                sizes="(min-width: 1024px) 84vw, 92vw"
+        <div className={styles.shift}>
+          <div ref={maskRef} className={styles.mask}>
+            <Image
+              className={styles.frame}
+              src={assets.posterSrc}
+              alt=""
+              fill
+              priority
+              sizes="(min-width: 1024px) 84vw, 92vw"
+            />
+            {mode === "intro" && (
+              <video
+                ref={videoRef}
+                className={`${styles.frame} ${styles.video}`}
+                data-ready={filmReady ? "true" : "false"}
+                src={assets.videoSrc}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                /* Not `canplaythrough`: the picture only has to cross
+                   over its own frame zero, so the moment there is a frame
+                   to show is the moment to show it. */
+                onLoadedData={() => {
+                  setFilmReady(true);
+                  releaseWarmFilm();
+                }}
               />
-              {mode === "intro" && (
-                <video
-                  ref={videoRef}
-                  className={`${styles.frame} ${styles.video}`}
-                  data-ready={filmReady ? "true" : "false"}
-                  src={assets.videoSrc}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  /* Not `canplaythrough`: the picture only has to cross
-                     over its own frame zero, so the moment there is a frame
-                     to show is the moment to show it. */
-                  onLoadedData={() => {
-                    setFilmReady(true);
-                    releaseWarmFilm();
-                  }}
-                />
-              )}
-              <span className={styles.grade} />
-            </div>
+            )}
+            <span className={styles.grade} />
           </div>
         </div>
       </div>
@@ -444,6 +577,33 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
           Order Online
         </a>
       </div>
+
+      {/*
+        The travelling mark.
+
+        Portalled to the body because it has to end up on top of the
+        navigation bar, and the hero is a stacking context of its own that
+        the bar is not inside — an element in here, at any z-index at all,
+        still paints under it. Fixed rather than absolute for the same
+        reason the bar is: the two of them have to agree about where the
+        viewport is.
+      */}
+      {mode === "intro" && !introDone && assets.logoSrc &&
+        createPortal(
+          <div ref={flyRef} className={styles.brandFly} aria-hidden="true">
+            <span ref={glowRef} className={styles.brandGlow} />
+            <Image
+              className={styles.brandArt}
+              src={assets.logoSrc}
+              alt=""
+              width={1000}
+              height={426}
+              priority
+              sizes="320px"
+            />
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }

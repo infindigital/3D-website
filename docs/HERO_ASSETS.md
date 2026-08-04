@@ -17,42 +17,125 @@ fallback to fail over to, because there is nothing to fall back from.
 ## The page opens on the film
 
 There is no title card in front of the hero and no cut into it. The page
-opens on a sheet of restaurant orange with the film already running inside a
-small organic shape, thin outline rings pushing outward past it. The shape
-creeps, then opens out, and the orange collapses inward behind it until
-there is none of it left — and what is standing there is the hero.
+opens on a sheet of restaurant orange with the film already running inside
+its organic shape, the brand mark standing in the middle of it and thin
+outline rings pushing outward past it to the edges of the room. Then the
+orange collapses inward, the mark flies up into the navigation bar, and what
+is left standing there is the hero.
 
-The whole of that is one element being grown. `Hero.tsx` holds the beats:
+`Hero.tsx` holds the beats:
 
 | Second | What happens |
 | ------ | ------------ |
-| 0.0 | Orange sheet, film small in the middle, rings rippling outward. |
-| 0.8 | The shape starts to creep — slowly, so the open reads as a break. |
-| 2.4 | It opens out to full size. |
-| 2.5 | The orange starts collapsing into it. |
-| 2.95 | The room is the hero's; the header is told it may come down. |
-| 3.05 | The buttons rise into place. |
+| 0.0 | Orange sheet, film at full size, logo on it, rings pushing outward. |
+| 1.6 | The orange starts collapsing into the film. |
+| 2.2 | The room is the hero's: the header is told it may come down, and the logo sets off for it. |
+| 2.4 | The buttons rise into place. |
+| 3.35 | The logo lands; the bar's own mark comes up under it. |
 | 3.7 | Scroll is unlocked and everything the intro owned is unmounted. |
+
+**Nothing in the intro is a fade, a cut, or a growth.** Four things are on
+screen at 0.0 and the same four are on screen at 3.7. The film is one
+element at one size throughout. The rings run on one clock. The logo is one
+element that travels. The only thing that actually *happens* is that the
+orange leaves.
+
+That is a deliberate change from an earlier version in which the shape crept
+and then opened out. The size of the film, the rings around it and the mark
+standing on it are the composition the page opens on; a composition that
+swells for three seconds is a different composition, and the swell was the
+only part of it that had to be re-justified on every screen.
 
 **The film lives in the hero, not in the intro.** An intro that owns its own
 video has to hand over to a second one at the join, and a second one is a
-second decoder, a second buffer and a visible jump. Here the intro only
-*grows* the hero's own shape, so the frame playing at 0.0 is the frame
+second decoder, a second buffer and a visible jump. Here the intro never
+touches the hero's element at all, so the frame playing at 0.0 is the frame
 playing at 3.7 — "the video does not restart" is a structural fact rather
 than two players being resynchronised.
 
-**The orange collapses rather than fades.** `.wash` and `.rings` are clipped
-to `circle(var(--wipe) at 50% 50%)`, and the timeline closes `--wipe` on the
-centre. Everything still visible is the part of the sheet *outside* the
-film; once the circle is smaller than the film there is no orange left. No
-crossfade happens at any point, which is why there is no moment where two
-pictures are on screen at half strength.
+**The orange collapses rather than fades.** `.wash` and `.ringsOver` are
+clipped to `circle(var(--wipe) at 50% 50%)`, and the timeline closes
+`--wipe` on the centre. Everything still visible is the part of the sheet
+*outside* the film; once the circle is smaller than the film there is no
+orange left. No crossfade happens at any point, which is why there is no
+moment where two pictures are on screen at half strength.
+
+## The rings cross over, and they do it by not moving
+
+The rings are the one thing that belongs to both the intro and the hero, and
+the requirement on them is that the join is invisible: same shape, same
+spacing, same speed, no restart.
+
+They are drawn **twice, on one clock**. `.ringsUnder` belongs to the hero and
+is always there, in a low ember; `.ringsOver` is painted on the orange sheet
+in near-white and clipped to whatever is left of it. Both layers mount in the
+same render with the same keyframes and the same negative delays, so they are
+in step by construction rather than by synchronisation.
+
+What that buys is the crossover itself. As the sheet collapses, every ring is
+drawn in the light ink where there is still orange behind it and in the ember
+where there is not, and the boundary between the two is exactly the edge of
+the sheet. The rings never move, fade or restart, because they were never two
+sets of rings — there is nothing to hand over.
+
+They are cut from the film's own footprint. `--film-w`, `--film-ar` and
+`--film-cut` on `.hero` are the only place the picture's size and outline are
+decided, and the rings read all three, which is what makes them concentric
+offsets of the shape rather than ovals drawn near it. Change a breakpoint and
+they follow.
+
+**They cost something, and the two levers are `RING_COUNT` and the end of
+`@keyframes ripple`.** Each ring is a translucent sheet the compositor blends
+over everything behind it, for as long as the page is open. Five of them
+reaching 2.25× is roughly the same again as the whole rest of the hero, which
+on any GPU is nothing and in software rasterisation is about a third of the
+frame. Do not let either number grow without measuring: on a phone the reach
+is what pushes the rings off the sides of the screen, and the count is what
+turns the room into a lattice.
+
+## The brand flies out of the film
+
+The logo starts centred on the film — a little under half its width, the
+proportion the reference hero gives its wordmark — and lands in the
+navigation bar's own brand slot. `.brandFly` is one element carrying one
+uniform scale, so the mark never distorts on the way.
+
+Both ends are **measured, not written down**. The near end comes off the
+film's box, whatever the breakpoint made it; the far end off the bar's own
+brand element, whatever it is set in. Neither can drift out of agreement with
+the thing it is describing.
+
+The far end has a wrinkle: the bar enters from above, so during the intro its
+brand is not where it will end up. `restingBox()` reads the header's current
+transform and takes it back off, which gives the resting box whether the bar
+has not started moving or is halfway down.
+
+Three smaller things hold it together:
+
+- **The bar holds its own mark** until `HERO_BRAND_EVENT` says the flying one
+  has landed (`Navigation.tsx`, home page only, with
+  `HERO_BRAND_FALLBACK_MS` behind it). Two of the same mark on screen at once
+  is the one thing that would show the trick.
+- **They cross over rather than swap.** The flying mark fades out over the
+  same third of a second the bar's fades in, both standing on the same box at
+  the same size. A hard swap would show every sub-pixel of disagreement.
+- **It is portalled to `document.body`.** The hero is a stacking context of
+  its own and the bar is not inside it, so nothing rendered in the hero, at
+  any z-index, can land on top of the bar.
+
+The logo is owner-supplied artwork in red, green and near-black, and a
+kitchen is dark, so it needs light under it: `.brandGlow` is a soft pool that
+dissolves over the first half of the flight, leaving the artwork on its own
+by the time it reaches the bar. A hard plate would have read as a sticker on
+the film and would have had to be explained away at the other end.
 
 ## The stylesheet is the finished hero; the script is the opening frame
 
 `Hero.module.css` describes the **finished** hero and nothing else. The
-intro's opening frame — small shape, buttons parked below their line — is
-written by `gsap.set()` in a layout effect, before the browser has painted.
+intro's opening frame — the buttons parked below their line, the logo
+standing on the film — is written by `gsap.set()` in a layout effect, before
+the browser has painted. The film is the same size in both, so there is
+nothing to set on it.
 
 That split is the whole no-JS and reduced-motion story. A visitor whose
 bundle never arrives, or who has asked for less motion, gets an ordinary
@@ -117,14 +200,12 @@ No canvas, no per-frame readback, nothing measured during a scroll.
   the pointer (`.airLayer`). Two transforms on two elements — never both on
   one, or they fight. The nearest layer is defocused, which is what puts the
   film at the depth the eye is meant to read.
-- **The shape** — an eight-value `border-radius` morphing on a 26s loop, so
-  the film's outline is never the same twice and never an oval.
+- **The shape** — an eight-value `border-radius` on a 26s loop. It is a
+  rounded rectangle with no two corners alike, which is the outline the
+  reference hero uses: rectangular enough to be a frame around a film, uneven
+  enough never to read as a box, and never the same twice.
 - **The picture** — a slow scale inside the shape, so it is never perfectly
   still.
-
-`.shape` is the script's (the intro grows it) and `.shift` is the pointer's.
-Keeping them on separate elements is why the growth and the parallax never
-overwrite each other.
 
 **Only the shape's width is ever chosen.** Its height comes from
 `aspect-ratio`, so no breakpoint can turn the frame into a crop. Setting the
@@ -136,6 +217,18 @@ enough height for the bar above and the buttons below, the width gives way
 rather than the ratio. A phone is the one place the ratio itself changes, to
 3:2: it has width to spare and height to save, and an eighth off the sides
 still leaves the whole pan in frame.
+
+All of it lives in `--film-w`, `--film-ar` and `--film-cut` on `.hero`, and
+a breakpoint changes those rather than the rules that read them — because the
+rings read them too, and a picture and its rings that disagree about their
+own size is not a thing anybody would notice until it shipped.
+
+**On a phone the rings are what caps the width.** 84vw rather than the 92vw
+it would otherwise take: above that, every ring is wider than the screen, so
+all that shows of them is their top and bottom edges and the room reads as a
+set of horizontal stripes. At 84vw the first ring closes on both sides
+inside the screen, which is enough for the eye to read the rest as rings
+running off it.
 
 ## Keeping it moving
 
@@ -192,11 +285,13 @@ A watchdog that fires on a healthy film is indistinguishable from the fault.
 
 ## The header
 
-The hero owns when the bar arrives. At `2.95s` it fires
-`HERO_OPEN_EVENT` (`src/utils/heroOpen.ts`); `Navigation.tsx` listens on the
-home page only, with `HERO_OPEN_FALLBACK_MS` behind it so a hero that never
-mounts still cannot leave the site without navigation. Everywhere but the
-home page the bar comes down immediately.
+The hero owns when the bar arrives, and when the mark on it does. At `2.2s`
+it fires `HERO_OPEN_EVENT` and at `3.35s`, when the flying logo lands,
+`HERO_BRAND_EVENT` (both in `src/utils/heroOpen.ts`); `Navigation.tsx`
+listens for both on the home page only, each with its own fallback timer
+behind it so a hero that never mounts cannot leave the site without its
+navigation or without its name. Everywhere but the home page the bar and its
+mark are there from the start.
 
 The bar is transparent at the top of every page and takes its glass only
 once the page has moved.
@@ -254,6 +349,21 @@ missing.
 Two counts are worth taking on any change to how the film is fetched: how
 many requests go out for the mp4 (one), and how many go out under
 `reducedMotion: "reduce"` (none).
+
+Three more for the intro, none of which a screenshot will show you:
+
+- **The logo lands on the bar's own box.** Sample `.brandFly` and
+  `[data-brand-anchor]` at the end of the flight; the two rects should agree
+  to the pixel. They are measured from different things, so a layout change
+  that moves one and not the other shows up here and nowhere else.
+- **No frame has neither mark.** Poll both elements' opacity every frame
+  through the intro and count the frames where both are under a third. It
+  should be zero — that is the crossfade doing its job, and an off-by-a-beat
+  timeline is invisible to the eye at full speed but obvious in the trace.
+- **The rings double and halve.** `RING_COUNT` of them at rest, twice that
+  while the intro is up, back to `RING_COUNT` after it unmounts. Any other
+  number means one of the two layers is not mounting with the other, and
+  they will not be in step.
 
 `next start` snapshots `/public` at build time, and it holds its build
 manifest in memory — deleting `.next` under a running server leaves it

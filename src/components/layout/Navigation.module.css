@@ -89,6 +89,16 @@
   align-items: center;
   gap: 10px;
   margin-right: auto;
+  transition: opacity 0.34s var(--ease-soft);
+}
+
+/*
+ * The bar's own mark, held back while the hero's copy of it is still in the
+ * air. Opacity rather than display: the flying logo is aiming at this
+ * element's box, so the box has to be exactly where it will end up.
+ */
+.brandHeld {
+  opacity: 0;
 }
 
 /* Wordmark in the logo's own identity: RS in green pentagons, Chef'z in red */

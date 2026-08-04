@@ -21,11 +21,17 @@ function has(publicPath: string): boolean {
  * up exactly and the crossfade between them is invisible: the intro can
  * open on the poster the instant the HTML lands and let the picture take
  * over underneath it without anything on screen moving.
+ *
+ * The logo is the one the navigation bar uses, and it is gated the same way
+ * the bar gates it: the brand mark is owner-supplied and never generated, so
+ * if the file is not there the intro simply has no logo standing in it.
  */
 function getHeroAssets(): HeroAssets {
+  const logo = "/assets/brand/logo.png";
   return {
     videoSrc: FILM_SRC,
     posterSrc: "/assets/hero/hero-poster.webp",
+    logoSrc: has(logo) ? logo : undefined,
   };
 }
 
