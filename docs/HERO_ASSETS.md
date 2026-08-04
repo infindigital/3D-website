@@ -52,12 +52,20 @@ touches the hero's element at all, so the frame playing at 0.0 is the frame
 playing at 3.7 — "the video does not restart" is a structural fact rather
 than two players being resynchronised.
 
-**The orange collapses rather than fades.** `.wash` and `.rings` are clipped
-to `circle(var(--wipe) at 50% 50%)`, and the timeline closes `--wipe` on the
-centre. Everything still visible is the part of the sheet *outside* the film;
-once the circle is smaller than the film there is no orange left. No
+**The orange collapses rather than fades.** `.intro` is clipped to
+`circle(var(--wipe) at 50% var(--film-cy))`, and the timeline closes `--wipe`
+on that point. Everything still visible is the part of the sheet *outside* the
+film; once the circle is smaller than the film there is no orange left. No
 crossfade happens at any point, which is why there is no moment where two
 pictures are on screen at half strength.
+
+The clip is on the sheet, not on the things inside it. The orange and the
+rings are one sheet and have to leave through one door; clipping `.intro`
+makes that true by construction rather than by two declarations happening to
+carry the same value. It also frees the ring layer to drift with the pointer
+alongside the film — a clip on an ancestor applies to whatever its children
+paint, wherever they paint it, so the layer can move without dragging the
+closing edge with it.
 
 ## The rings belong to the opening, and only to the opening
 
@@ -82,7 +90,46 @@ sized for. Past that it is paying to draw off-screen. `RING_COUNT` is the
 other lever; on a phone the reach is what pushes them off the sides of the
 screen and the count is what turns the opening into a lattice.
 
-They are cut from the film's own footprint. `--film-w`, `--film-ar` and
+**A ring is brightest where it is still wrapped around the picture.** `ripple`
+falls to 0.5 by 46% of its travel and 0.16 by 76%, rather than holding near
+full strength to the end. This is not decoration, it is what keeps a phone
+readable: the film is most of the width of the screen there, so every ring
+past the first is wider than the screen and shows only its top and bottom
+edge. Held bright, those edges read as horizontal rules ruled across the room.
+Faded, they read as what they are — the near ring is the subject and the rest
+are its wake.
+
+## One centre, and it is not the middle of the screen
+
+The film is centred between the bar above and the buttons below. That is not
+the middle of the hero: the buttons need far more room than the bar, and on a
+phone in a column they need most of the bottom of the screen, so the picture
+sits some seventy-five pixels high of centre.
+
+Everything in the opening is aimed at *that* point rather than at the screen's:
+
+```css
+--film-top: calc(var(--nav-height) + 14px);
+--film-bottom: clamp(96px, 15vh, 156px);
+--film-cy: calc(50% + (var(--film-top) - var(--film-bottom)) / 2);
+```
+
+`.stage` and `.rings` are both padded by the first two — one holds the film,
+the other lays the rings out in the same room, so both centre on the same
+point without an offset being written anywhere. The wipe is centred on the
+third, so the orange closes onto the picture rather than onto a spot below it.
+A breakpoint that gives the buttons more room moves the film, the rings and
+the closing orange together; there is no fourth place for any of them to fall
+out of step. This is what the phone breakpoint overrides — not `.stage`'s
+padding directly.
+
+The rings are laid out rather than positioned: `.rings` is a grid with
+`place-items: center`, and every ring is `grid-area: 1 / 1`, so they stack in
+one cell. Absolute positioning cannot be used here, because the containing
+block for an absolutely positioned child is its ancestor's **padding** box —
+the padding that defines the film's room would be invisible to them.
+
+They are also cut from the film's own footprint. `--film-w`, `--film-ar` and
 `--film-cut` on `.hero` are the only place the picture's size and outline are
 decided, and the rings read all three, which is what makes them concentric
 offsets of the shape rather than ovals drawn near it. Change a breakpoint and
@@ -229,13 +276,13 @@ rings read them too, and a picture and its rings that disagree about their
 own size is not a thing anybody would notice until it shipped.
 
 **On a phone the opening's rings are what caps the width.** 84vw rather than
-the 92vw it would otherwise take: above that, every ring is wider than the
-screen, so all that shows of them is their top and bottom edges and the
-opening reads as a set of horizontal stripes. At 84vw the first ring closes
-on both sides inside the screen, which is enough for the eye to read the rest
-as rings running off it. The film keeps that width for the rest of the visit,
-long after the rings have gone, because the one thing it must never do is
-change size.
+the 92vw it would otherwise take: above that, not even the first ring closes
+on both sides inside the screen, and there is nothing left for the eye to read
+the cropped ones as. At 84vw the first ring does close, and the rest — which
+are wider than the screen no matter what, and are faded for exactly that
+reason — read as its wake running off the sides. The film keeps that width for
+the rest of the visit, long after the rings have gone, because the one thing
+it must never do is change size.
 
 ## Keeping it moving
 
@@ -371,6 +418,13 @@ Three more for the intro, none of which a screenshot will show you:
   the intro is up, **zero** after it unmounts, and zero under reduced motion.
   Any survivor is a layer that has escaped `.intro`, and it will be running
   behind the page for the rest of the visit.
+- **The film and the rings share a centre.** Sample `.mask` and any `.ring`
+  mid-intro and compare the two boxes' vertical centres: they must agree to
+  the pixel, on a phone as much as on a desktop. This is the one that got away
+  before — the rings were centred on the screen while the film was centred in
+  the room between the bar and the buttons, which is a 22px error on a desktop
+  and a 79px error on a phone. It costs nothing to check and a screenshot at
+  the wrong second will not show it.
 - **The room holds still off screen.** Scroll past the hero and read
   `animation-play-state` on a band: it should be `paused`, and `running`
   again on the way back up. Query it by `[data-row]` — a `[class*="band"]`

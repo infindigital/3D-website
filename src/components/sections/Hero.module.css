@@ -45,6 +45,29 @@
   --film-ar: 16 / 9;
 
   /*
+   * The room the film stands in — and with it, the centre the whole opening
+   * is aimed at.
+   *
+   * The film is centred between the bar above and the buttons below, which
+   * is not the middle of the screen: the buttons need far more room than the
+   * bar, so the picture sits high. On a phone that is some seventy-five
+   * pixels above centre.
+   *
+   * The rings are laid out in this same room and the orange closes on this
+   * same point, so all three agree by construction. Nothing here is allowed
+   * to be written down twice — a breakpoint that gives the buttons more room
+   * moves the film, the rings and the wipe together.
+   */
+  --film-top: calc(var(--nav-height) + 14px);
+  --film-bottom: clamp(96px, 15vh, 156px);
+  --film-cy: calc(50% + (var(--film-top) - var(--film-bottom)) / 2);
+
+  /* How far the pointer carries the picture. The rings ride the same two, so
+     the film never drifts out from inside them. */
+  --film-drift-x: calc(var(--parallax-x, 0) * 16px);
+  --film-drift-y: calc(var(--parallax-y, 0) * 11px);
+
+  /*
    * The outline both are cut to: a rounded rectangle with no two corners
    * alike. Rectangular enough to be a frame around a film, uneven enough
    * never to look like a box — which is the shape the reference hero uses
@@ -288,14 +311,24 @@
   inset: 0;
   pointer-events: none;
   /* How much of the sheet is still on screen. Script closes this on the
-     centre, so the orange collapses into the film rather than fading. */
+     film, so the orange collapses into the picture rather than fading. */
   --wipe: 118%;
+  /*
+   * The one clip, on the sheet itself rather than on each thing inside it.
+   * The orange and the rings are the same sheet and have to leave through
+   * the same door; clipping the sheet is what makes that true by
+   * construction rather than by two declarations agreeing.
+   *
+   * It also frees the rings to drift with the pointer: the clip is applied
+   * to whatever the children paint, wherever they paint it, so the ring
+   * layer can move without taking the closing edge with it.
+   */
+  clip-path: circle(var(--wipe) at 50% var(--film-cy));
 }
 
 .wash {
   position: absolute;
   inset: 0;
-  clip-path: circle(var(--wipe) at 50% 50%);
   background: radial-gradient(
     112% 84% at 50% 26%,
     #ef7c33 0%,
@@ -323,13 +356,18 @@
   inset: 0;
   display: grid;
   place-items: center;
+  /* The film's own room, so the rings are centred on the picture rather
+     than on the screen — see `--film-top` at the top of this file. Every
+     ring is stacked in the one cell, which is what makes them concentric
+     without a single offset being written anywhere. */
+  padding: var(--film-top) 0 var(--film-bottom);
   pointer-events: none;
-  clip-path: circle(var(--wipe) at 50% 50%);
+  transform: translate3d(var(--film-drift-x), var(--film-drift-y), 0);
   --ring-ink: rgba(255, 244, 232, 0.62);
 }
 
 .ring {
-  position: absolute;
+  grid-area: 1 / 1;
   /* Cut from the film's own footprint and outline, so each ring is the
      shape itself pushed outward rather than an oval drawn around it */
   width: var(--film-w);
@@ -364,17 +402,29 @@
  * How far out they go: just past the widest room the film is sized for, and
  * no further. Past that they are being drawn off-screen at the exact moment
  * the film is decoding its first frames.
+ *
+ * And how they leave: brightest where they are still wrapped around the
+ * picture, falling away as they go. That is the difference between a ripple
+ * and a set of stripes, and on a phone it is the whole difference. The film
+ * is most of the width of the screen there, so every ring past the first one
+ * is wider than the screen and shows only its top and bottom edge — held at
+ * full strength those edges read as horizontal rules ruled across the room.
+ * Faded, they read as what they are: the near ring is the one being looked
+ * at, and the rest are its wake.
  */
 @keyframes ripple {
   0% {
     transform: scale(1.06);
     opacity: 0;
   }
-  9% {
+  8% {
     opacity: 1;
   }
-  74% {
-    opacity: 0.72;
+  46% {
+    opacity: 0.5;
+  }
+  76% {
+    opacity: 0.16;
   }
   100% {
     transform: scale(2.25);
@@ -393,8 +443,9 @@
   display: grid;
   place-items: center;
   /* Clear of the bar above and the buttons below, without either of them
-     having to know the film's size */
-  padding: calc(var(--nav-height) + 14px) 0 clamp(96px, 15vh, 156px);
+     having to know the film's size. The ring layer is padded by the same
+     two, which is what puts the two on one centre. */
+  padding: var(--film-top) 0 var(--film-bottom);
   pointer-events: none;
 }
 
@@ -403,11 +454,7 @@
    it. */
 .shift {
   will-change: transform;
-  transform: translate3d(
-    calc(var(--parallax-x, 0) * 16px),
-    calc(var(--parallax-y, 0) * 11px),
-    0
-  );
+  transform: translate3d(var(--film-drift-x), var(--film-drift-y), 0);
 }
 
 .mask {
@@ -599,12 +646,6 @@
    ------------------------------------------------------------ */
 
 @media (max-width: 640px) {
-  /* Room at the bottom for three buttons in a column rather than two on one
-     line and one stranded underneath */
-  .stage {
-    padding: calc(var(--nav-height) + 8px) 0 clamp(186px, 27vh, 244px);
-  }
-
   /*
    * Nearly the full width of the phone, and a shade squarer than the film.
    * A phone has width to spare and height to save, and 3:2 costs the shot
@@ -623,6 +664,14 @@
   .hero {
     --film-w: min(84vw, calc((100svh - 290px) * 3 / 2));
     --film-ar: 3 / 2;
+
+    /* Three buttons in a column rather than two on one line and one
+       stranded underneath, which needs most of the bottom of the screen.
+       The film rides up out of the way, and — because these are the same
+       two numbers the ring layer is padded by and the wipe is centred on —
+       the rings and the closing orange ride up with it. */
+    --film-top: calc(var(--nav-height) + 8px);
+    --film-bottom: clamp(186px, 27vh, 244px);
   }
 
   /* A phone shows one word of a band at a time, so the type has to be
