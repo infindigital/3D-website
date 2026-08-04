@@ -69,10 +69,9 @@
   gap: clamp(6px, 1.6vh, 26px);
   pointer-events: none;
   transform: rotate(-7deg);
-  /* Printed, not ghosted. The words carry the brand's own orange at close
-     to its real weight — held back only enough that the film in front of
-     them still reads as the subject. */
-  opacity: 0.5;
+  /* No veil over this layer. The words are the brand's exact orange and
+     exact red, at full strength — what separates them from the film is the
+     drawn word in every third position, not a wash over all of them. */
 }
 
 .band {
@@ -105,13 +104,16 @@
 }
 
 /*
- * The words are solid brand orange — the ink itself, not an outline of it.
- * Hollow letters read as a wireframe placed behind the film; filled ones
- * read as a poster the film is standing in front of.
+ * Three inks on a three-word cycle: the exact orange, the exact red, and
+ * one word in every three drawn rather than filled.
  *
- * They alternate between the orange and its deep end, which is the same
- * orange the intro sheet falls to at its edges. Two tones of one colour
- * give the band a beat without introducing a second colour into the room.
+ * The drawn word is what keeps a band of solid colour from becoming a slab.
+ * It is also what lets the ink stay at full strength — the eye reads the
+ * hollow letters as air, so the room breathes without the colours having to
+ * be watered down to make it.
+ *
+ * The rows are offset by their own index, so all three inks are on screen
+ * at once and no two rows put the same one in a column.
  */
 .bandWord {
   padding-right: 0.22em;
@@ -119,8 +121,13 @@
   color: var(--ember);
 }
 
-.bandWord[data-ink="deep"] {
-  color: #b8420f;
+.bandWord[data-ink="red"] {
+  color: var(--color-chilli);
+}
+
+.bandWord[data-ink="line"] {
+  color: transparent;
+  -webkit-text-stroke: 3px var(--ember);
 }
 
 /* Two identical runs, so half the band's width is exactly one run */
@@ -515,6 +522,12 @@
     gap: 10px;
   }
 
+  /* A stroke is an absolute width: left at the desktop weight it would be
+     three times the share of a letter this size */
+  .bandWord[data-ink="line"] {
+    -webkit-text-stroke-width: 1.6px;
+  }
+
   /*
    * Three buttons across a phone is three cramped labels; two across and
    * one stranded underneath is worse. A single column of equal buttons is
@@ -564,9 +577,5 @@
 
   .air {
     display: none;
-  }
-
-  .bands {
-    opacity: 0.06;
   }
 }

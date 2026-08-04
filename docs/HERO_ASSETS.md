@@ -104,9 +104,14 @@ No canvas, no per-frame readback, nothing measured during a scroll.
 - **Words** — three bands of huge display type crossing the room at
   different speeds, the middle one running the other way. Each band prints
   its words twice and travels exactly `-50%`, so the loop has no seam. The
-  words are printed in the brand's own orange, alternating with its deep
-  end. They are ink, not outline: hollow letters read as a wireframe placed
-  behind the film, filled ones as a poster the film is standing in front of.
+  words cycle through three inks: the brand's exact orange, its exact red,
+  and one word in three drawn as an outline rather than filled. Nothing is
+  washed out to make room — the colours are the real ones at full strength,
+  and the drawn word is what keeps a band of solid colour from becoming a
+  slab. The eye reads the hollow letters as air, so the room breathes
+  without the ink having to be watered down. Rows are offset by their own
+  index, so all three inks are on screen at once and no two rows put the
+  same one in a column.
 - **Herbs** — curry leaf, chilli and peppercorn at three depths. Each bit
   drifts on its own clock (`.bit`), and the whole depth layer swings with
   the pointer (`.airLayer`). Two transforms on two elements — never both on

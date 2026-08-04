@@ -97,12 +97,19 @@ const AIR = [
 ];
 
 /**
+ * The three inks the words are printed in, in the order they cycle: the
+ * brand's exact orange, its exact red, and one word in three drawn as an
+ * outline rather than filled.
+ */
+const INKS = ["ember", "red", "line"] as const;
+
+/**
  * One pass of a band's words. Printed twice per row, so half the row's
- * width is exactly one pass and the loop has no seam.
+ * width is exactly one pass and the loop has no seam — which is also why
+ * both passes take the same offset and come out identical.
  *
- * The words alternate between the brand orange and its deep end, and the
- * row's own index shifts which of the two a row opens on, so no two rows
- * sit their darker words in a column.
+ * The row's own index shifts where in the cycle it opens, so all three inks
+ * are on screen at once and no two rows put the same one in a column.
  */
 function BandRun({ row, offset }: { row: string[]; offset: number }) {
   return (
@@ -111,7 +118,7 @@ function BandRun({ row, offset }: { row: string[]; offset: number }) {
         <span
           key={word}
           className={styles.bandWord}
-          data-ink={(index + offset) % 2 ? "deep" : "ember"}
+          data-ink={INKS[(index + offset) % INKS.length]}
         >
           {word} —
         </span>
