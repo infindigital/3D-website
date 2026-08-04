@@ -34,11 +34,10 @@ is left standing there is the hero.
 | 3.35 | The logo lands; the bar's own mark comes up under it. |
 | 3.7 | Scroll is unlocked and everything the intro owned is unmounted. |
 
-**Nothing in the intro is a fade, a cut, or a growth.** Four things are on
-screen at 0.0 and the same four are on screen at 3.7. The film is one
-element at one size throughout. The rings run on one clock. The logo is one
-element that travels. The only thing that actually *happens* is that the
-orange leaves.
+**Nothing in the intro is a fade, a cut, or a growth.** The film is one
+element at one size throughout. The rings run on one clock and leave through
+the same door the orange does. The logo is one element that travels. The
+only thing that actually *happens* is that the orange leaves.
 
 That is a deliberate change from an earlier version in which the shape crept
 and then opened out. The size of the film, the rings around it and the mark
@@ -53,30 +52,35 @@ touches the hero's element at all, so the frame playing at 0.0 is the frame
 playing at 3.7 — "the video does not restart" is a structural fact rather
 than two players being resynchronised.
 
-**The orange collapses rather than fades.** `.wash` and `.ringsOver` are
-clipped to `circle(var(--wipe) at 50% 50%)`, and the timeline closes
-`--wipe` on the centre. Everything still visible is the part of the sheet
-*outside* the film; once the circle is smaller than the film there is no
-orange left. No crossfade happens at any point, which is why there is no
-moment where two pictures are on screen at half strength.
+**The orange collapses rather than fades.** `.wash` and `.rings` are clipped
+to `circle(var(--wipe) at 50% 50%)`, and the timeline closes `--wipe` on the
+centre. Everything still visible is the part of the sheet *outside* the film;
+once the circle is smaller than the film there is no orange left. No
+crossfade happens at any point, which is why there is no moment where two
+pictures are on screen at half strength.
 
-## The rings cross over, and they do it by not moving
+## The rings belong to the opening, and only to the opening
 
-The rings are the one thing that belongs to both the intro and the hero, and
-the requirement on them is that the join is invisible: same shape, same
-spacing, same speed, no restart.
+They live inside `.intro` and share its clip, so they close on the centre in
+step with the orange and are gone the moment it is. No fade of their own, no
+second set carrying on underneath, and nothing still running behind a hero
+that has finished. The hero the visitor is left standing in is paper, the
+words crossing it, the herbs and the film.
 
-They are drawn **twice, on one clock**. `.ringsUnder` belongs to the hero and
-is always there, in a low ember; `.ringsOver` is painted on the orange sheet
-in near-white and clipped to whatever is left of it. Both layers mount in the
-same render with the same keyframes and the same negative delays, so they are
-in step by construction rather than by synchronisation.
+An earlier version drew them twice on one clock so they could cross the join
+and keep going in the hero's own ink. It worked, and it was removed on
+purpose: rings that never stop are a moving thing in the corner of the eye
+for as long as the page is open, and the hero reads calmer without them. If
+they are ever wanted back in the hero, the way to do it is that one — two
+layers, one clock, different ink — not a second animation handing over.
 
-What that buys is the crossover itself. As the sheet collapses, every ring is
-drawn in the light ink where there is still orange behind it and in the ember
-where there is not, and the boundary between the two is exactly the edge of
-the sheet. The rings never move, fade or restart, because they were never two
-sets of rings — there is nothing to hand over.
+Their reach is also **the one number in the opening with a cost attached**.
+Each ring is a translucent sheet the compositor blends over everything behind
+it, at exactly the moment the film is decoding its first frames, so
+`@keyframes ripple` ends at 2.25× — just past the widest room the film is
+sized for. Past that it is paying to draw off-screen. `RING_COUNT` is the
+other lever; on a phone the reach is what pushes them off the sides of the
+screen and the count is what turns the opening into a lattice.
 
 They are cut from the film's own footprint. `--film-w`, `--film-ar` and
 `--film-cut` on `.hero` are the only place the picture's size and outline are
@@ -84,14 +88,15 @@ decided, and the rings read all three, which is what makes them concentric
 offsets of the shape rather than ovals drawn near it. Change a breakpoint and
 they follow.
 
-**They cost something, and the two levers are `RING_COUNT` and the end of
-`@keyframes ripple`.** Each ring is a translucent sheet the compositor blends
-over everything behind it, for as long as the page is open. Five of them
-reaching 2.25× is roughly the same again as the whole rest of the hero, which
-on any GPU is nothing and in software rasterisation is about a third of the
-frame. Do not let either number grow without measuring: on a phone the reach
-is what pushes the rings off the sides of the screen, and the count is what
-turns the room into a lattice.
+## The hero stands down when it is off screen
+
+The same `IntersectionObserver` that pauses the film writes
+`data-live="false"` on the section, and the stylesheet puts
+`animation-play-state: paused` on the words, the herbs, the film's breathe
+and the shape's morph. All of it is compositor work, which is to say cheap —
+but cheap *per frame*, and the 3D world below wants every frame it can get
+once the hero has left. `animation-play-state` pauses a clock rather than
+rewinding one, so the room picks up mid-stride when it comes back.
 
 ## The brand flies out of the film
 
@@ -223,12 +228,14 @@ a breakpoint changes those rather than the rules that read them — because the
 rings read them too, and a picture and its rings that disagree about their
 own size is not a thing anybody would notice until it shipped.
 
-**On a phone the rings are what caps the width.** 84vw rather than the 92vw
-it would otherwise take: above that, every ring is wider than the screen, so
-all that shows of them is their top and bottom edges and the room reads as a
-set of horizontal stripes. At 84vw the first ring closes on both sides
-inside the screen, which is enough for the eye to read the rest as rings
-running off it.
+**On a phone the opening's rings are what caps the width.** 84vw rather than
+the 92vw it would otherwise take: above that, every ring is wider than the
+screen, so all that shows of them is their top and bottom edges and the
+opening reads as a set of horizontal stripes. At 84vw the first ring closes
+on both sides inside the screen, which is enough for the eye to read the rest
+as rings running off it. The film keeps that width for the rest of the visit,
+long after the rings have gone, because the one thing it must never do is
+change size.
 
 ## Keeping it moving
 
@@ -360,10 +367,15 @@ Three more for the intro, none of which a screenshot will show you:
   through the intro and count the frames where both are under a third. It
   should be zero — that is the crossfade doing its job, and an off-by-a-beat
   timeline is invisible to the eye at full speed but obvious in the trace.
-- **The rings double and halve.** `RING_COUNT` of them at rest, twice that
-  while the intro is up, back to `RING_COUNT` after it unmounts. Any other
-  number means one of the two layers is not mounting with the other, and
-  they will not be in step.
+- **The rings arrive and leave with the intro.** `RING_COUNT` of them while
+  the intro is up, **zero** after it unmounts, and zero under reduced motion.
+  Any survivor is a layer that has escaped `.intro`, and it will be running
+  behind the page for the rest of the visit.
+- **The room holds still off screen.** Scroll past the hero and read
+  `animation-play-state` on a band: it should be `paused`, and `running`
+  again on the way back up. Query it by `[data-row]` — a `[class*="band"]`
+  selector matches the container first, which has no animation and will
+  report `running` forever.
 
 `next start` snapshots `/public` at build time, and it holds its build
 manifest in memory — deleting `.next` under a running server leaves it

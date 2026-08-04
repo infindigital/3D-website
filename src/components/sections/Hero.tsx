@@ -58,10 +58,10 @@ function releaseWarmFilm() {
  * The film does not grow. It opens at the size it will keep, because that
  * size is the composition — the shape, the rings around it and the logo
  * standing in the middle of it are the picture the page opens on, and a
- * picture that swells for three seconds is not that picture. What crosses
- * from the intro into the hero is the rings: they never stop, never change
- * their spacing and never change their shape, and the orange simply leaves
- * from around them.
+ * picture that swells for three seconds is not that picture. The rings and
+ * the orange are the opening's own; they close together on the centre. What
+ * carries into the hero is the film, unmoved, and the mark, which flies up
+ * into the bar.
  */
 const BEAT = {
   /** the orange sheet starts collapsing */
@@ -79,22 +79,22 @@ const FLIGHT = 1.15;
 
 /**
  * The rings. Concentric offsets of the film's own outline, pushing outward
- * past the edges of the room forever.
+ * past the edges of the room.
  *
- * There are two of these layers and they are identical in every way except
- * their ink. One is painted over the orange sheet and clipped to whatever is
- * left of it; the other lies under everything in the hero's own colour. As
- * the sheet collapses, each ring is drawn in the light ink where there is
- * still orange under it and in the ember where there is not — so the rings
- * themselves never move, never fade and never restart across the join. They
- * are the same rings the whole way through; only the room behind them
- * changes.
+ * They belong to the opening and to nothing else. The layer is painted on
+ * the orange sheet and clipped to whatever is left of it, so when the sheet
+ * closes on the centre the rings close with it — they leave by the same
+ * door the orange does, in the same second, rather than being faded out
+ * separately or left running under a finished hero.
+ *
+ * The hero the visitor is left standing in has no rings in it at all: paper,
+ * the words crossing it, the herbs, and the film.
  */
 const RING_COUNT = 5;
 
-function Rings({ className }: { className: string }) {
+function Rings() {
   return (
-    <div className={className} aria-hidden="true">
+    <div className={styles.rings} aria-hidden="true">
       {Array.from({ length: RING_COUNT }, (_, index) => (
         <span key={index} className={styles.ring} />
       ))}
@@ -197,15 +197,17 @@ function BandRun({ row, offset }: { row: string[]; offset: number }) {
  * orange with the kitchen film already running inside an organic shape, the
  * brand mark standing in the middle of it, and thin outline rings pushing
  * outward past it to the edges of the room. Then the orange collapses
- * inward, the logo flies up into the navigation bar, and what is left
- * standing there is the hero.
+ * inward, taking the rings with it, the logo flies up into the navigation
+ * bar, and what is left standing there is the hero.
  *
  * Nothing in that is a fade or a cut. The film is one element at one size
  * throughout — the intro does not grow it and does not hand over to a second
  * player, so the frame playing at 0.0 is the frame playing at the end. The
- * rings run on one clock from first paint to forever. The logo is one
- * element that travels. The only thing that actually happens is that the
- * orange leaves.
+ * logo is one element that travels. The only thing that actually happens is
+ * that the orange leaves.
+ *
+ * What it leaves behind is deliberately quiet: paper, the words, the herbs
+ * and the film. The rings are the opening's, and they go home with it.
  *
  * That is why the film lives in the hero rather than in the intro. An intro
  * that owns its own video has to hand over to a second one, and a second
@@ -288,6 +290,20 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         onScreen = entry.intersectionRatio > 0.4;
         if (onScreen) play();
         else video.pause();
+        /*
+         * And the room stands down with it.
+         *
+         * The words crossing the hero, the herbs drifting through it and the
+         * shape's own morph are compositor animations, which is to say they
+         * are cheap — but they are cheap *per frame*, and they keep asking
+         * for frames long after the hero has gone off the top of the window.
+         * The 3D world below is drawing by then, and it wants every one of
+         * those frames. So the whole hero holds still while nobody is
+         * looking at it, and picks up exactly where it left off when it
+         * comes back: `animation-play-state` pauses a clock, it does not
+         * rewind one.
+         */
+        section.dataset.live = onScreen ? "true" : "false";
       },
       { threshold: [0, 0.4, 0.95] },
     );
@@ -492,11 +508,6 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         ))}
       </div>
 
-      {/* The rings, in the hero's own ink. Always here, always running: the
-          intro's light copy is painted over the top of these while there is
-          still orange to paint it on. */}
-      <Rings className={styles.ringsUnder} />
-
       {/* Herbs and seed at three depths, each drifting on its own and the
           whole layer swinging with the pointer */}
       <div className={styles.air} aria-hidden="true">
@@ -518,7 +529,7 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
       {mode === "intro" && !introDone && (
         <div ref={introRef} className={styles.intro} aria-hidden="true">
           <div className={styles.wash} />
-          <Rings className={styles.ringsOver} />
+          <Rings />
         </div>
       )}
 

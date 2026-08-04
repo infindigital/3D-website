@@ -30,8 +30,30 @@ const WorldCanvas = dynamic(() => import("@/three/world/WorldCanvas"), {
  * one in HomeWorld.module.css. **The two must stay in step**, exactly as
  * the hero's do: the stylesheet alone decides the page's shape so it is
  * right on the first paint, and this decides whether to drive it.
+ *
+ * Four conditions, and each of them is here because of something the
+ * corridor cannot do without it:
+ *
+ * `pointer: fine` — a mouse. This is the one that keeps phones and tablets
+ * out, and the reason is not only that a nine-screen pinned WebGL flight
+ * asks more of a tablet's GPU than it can give while the page is also
+ * scrolling. It is that the corridor is composed for a frame you look
+ * across: the packs stand to one side and the copy sits in the other half.
+ * On a portrait tablet there is no other half — the words land on top of
+ * the artwork and the rail lands on top of the words. Every touch device
+ * gets the flat page instead, which is not a lesser version of this one;
+ * it is the same six acts, read straight down, and it stays legible at any
+ * width.
+ *
+ * `min-width` and `min-height` — enough of a window to hold that
+ * composition. A desktop browser dragged narrow or short is in the same
+ * position as the tablet.
+ *
+ * `prefers-reduced-motion` — the flight is the motion. There is no reduced
+ * version of it worth having.
  */
-const IMMERSIVE = "(min-width: 768px) and (prefers-reduced-motion: no-preference)";
+const IMMERSIVE =
+  "(min-width: 1024px) and (min-height: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
 
 /**
  * Where each panel of copy lives on the flight, as a range of world
@@ -55,6 +77,16 @@ const BANDS: Record<string, [number, number]> = {
   /* Runs past the end so the closing panel never fades back out */
   finale: [0.92, 1.08],
 };
+
+/**
+ * The pack artwork's shape. Every pouch is shot to the same frame, so one
+ * pair of numbers covers all of them.
+ *
+ * They are not a size — nothing is drawn this big. They are the ratio the
+ * browser reserves the space in, and the ratio the picture is then drawn
+ * to. Getting them wrong does not scale the pack; it distorts it.
+ */
+const PACK_ART = { width: 1094, height: 1403 } as const;
 
 /** The rail down the side: one stop per act, so 760vh is still navigable */
 const STOPS = [
@@ -320,7 +352,10 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
                 the back.
               </p>
 
-              <div className={styles.packShots}>
+              <div
+                className={styles.packShots}
+                data-single={packs.length === 1 ? "true" : "false"}
+              >
                 {packs.map((pack) => (
                   <Link
                     key={pack.slug}
@@ -328,12 +363,15 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
                     className={styles.packShot}
                     aria-label={`Explore ${pack.name}`}
                   >
+                    {/* The artwork's own proportions. These two decide the
+                        box the picture is drawn in, so a guess at them is a
+                        pack that comes out stretched. */}
                     <Image
                       src={pack.front}
                       alt={`${pack.name} pack`}
-                      width={400}
-                      height={560}
-                      sizes="(max-width: 560px) 44vw, 240px"
+                      width={PACK_ART.width}
+                      height={PACK_ART.height}
+                      sizes="(max-width: 640px) 30vw, 240px"
                     />
                   </Link>
                 ))}
@@ -414,7 +452,7 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
                 {explore(product)}
               </div>
 
-              <div className={styles.packShots}>
+              <div className={styles.packShots} data-single="true">
                 <Link
                   href={`/products/${product.slug}`}
                   className={styles.packShot}
@@ -423,9 +461,9 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
                   <Image
                     src={product.images.front}
                     alt={`${product.name} pack`}
-                    width={700}
-                    height={850}
-                    sizes="(max-width: 900px) 62vw, 380px"
+                    width={PACK_ART.width}
+                    height={PACK_ART.height}
+                    sizes="(max-width: 640px) 52vw, 320px"
                   />
                 </Link>
               </div>

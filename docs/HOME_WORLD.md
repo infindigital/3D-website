@@ -164,7 +164,8 @@ another, no pinning, no canvas — and then adds the immersive world inside one
 media query:
 
 ```css
-@media (min-width: 768px) and (prefers-reduced-motion: no-preference)
+@media (min-width: 1024px) and (min-height: 640px)
+   and (pointer: fine) and (prefers-reduced-motion: no-preference)
 ```
 
 That exact string is repeated verbatim as `IMMERSIVE` in `HomeWorld.tsx` and
@@ -173,10 +174,47 @@ shape in the stylesheet rather than in an effect is what keeps the first
 paint correct, before any JavaScript has run and before the canvas exists;
 the effect only *drives* the shape the CSS has already chosen.
 
+Each condition is there for a reason worth keeping:
+
+- **`pointer: fine`** — a mouse, which in practice means "not a tablet". This
+  used to be a bare `min-width: 768px`, which handed a portrait iPad a
+  nine-screen pinned WebGL flight. Two things were wrong with that, and the
+  cheaper one was the frame rate (**8.8 fps, 45 janked frames and a 689 ms
+  longest task** across a six-second scroll at 820×1180; the flat page at the
+  same size is a flat 60 with no long tasks at all). The worse one was the
+  composition: the corridor is laid out for a frame you look *across*, with
+  the packs to one side and the copy in the other half. A portrait tablet has
+  no other half, so the words landed on the artwork and the rail landed on
+  the words.
+- **`min-width` / `min-height`** — enough window to hold that composition. A
+  desktop browser dragged narrow or short is in the same position as the
+  tablet was.
+- **`prefers-reduced-motion`** — the flight *is* the motion; there is no
+  reduced version of it worth having.
+
 In the flat layout every panel is opaque and in normal flow, there is no
 canvas, and the film appears once as an ordinary `<video>` — autoplaying and
 looping where motion is welcome, and paused with controls under
-`prefers-reduced-motion: reduce`, so it is offered rather than imposed.
+`prefers-reduced-motion: reduce`, so it is offered rather than imposed. It is
+not a lesser version of the world: it is the same six acts read straight
+down, and it stays legible at any width.
+
+### The flat layout's own tuning
+
+Two things it needs that the desktop column does not:
+
+- **The pack artwork sets a width and lets the height follow.** `.packShot`
+  used to set only the link's width; the picture inside kept the height from
+  its markup attributes, so on a phone a pouch 0.78 wide for its height was
+  drawn at 128 × 560 — a quarter of its width, stretched down the screen.
+  `.packShot img` is now `width: 100%; height: auto`, and the `width`/`height`
+  passed to `next/image` (`PACK_ART`) are the artwork's real proportions —
+  they are a *ratio*, not a size, and getting them wrong distorts the pack
+  rather than scaling it.
+- **Less air below 1024px.** The beat padding is `11vw`, measured against a
+  desktop column. Repeated down a hand-held page that becomes a screen of
+  nothing between every two things worth reading, which is the whole of what
+  makes a page feel long rather than generous.
 
 ## Accessibility
 

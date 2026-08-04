@@ -66,11 +66,26 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     ).matches;
     if (prefersReducedMotion) return;
 
+    /*
+     * How the page answers the wheel.
+     *
+     * `duration` is how long the page is still moving after the wheel has
+     * stopped, and it is the whole of how smooth scrolling feels. Too short
+     * and it is native scroll with extra steps; too long and every flick
+     * carries on gliding after the reader has arrived, then has to be
+     * caught and turned round — which reads as the page dragging rather
+     * than as smoothness. Just under a second is short enough that the page
+     * stops roughly where it is pushed, and long enough to lose the steps
+     * a mouse wheel actually sends.
+     *
+     * Touch is deliberately left alone. Lenis only takes the wheel here;
+     * a finger drag stays on the browser's own scroller, which runs off the
+     * main thread and cannot be made to stutter by anything drawing on it.
+     */
     const lenis = new Lenis({
-      duration: 1.15,
+      duration: 0.9,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 1.5,
     });
     lenisRef.current = lenis;
     activeLenis = lenis;

@@ -207,8 +207,16 @@
 
 .airLayer[data-depth="2"] {
   --swing: 54px;
-  /* The nearest layer is out of focus, which is what puts the film at the
-     depth the eye is meant to be reading */
+}
+
+/* The nearest layer is out of focus, which is what puts the film at the
+   depth the eye is meant to be reading.
+
+   The blur goes on the three specks rather than on the layer holding them.
+   A filter on the layer makes the compositor blur a sheet the size of the
+   window, every frame the pointer moves it; on the specks it blurs three
+   boxes a few dozen pixels across, and looks identical. */
+.airLayer[data-depth="2"] .bit {
   filter: blur(1.4px);
 }
 
@@ -299,34 +307,23 @@
 /* ------------------------------------------------------------
    The rings
 
-   Two layers of the same rings, running on the same clock and differing
-   only in ink. `.ringsUnder` belongs to the hero and is always here;
-   `.ringsOver` is painted on the orange sheet and clipped to whatever is
-   left of it. As the sheet collapses, every ring is drawn light where
-   there is still orange behind it and ember where there is not, and the
-   rings themselves neither move nor fade nor restart across the join.
+   The opening's, and the opening's only. They live inside the intro sheet
+   and are clipped to exactly what is left of it, so they close on the
+   centre in step with the orange and are gone the moment it is — no fade
+   of their own, no second set carrying on underneath, and nothing left
+   running behind a hero that is finished.
 
-   That is the whole of "only the rings cross over": there is nothing to
-   animate, because they were never two sets of rings.
+   Which is also why they cost nothing after the first few seconds: the
+   layer is unmounted with the rest of the intro, so the compositor is not
+   blending five translucent sheets over the page for as long as it is open.
    ------------------------------------------------------------ */
 
-.ringsUnder,
-.ringsOver {
+.rings {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   pointer-events: none;
-}
-
-.ringsUnder {
-  z-index: 2;
-  /* Held well back: these run under the whole hero forever, and a line
-     that competes with the film is a line nobody stops seeing. */
-  --ring-ink: rgba(217, 90, 26, 0.26);
-}
-
-.ringsOver {
   clip-path: circle(var(--wipe) at 50% 50%);
   --ring-ink: rgba(255, 244, 232, 0.62);
 }
@@ -364,11 +361,9 @@
 }
 
 /*
- * How far out they go, and the one number in here with a cost attached.
- * These layers run for as long as the page is open, and every one of them
- * is a translucent sheet the compositor blends over everything behind it —
- * so the outermost is set to just clear the widest room the film is sized
- * for and no further. Past that it is paying to draw off-screen.
+ * How far out they go: just past the widest room the film is sized for, and
+ * no further. Past that they are being drawn off-screen at the exact moment
+ * the film is decoding its first frames.
  */
 @keyframes ripple {
   0% {
@@ -616,13 +611,14 @@
    * an eighth of its sides — the pan stays in frame, which is all the
    * earlier near-square crop threw away.
    *
-   * The rings follow, because they are cut from the same two values — and
-   * they are also what stops this going any wider. A film across the whole
-   * width of a phone leaves the rings nowhere to be rings: every one of
-   * them is wider than the screen, so all that shows of them is their top
-   * and bottom edges, and the room reads as a set of horizontal stripes.
-   * At 84vw the first ring closes on both sides inside the screen, which is
-   * enough for the eye to read the rest as rings running off it.
+   * The opening's rings are cut from the same two values, and they are what
+   * stops this going any wider. A film across the whole width of a phone
+   * leaves them nowhere to be rings: every one is wider than the screen, so
+   * all that shows is their top and bottom edges and the opening reads as a
+   * set of horizontal stripes. At 84vw the first ring closes on both sides
+   * inside the screen, which is enough for the eye to read the rest as
+   * rings running off it. The film keeps that width afterwards, because the
+   * one thing it must never do is change size.
    */
   .hero {
     --film-w: min(84vw, calc((100svh - 290px) * 3 / 2));
@@ -673,6 +669,22 @@
   .hero {
     --film-w: min(84vw, 620px, calc((100svh - 280px) * 16 / 9));
   }
+}
+
+/* ------------------------------------------------------------
+   Off screen: the room holds still
+
+   Set from the same observer that pauses the film — see Hero.tsx. Nothing
+   in here is expensive, and all of it together is a hero's worth of
+   compositing being asked for every frame the 3D world below is trying to
+   draw one of its own.
+   ------------------------------------------------------------ */
+
+.hero[data-live="false"] .band,
+.hero[data-live="false"] .bit,
+.hero[data-live="false"] .frame,
+.hero[data-live="false"] .mask {
+  animation-play-state: paused;
 }
 
 /* ------------------------------------------------------------
