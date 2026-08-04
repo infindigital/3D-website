@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { siteConfig } from "@/config/site";
 import { products } from "@/config/products";
+import { HERO_OPEN_EVENT, HERO_OPEN_FALLBACK_MS } from "@/utils/heroOpen";
 import styles from "./Navigation.module.css";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -30,6 +31,47 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [onDark, setOnDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [heroOpen, setHeroOpen] = useState(false);
+  const [openOn, setOpenOn] = useState(pathname);
+
+  /*
+   * When the bar comes down. Everywhere but the home page that is straight
+   * away; the home page opens on the hero's intro, and a floating bar over
+   * a full-screen title card is the one thing that would give away that the
+   * title card is a web page. So there it waits for the hero to say the
+   * shape has landed.
+   *
+   * The wait is only ever a wait. A hero that fails to mount, a bundle that
+   * never arrives, a reader who has asked for less motion and so is served
+   * no intro at all — each of those still gets the bar, off the timer,
+   * because nothing may leave a site without its navigation.
+   */
+  const revealed = pathname !== "/" || heroOpen;
+
+  /* Leaving the home page arms the wait again: come back to it and the
+     hero replays its intro, so the bar has to go back up for it. */
+  if (openOn !== pathname) {
+    setOpenOn(pathname);
+    setHeroOpen(false);
+  }
+
+  useEffect(() => {
+    if (pathname !== "/") return;
+
+    const reveal = () => setHeroOpen(true);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    window.addEventListener(HERO_OPEN_EVENT, reveal);
+    const timer = window.setTimeout(
+      reveal,
+      reduced ? 0 : HERO_OPEN_FALLBACK_MS,
+    );
+
+    return () => {
+      window.removeEventListener(HERO_OPEN_EVENT, reveal);
+      window.clearTimeout(timer);
+    };
+  }, [pathname]);
 
   /*
    * The bar floats over whatever is beneath it. A section marks itself with
@@ -74,9 +116,9 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
   return (
     <motion.header
       className={styles.header}
-      initial={{ y: -90, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 1, delay: 0.5, ease: EASE }}
+      initial={{ y: -110, opacity: 0 }}
+      animate={revealed ? { y: 0, opacity: 1 } : { y: -110, opacity: 0 }}
+      transition={{ duration: 1, delay: revealed ? 0.15 : 0, ease: EASE }}
     >
       <nav
         aria-label="Main"

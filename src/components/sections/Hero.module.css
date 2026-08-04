@@ -1,1145 +1,511 @@
-/*
- * "A Feast in Motion".
- *
- * Two layouts, and a media query alone decides which one applies, so the
- * hero is in its final shape on the first paint and nothing reflows later
- * when the film finishes downloading.
- *
- *   default        one screen tall, every line of copy at once. Phones,
- *                  reduced motion, and anything too narrow to walk a camera
- *                  down.
- *   cinematic      several screens tall with a sticky stage, so the camera
- *                  can travel while the page appears to hold still.
- *
- * The room is in both. The film is never the backdrop: it plays on a panel
- * standing in a lit space, with a wall behind it, walls beside it and a
- * floor under it catching what it throws down. Only the camera move is the
- * cinematic layout's alone.
- *
- * Every measurement in the cinematic layout derives from one number: the
- * script writes --p, the raw scroll progress through the section, and the
- * calc() chains below turn it into the dolly, the vignette, the readability
- * pool and the closing wash.
- *
- * The room is daylit, in the same white-to-cream the rest of the site is
- * built on, so the hero is not a dark box bolted onto a bright page. Nothing
- * here is black: every shadow is warm brown at low opacity, which is what a
- * white room's shadows actually are, and the panel is the darkest thing in
- * frame on purpose — it is the only light source that matters.
- */
+/* ============================================================
+   Hero — the opening film.
+
+   This stylesheet describes the FINISHED hero and nothing else. The
+   intro's opening frame (small shape, buttons below their line) is
+   written from script in a layout effect before the first paint, so a
+   visitor whose script never runs, or who has asked for less motion,
+   gets an ordinary still hero rather than an intro frozen at frame one.
+   ============================================================ */
+
 .hero {
   position: relative;
-  height: 100vh;
-  height: 100svh;
-
-  /* The room's own surfaces and the one colour its shade is made of. Shade,
-     never black: black on cream reads as a hole, warm brown reads as a
-     surface turning away from the light. */
-  --room-lit: #ffffff;
-  --room-warm: var(--color-cream);
-  --room-shade: rgba(150, 106, 60, 0.2);
-}
-
-.stage {
-  --p: 0;
-  position: sticky;
-  top: 0;
+  isolation: isolate;
   height: 100vh;
   height: 100svh;
   overflow: hidden;
-  isolation: isolate;
-  /* The same white-over-cream fall the body carries, so the stage and the
-     page it sits on are one surface */
-  background:
-    radial-gradient(
-      120% 100% at 50% 8%,
-      var(--room-lit) 0%,
-      var(--room-warm) 68%
-    ),
-    var(--color-white);
+
+  /* Warm off-white paper. The rest of the page is white falling to cream,
+     so the hero sits a shade warmer and hands over through the fade at the
+     bottom of this file. */
+  --paper: #f7f4ed;
+  /* Deep restaurant orange: the intro sheet, and the accent every button
+     and outline in here answers to. */
+  --ember: #d95a1a;
+
+  background: var(--paper);
+}
+
+/* The room hands over to the white page below rather than butting into it.
+   Under the intro sheet, above the scenery: a strip of the next page's
+   white showing through an intro that has not opened yet would give the
+   whole thing away. */
+.hero::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16vh;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(247, 244, 237, 0) 0%, var(--color-white) 100%);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------
+   Scenery: giant outlined words crossing the room
+   ------------------------------------------------------------ */
+
+.bands {
+  position: absolute;
+  z-index: 1;
+  /* Overhung on every side so the tilt never exposes a corner */
+  inset: -14% -10%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  /* The panel hangs in the upper third of the room, so the copy sits under
-     it rather than through it. The cinematic layout takes the copy out of
-     flow entirely and positions it for itself. */
-  justify-content: flex-end;
-  gap: 30px;
-  padding: calc(var(--nav-height) + 26px) 24px 44px;
-  text-align: center;
+  justify-content: center;
+  gap: clamp(6px, 1.6vh, 26px);
+  pointer-events: none;
+  transform: rotate(-7deg);
+  opacity: 0.085;
 }
 
-/* ---------- The shot ---------- */
-
-/*
- * The stage is a space, not a stack. Everything the camera sees lives
- * inside this perspective, and the layers are separated by where they sit
- * in it rather than by how far a script slides them sideways.
- */
-.scene {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  perspective: 1400px;
-  /* The pointer moves the camera, not just the picture: shifting the
-     vanishing point re-projects everything in the space at once, which is
-     what makes the depth read as real rather than as layers sliding. */
-  perspective-origin: calc(50% + var(--parallax-x, 0) * 3%)
-    calc(46% + var(--parallax-y, 0) * 2%);
+.band {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+  animation: bandLeft 68s linear infinite;
 }
 
-/*
- * The room.
- *
- * Everything the camera can see is a child of this one element, and it is
- * the only thing that moves: the pointer swings it on two axes and the
- * scroll walks it forward. That is the whole trick. Because the back wall,
- * the side walls, the floor, the packs and the screen are all fixed at
- * their own depths *inside* it, one rotation turns the entire space
- * together and one translation flies the camera down it — the near-field
- * always outrunning the far, because the perspective divide is doing the
- * work rather than a script sliding layers at different speeds.
- *
- * A dolly is a change of distance, so this is a change of distance. By the
- * end of the run the side walls have swept out past the lens and the camera
- * is standing square in front of the screen, which is what hands the eye
- * over to the world below without a cut.
- */
-.room {
+/* The middle row runs the other way, so the room reads as depth rather
+   than as one sheet sliding past */
+.band[data-row="1"] {
+  animation-name: bandRight;
+  animation-duration: 84s;
+}
+
+.band[data-row="2"] {
+  animation-duration: 56s;
+}
+
+.bandRun {
+  padding-right: 0.28em;
+  font-family: var(--font-display), var(--font-heading);
+  font-size: clamp(3.2rem, 11vw, 10rem);
+  line-height: 1;
+  letter-spacing: 0.012em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--text-primary);
+}
+
+/* Two identical runs, so half the band's width is exactly one run */
+@keyframes bandLeft {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes bandRight {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ------------------------------------------------------------
+   Herbs and seed, hanging at three depths
+   ------------------------------------------------------------ */
+
+.air {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+
+.airLayer {
   position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
-  transform:
-    translateZ(calc(700px * var(--p)))
-    rotateY(calc(var(--parallax-x, 0) * -2.6deg))
-    rotateX(calc(var(--parallax-y, 0) * 1.7deg));
+  /* The whole layer swings with the pointer; each bit inside drifts on its
+     own clock. Two transforms, two elements, no fighting. */
+  transform: translate3d(
+    calc(var(--parallax-x, 0) * var(--swing, 20px)),
+    calc(var(--parallax-y, 0) * var(--swing, 20px) * 0.6),
+    0
+  );
+}
+
+.airLayer[data-depth="1"] {
+  --swing: 34px;
+}
+
+.airLayer[data-depth="2"] {
+  --swing: 54px;
+  /* The nearest layer is out of focus, which is what puts the film at the
+     depth the eye is meant to be reading */
+  filter: blur(1.4px);
+}
+
+.bit {
+  position: absolute;
+  display: block;
+  will-change: transform;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.bit:nth-child(2) {
+  animation-duration: 18s;
+  animation-delay: -4s;
+}
+
+.bit:nth-child(3) {
+  animation-duration: 22s;
+  animation-delay: -9s;
+}
+
+.bit:nth-child(4) {
+  animation-duration: 16s;
+  animation-delay: -13s;
+}
+
+/* A curry leaf: pointed at both ends */
+.leaf {
+  width: 26px;
+  height: 13px;
+  border-radius: 0 100% 0 100%;
+  background: linear-gradient(120deg, #2f7d4f 0%, #0f5c33 100%);
+  opacity: 0.72;
+}
+
+/* A dried chilli */
+.chilli {
+  width: 34px;
+  height: 9px;
+  border-radius: 60% 8% 8% 60% / 50%;
+  background: linear-gradient(100deg, var(--color-chilli) 0%, #a51a10 100%);
+  opacity: 0.7;
+}
+
+/* Peppercorn */
+.seed {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4a3527;
+  opacity: 0.55;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) rotate(-14deg);
+  }
+  to {
+    transform: translate3d(26px, -34px, 0) rotate(22deg);
+  }
+}
+
+/* ------------------------------------------------------------
+   The intro sheet
+   ------------------------------------------------------------ */
+
+.intro {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  pointer-events: none;
+  /* How much of the sheet is still on screen. Script closes this on the
+     centre, so the orange collapses into the film rather than fading. */
+  --wipe: 118%;
+}
+
+.wash {
+  position: absolute;
+  inset: 0;
+  clip-path: circle(var(--wipe) at 50% 50%);
+  background: radial-gradient(
+    112% 84% at 50% 26%,
+    #ef7c33 0%,
+    var(--ember) 46%,
+    #b8420f 100%
+  );
+}
+
+.rings {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  clip-path: circle(var(--wipe) at 50% 50%);
+}
+
+.ring {
+  position: absolute;
+  width: 62vmin;
+  height: 42vmin;
+  border: 2px solid rgba(255, 244, 232, 0.6);
+  /* The same organic outline the film is cut to, so the rings read as the
+     shape pushing outward rather than as decoration around it */
+  border-radius: 27% 30% 25% 28% / 34% 28% 33% 30%;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: ripple 6.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.ring:nth-child(2) {
+  animation-delay: -1.28s;
+}
+
+.ring:nth-child(3) {
+  animation-delay: -2.56s;
+}
+
+.ring:nth-child(4) {
+  animation-delay: -3.84s;
+}
+
+.ring:nth-child(5) {
+  animation-delay: -5.12s;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  62% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.7);
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------
+   The film
+   ------------------------------------------------------------ */
+
+.stage {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  /* Clear of the bar above and the buttons below, without either of them
+     having to know the film's size */
+  padding: calc(var(--nav-height) + 14px) 0 clamp(96px, 15vh, 156px);
+  pointer-events: none;
+}
+
+/* Script owns this one: the intro's whole job is to grow it */
+.shape {
   will-change: transform;
 }
 
-/*
- * The far wall of the room. Not the film — the plaster the film's light
- * lands on. It is a long way back and heavily overscanned, because at that
- * distance the perspective divide shrinks it to little over half its layout
- * size and the pointer still has to be able to swing the room without ever
- * finding an edge of it.
- */
-.backdrop {
-  position: absolute;
-  inset: -70%;
-  pointer-events: none;
-  transform: translateZ(-1200px);
-  background:
-    /* The screen's own spill, thrown forward onto the wall behind it and
-       warming as the camera closes in */
-    radial-gradient(
-      54% 44% at 50% 44%,
-      rgba(255, 204, 132, calc(0.34 + 0.2 * var(--p))) 0%,
-      rgba(255, 231, 198, 0.5) 44%,
-      transparent 76%
-    ),
-    linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 100%);
+/* Pointer parallax, kept off .shape so the swing and the growth never
+   write to the same transform */
+.shift {
+  transform: translate3d(
+    calc(var(--parallax-x, 0) * 16px),
+    calc(var(--parallax-y, 0) * 11px),
+    0
+  );
 }
 
-/*
- * The screen.
- *
- * This is the whole point of the section, and it is a thing standing in a
- * room rather than a picture pasted behind one. It has edges, a lit rim, a
- * shadow it drops onto the floor and a bloom it throws forwards; there is
- * floor under it, wall behind it and packs beside it. Nothing about it is
- * full-bleed, so at no point does the footage read as the page's wallpaper.
- *
- * In a white room the panel is the darkest thing in frame, so it needs a
- * real cast shadow rather than a halo to sit in the space — the halo only
- * ever worked because everything around it was already black.
- *
- * On a wide screen it starts off to one side and turned away, so the first
- * thing the eye gets is the panel in three-quarter view with the room
- * running past it. Both of those unwind against --p: the camera walks
- * across and around until, at the end of the section, it is square on and
- * the panel is the only thing left in frame. That is one element's transform
- * doing the whole move — no script touches it per frame.
- */
-.screen {
-  position: absolute;
-  left: 50%;
-  top: 33%;
-  width: min(94%, 760px);
-  aspect-ratio: 16 / 9;
-  border-radius: 12px;
+.mask {
+  position: relative;
+  width: min(86vw, 1080px);
+  height: min(62vh, 620px);
   overflow: hidden;
-  /* Warms the frame for the beat before the poster decodes, rather than
-     punching a black rectangle into a white room */
   background: var(--color-cream-deep);
-  pointer-events: none;
-  transform:
-    translate(-50%, -50%)
-    translateX(calc(var(--screen-shift, 0px) * (1 - var(--p))))
-    translateZ(-380px)
-    rotateY(calc(var(--screen-yaw, 0deg) * (1 - var(--p))));
+  /* Organic, and never the same shape twice */
+  border-radius: 26% 30% 24% 28% / 34% 28% 32% 30%;
   box-shadow:
-    /* the bezel */
-    0 0 0 1px rgba(132, 92, 48, 0.18),
-    /* the contact shadow, tight under the panel */
-    0 14px 30px rgba(120, 74, 30, 0.16),
-    /* and the long one it drops across the floor behind it */
-    0 44px 96px rgba(112, 66, 24, 0.24),
-    /* what it throws back into the room, which on a white wall is a wash of
-       warmth rather than a glow */
-    0 0 140px 30px rgba(255, 168, 66, calc(0.16 + 0.12 * var(--p)));
-  will-change: transform;
+    0 34px 84px rgba(122, 62, 20, 0.2),
+    0 8px 22px rgba(122, 62, 20, 0.12);
+  animation: morph 26s ease-in-out infinite;
 }
 
-.plate {
+@keyframes morph {
+  0% {
+    border-radius: 26% 30% 24% 28% / 34% 28% 32% 30%;
+  }
+  34% {
+    border-radius: 30% 24% 29% 23% / 27% 34% 27% 35%;
+  }
+  67% {
+    border-radius: 23% 28% 31% 26% / 32% 25% 35% 29%;
+  }
+  100% {
+    border-radius: 26% 30% 24% 28% / 34% 28% 32% 30%;
+  }
+}
+
+.frame {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* The picture never sits perfectly still */
+  animation: breathe 20s ease-in-out infinite alternate;
 }
 
-/*
- * The film arrives on a breath, not a switch: it dissolves in over its own
- * poster frame while settling from fractionally too large down to exact
- * registration, so the cut from still to moving is never visible. The
- * poster is the film's own frame zero, which is what leaves the dissolve
- * nothing to give away.
- */
+@keyframes breathe {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.09);
+  }
+}
+
 .video {
   opacity: 0;
-  transform: scale(1.04);
-  transition:
-    opacity 1.6s var(--ease-soft),
-    transform 2.2s var(--ease-soft);
+  transition: opacity 0.9s var(--ease-soft);
 }
 
+/* Crossfades up over its own frame zero, so the join is invisible */
 .video[data-ready="true"] {
   opacity: 1;
-  transform: scale(1);
 }
 
-/*
- * A sheen across the panel and a touch of shade towards its own corners:
- * the two things that stop a rectangle of video from looking like a hole
- * cut in the page. Light, because the room is light — the corner shade only
- * has to describe glass, not darken the shot. Flat gradients over the
- * picture, so no per-frame readback.
- */
-.glass {
+/* Enough grade to seat the film in the room and hold the shape's edge */
+.grade {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(
-      114deg,
-      rgba(255, 252, 246, 0.16) 0%,
-      rgba(255, 252, 246, 0) 34%
-    ),
-    radial-gradient(
-      124% 96% at 50% 50%,
-      transparent 52%,
-      rgba(58, 34, 14, 0.26) 100%
-    );
+    linear-gradient(180deg, rgba(43, 29, 22, 0.1) 0%, rgba(43, 29, 22, 0) 32%),
+    linear-gradient(0deg, rgba(43, 29, 22, 0.16) 0%, rgba(43, 29, 22, 0) 30%);
+  box-shadow: inset 0 0 0 1px rgba(122, 62, 20, 0.12);
 }
 
-/* ---------- The room the film hangs in ---------- */
+/* ------------------------------------------------------------
+   The three buttons
+   ------------------------------------------------------------ */
 
-/*
- * The two side walls. Each is a plane hinged at its near edge and swung a
- * quarter turn so it runs away from the camera and past the screen, which
- * is what puts real converging geometry either side of the panel instead of
- * a vignette pretending to be one.
- *
- * They start outside the frame and only enter it as they recede, so the
- * room reads as wide rather than as a box — and then the dolly sweeps them
- * out past the lens, so the closing beat is the screen alone.
- *
- * No photograph on them, on purpose. A stretched still at this magnification
- * would be soft and would read as a second copy of the shot; light and shade
- * read as a wall, cost nothing to composite, and stay crisp at any size.
- *
- * Phones get these too. They are static gradients on a plane the compositor
- * draws once and never touches again, so a screen with no pointer to swing
- * the room and no timeline to fly it down still gets to stand inside it.
- */
-.wall {
+.actions {
   position: absolute;
-  top: -30%;
-  height: 160%;
-  width: 800px;
-  pointer-events: none;
-  backface-visibility: hidden;
-  /* Gone before the camera reaches them: a plane a hand's width from the
-     lens is a smear, not a wall */
-  opacity: calc(1 - clamp(0, (var(--p) - 0.56) * 2.8, 1));
-  background:
-    /* Where the wall meets the ceiling and the floor. Both edges pick up
-       shade, so the plane is a surface in a room rather than a flat swatch */
-    linear-gradient(
-        180deg,
-        var(--room-shade) 0%,
-        rgba(255, 255, 255, 0) 26%,
-        rgba(255, 255, 255, 0) 68%,
-        var(--room-shade) 100%
-      ),
-    /* Standing seams. They run with the wall, so the perspective divide
-       crowds them together towards the far end on its own — which is what
-       makes a surface almost edge-on to the lens still read as receding. */
-      repeating-linear-gradient(
-        var(--wall-run, 90deg),
-        rgba(158, 112, 64, 0.09) 0 2px,
-        transparent 2px 110px
-      ),
-    /* The light, and the reason the screen reads as a light source rather
-       than as a picture. The panel stands about four fifths of the way down
-       the run, so that is where the wall is warmest; the near end, back
-       towards the camera, falls into the room's own shade. A lamp lights
-       what is beside it, not what is behind it. */
-      linear-gradient(
-        var(--wall-run, 90deg),
-        rgba(214, 196, 175, 0.97) 0%,
-        rgba(240, 228, 212, 0.95) 38%,
-        rgba(255, 248, 238, 0.94) 62%,
-        rgba(255, 224, 172, calc(0.72 + 0.18 * var(--p))) 79%,
-        rgba(253, 240, 222, 0.93) 92%,
-        rgba(240, 228, 213, 0.95) 100%
-      );
-}
-
-.wallLeft {
-  left: -13%;
-  transform-origin: 0 50%;
-  transform: translateZ(240px) rotateY(90deg);
-}
-
-.wallRight {
-  right: -13%;
-  transform-origin: 100% 50%;
-  transform: translateZ(240px) rotateY(-90deg);
-  /* Mirrored, so "far" is still the end nearest the film */
-  --wall-run: 270deg;
-}
-
-/*
- * The floor, hinged at the horizon and laid forward under the camera, with
- * the pool of light the panel drops onto it. The pool is what puts the
- * screen *on* something: a bright rectangle with nothing beneath it floats,
- * and a floating rectangle is a background by another name.
- */
-.floor {
-  position: absolute;
-  left: -40%;
-  right: -40%;
-  top: 78%;
-  height: 620px;
-  pointer-events: none;
-  transform-origin: 50% 0;
-  transform: rotateX(90deg);
-  background:
-    /* the spill, directly under the panel and fading out long before it
-       reaches either wall */
-    radial-gradient(
-      42% 60% at 50% 16%,
-      rgba(255, 176, 74, calc(0.3 + 0.16 * var(--p))) 0%,
-      rgba(255, 206, 144, 0.18) 40%,
-      transparent 74%
-    ),
-    /* Nothing at all along the far edge. A floor plane has a straight far
-       edge, and a straight edge drawn across the room is a seam the eye
-       finds instantly — so the surface only becomes visible once it is
-       already well clear of it. Then it deepens towards the camera, which
-       is the boards falling out of the light rather than into the dark. */
-      linear-gradient(
-        180deg,
-        transparent 0%,
-        rgba(255, 245, 230, 0.55) 12%,
-        rgba(240, 226, 208, 0.85) 42%,
-        rgba(220, 202, 180, 0.96) 100%
-      );
-}
-
-/*
- * Both packs, standing on the floor either side of the screen in the poses
- * they hold at the head of the world below — so the two acts share a lineup,
- * and scrolling out of the hero reads as walking up to it rather than as
- * arriving somewhere new. They are also the room's scale: something of a
- * known size standing beside the panel is what tells the eye how big the
- * panel is and how far away it is.
- *
- * They are gone well before the sign-off: the dolly would otherwise carry
- * them straight into the camera and across the headline.
- */
-.cameo {
-  display: none;
-  position: absolute;
-  top: 47%;
-  width: 14.5%;
-  height: 37%;
-  pointer-events: none;
-  /* Off well before the halfway mark. The dolly magnifies whatever is left
-     of them, so a slow fade would hold a large ghost across the picture for
-     most of the run; they belong to the opening frame and should be gone
-     long before the copy hands over. */
-  opacity: calc(1 - clamp(0, (var(--p) - 0.14) * 4.4, 1));
-}
-
-.cameoLeft {
-  left: 1%;
-  transform: translateZ(-250px) rotateY(13deg);
-}
-
-.cameoRight {
-  right: 1%;
-  transform: translateZ(-250px) rotateY(-13deg);
-}
-
-.cameoArt {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: bottom center;
-  /* Two shadows and no filtering of the artwork itself: in a lit room the
-     packs are simply lit, and the offset shadow is the only thing needed to
-     stand them on the floor rather than float them in the air. */
-  filter: drop-shadow(0 18px 30px rgba(122, 76, 32, 0.28))
-    drop-shadow(0 2px 6px rgba(122, 76, 32, 0.16));
-  opacity: 0;
-  animation: cameoIn 1.8s var(--ease-soft) 0.7s forwards;
-}
-
-@keyframes cameoIn {
-  to {
-    opacity: 1;
-  }
-}
-
-/*
- * Dust in the light. Three sheets of specks at three depths, and because
- * they hang inside the room at real distances the perspective divide alone
- * makes the near ones large and fast and the far ones fine and slow — the
- * cheapest honest depth cue there is. Warm and dark, because on a white
- * wall it is the motes that catch the shade, not the light.
- */
-.motes {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  pointer-events: none;
-}
-
-.mote {
-  position: absolute;
-  inset: -60%;
-  pointer-events: none;
-  background-image:
-    radial-gradient(
-      circle at 20% 30%,
-      rgba(196, 142, 82, 0.36) 0 1.1px,
-      transparent 1.7px
-    ),
-    radial-gradient(
-      circle at 72% 64%,
-      rgba(206, 152, 92, 0.3) 0 1.4px,
-      transparent 2px
-    ),
-    radial-gradient(
-      circle at 45% 85%,
-      rgba(184, 132, 76, 0.24) 0 1px,
-      transparent 1.6px
-    );
-  background-size:
-    220px 260px,
-    310px 190px,
-    170px 330px;
-  animation: drift 38s linear infinite alternate;
-}
-
-.mote:nth-child(1) {
-  --mz: -120px;
-}
-
-.mote:nth-child(2) {
-  --mz: -340px;
-  animation-duration: 52s;
-  animation-delay: -18s;
-  opacity: 0.8;
-}
-
-.mote:nth-child(3) {
-  --mz: -520px;
-  animation-duration: 64s;
-  animation-delay: -35s;
-  opacity: 0.62;
-}
-
-@keyframes drift {
-  from {
-    transform: translateZ(var(--mz, 0)) translate3d(-1.6%, 2.2%, 0);
-  }
-  to {
-    transform: translateZ(var(--mz, 0)) translate3d(1.6%, -3%, 0);
-  }
-}
-
-/* ---------- Atmosphere ---------- */
-
-/*
- * Steam is the one thing that never waits for the scroll. It keeps curling
- * up off the plate even when the film is frozen mid-air, which is what stops
- * a paused scroll from looking like a stalled video.
- *
- * It multiplies rather than screens. White steam over a white room is
- * nothing at all; warm air that very slightly deepens whatever it drifts
- * across is what a bright kitchen actually shows.
- */
-.steam {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  mix-blend-mode: multiply;
-  opacity: 0.5;
-  pointer-events: none;
-  /* Mid-depth: it trails the film and leads the type, which is what puts
-     it between them without any of the three ever touching */
-  transform: translate3d(
-    calc(var(--parallax-x, 0) * -7px),
-    calc(var(--parallax-y, 0) * -5px),
-    0
-  );
-}
-
-.plume {
-  position: absolute;
-  bottom: 14%;
-  width: 34vmin;
-  height: 34vmin;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 224, 180, 0.62) 0%,
-    rgba(255, 235, 208, 0.24) 46%,
-    transparent 70%
-  );
-  filter: blur(24px);
-  will-change: transform, opacity;
-  animation: rise 17s var(--ease-soft) infinite;
-}
-
-.plume:nth-child(1) {
-  left: 34%;
-}
-
-.plume:nth-child(2) {
-  left: 48%;
-  width: 26vmin;
-  height: 26vmin;
-  animation-duration: 21s;
-  animation-delay: -7s;
-}
-
-.plume:nth-child(3) {
-  left: 60%;
-  width: 30vmin;
-  height: 30vmin;
-  animation-duration: 19s;
-  animation-delay: -13s;
-}
-
-@keyframes rise {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.7);
-  }
-  22% {
-    opacity: 1;
-  }
-  70% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(4vmin, -62vh, 0) scale(1.7);
-  }
-}
-
-/* One patch of warm afternoon across the room, drifting with the pointer */
-.flare {
-  position: absolute;
-  left: 22%;
-  top: 12%;
-  width: 46vmin;
-  height: 46vmin;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 205, 128, 0.42) 0%,
-    rgba(255, 224, 170, 0.16) 40%,
-    transparent 68%
-  );
-  filter: blur(20px);
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  transform: translate3d(
-    calc(var(--parallax-x, 0) * 26px),
-    calc(var(--parallax-y, 0) * 18px),
-    0
-  );
-}
-
-/*
- * Shades the edges and deepens as the camera closes in on the food. It
- * carries less than it used to: where it once had to fake the sense of a
- * space closing in around the shot, the walls now genuinely do that. Warm
- * brown at a low opacity — the corners of a white room fall off, they do
- * not go black.
- */
-.vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    124% 92% at 50% 46%,
-    transparent 38%,
-    rgba(184, 140, 96, 0.12) 74%,
-    rgba(158, 116, 76, 0.26) 100%
-  );
-  opacity: calc(0.62 + 0.38 * var(--p));
-}
-
-/* ---------- Copy ---------- */
-
-.copy {
-  position: relative;
-  z-index: 3;
+  z-index: 6;
+  left: 0;
+  right: 0;
+  bottom: clamp(28px, 5.5vh, 66px);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  max-width: var(--page-max-width);
-  color: var(--text-primary);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(8px, 1.2vw, 16px);
+  padding: 0 16px;
 }
 
-/*
- * A soft pool of light under the words. It is the readability floor for the
- * type: the room behind is already white, but the panel is not, and where a
- * narrow frame puts the copy across it dark type on the footage would be
- * unreadable. The pool is bounded rather than full-bleed so it never has to
- * wash the picture out to do its job.
- *
- * Light alone, deliberately. This used to blur the picture behind it as
- * well, and a backdrop blur is not a layer drawn over a film — it is the
- * film read back out of the frame buffer, blurred and composited again, for
- * every one of its frames, across most of the screen. That is the single
- * most expensive thing that can sit over a playing video, and it is what
- * the hero was spending its frame budget on. The pool is a wide, soft
- * gradient with no edge of its own, so it never needed the blur to hide a
- * boundary — a touch more density reads the same and costs nothing per
- * frame.
- */
-.copy::before {
-  content: "";
-  position: absolute;
-  /* Sized off the words themselves. Anything larger reaches the panel and
-     fogs the picture, which is the one thing a readability pool must never
-     do — the copy box is the whole stage in the cinematic layouts, so each
-     of those re-anchors this to where its text actually sits. */
-  inset: -7% -5%;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 251, 244, calc(0.9 + 0.08 * var(--p))) 0%,
-    rgba(255, 248, 238, 0.6) 52%,
-    transparent 100%
-  );
-}
-
-.eyebrow {
-  font-family: var(--font-heading);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-  /* Chilli, not turmeric: turmeric is a highlight colour and has almost no
-     contrast against cream */
-  color: var(--color-chilli);
-}
-
-/*
- * Scene one's title card. It belongs to the film, so the still layout drops
- * it rather than stacking a second headline above the real one.
- */
-.storyLine {
-  display: none;
-  font-family: var(--font-heading);
-  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: var(--text-secondary);
-}
-
-.headline {
-  font-size: clamp(2.3rem, 6.2vw, 5rem);
-  line-height: 1.04;
-  max-width: 15ch;
-  color: var(--text-primary);
-}
-
-.mask {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  padding-bottom: 0.09em;
-  margin-bottom: -0.09em;
-}
-
-.word {
-  display: inline-block;
-  margin-right: 0.24em;
-}
-
-.mask:last-child .word {
-  margin-right: 0;
-}
-
-.wordAccent {
-  /* Runs orange to chilli rather than opening on turmeric, which all but
-     disappears against a cream page */
-  background: linear-gradient(
-    116deg,
-    var(--color-orange) 0%,
-    var(--color-chilli) 62%,
-    var(--color-logo-red) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.sub {
-  font-size: clamp(0.98rem, 1.9vw, 1.2rem);
-  line-height: 1.62;
-  color: var(--text-secondary);
-  max-width: 46ch;
-}
-
-/* The same pill the rest of the site buys with, so the hero's call to
-   action and the sign-off's are visibly the same button */
-.explore {
+.action {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-  padding: 15px 30px;
-  border-radius: 999px;
-  background: linear-gradient(
-    135deg,
-    var(--color-orange) 0%,
-    var(--color-chilli) 100%
-  );
-  box-shadow: 0 14px 34px rgba(230, 51, 36, 0.26);
-  font-family: var(--font-heading);
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: var(--text-on-accent);
+  justify-content: center;
+  min-width: clamp(112px, 15vw, 190px);
+  padding: 15px 26px;
+  border: 1.6px solid rgba(217, 90, 26, 0.5);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.86);
+  font-family: var(--font-display), var(--font-heading);
+  font-size: clamp(0.76rem, 1.05vw, 0.95rem);
+  font-weight: 400;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-primary);
   transition:
+    background 0.45s var(--ease-cinematic),
+    border-color 0.45s var(--ease-cinematic),
+    color 0.45s var(--ease-cinematic),
     box-shadow 0.45s var(--ease-cinematic),
     transform 0.45s var(--ease-cinematic);
 }
 
-.explore svg {
-  width: 17px;
-  height: 17px;
-  transition: transform 0.45s var(--ease-cinematic);
+.action:hover {
+  background: var(--ember);
+  border-color: var(--ember);
+  color: var(--text-on-accent);
+  box-shadow: 0 16px 34px rgba(217, 90, 26, 0.32);
+  transform: scale(1.03);
 }
 
-.explore:hover {
-  box-shadow: 0 20px 44px rgba(230, 51, 36, 0.38);
-  transform: translateY(-3px);
-}
-
-.explore:hover svg {
-  transform: translateY(3px);
-}
-
-.explore:focus-visible {
-  outline: 3px solid var(--color-turmeric);
+.action:focus-visible {
+  outline: 3px solid var(--ember);
   outline-offset: 3px;
 }
 
-/* ---------- Scene four sign-off ---------- */
+/* ------------------------------------------------------------
+   Narrow screens
+   ------------------------------------------------------------ */
 
-.finale {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.finaleLogo {
-  width: clamp(132px, 16vw, 186px);
-  height: auto;
-  filter: drop-shadow(0 12px 26px rgba(122, 76, 32, 0.2));
-}
-
-.finaleMark {
-  font-family: var(--font-heading);
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--text-primary);
-}
-
-.finaleCtas {
-  justify-content: center;
-}
-
-/* ---------- Furniture ---------- */
-
-/* The marker only means something where the scroll drives the stage */
-.cue {
-  display: none;
-  position: absolute;
-  left: 50%;
-  bottom: 26px;
-  transform: translateX(-50%);
-  z-index: 3;
-  flex-direction: column;
-  align-items: center;
-  gap: 9px;
-}
-
-.cueDot {
-  position: relative;
-  width: 26px;
-  height: 40px;
-  border: 2px solid rgba(107, 90, 78, 0.4);
-  border-radius: 999px;
-}
-
-.cueDot::after {
-  content: "";
-  position: absolute;
-  top: 7px;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--color-chilli);
-  transform: translateX(-50%);
-  animation: cueDrop 2.2s var(--ease-soft) infinite;
-}
-
-.cueLabel {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-@keyframes cueDrop {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, 0);
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, 16px);
-  }
-}
-
-/* Ambience is off until this is pressed, and it never plays on its own */
-.sound {
-  position: absolute;
-  right: 22px;
-  bottom: 22px;
-  z-index: 5;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--surface-glass-border);
-  background: var(--surface-glass);
-  box-shadow: 0 8px 22px rgba(122, 76, 32, 0.14);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: border-color 0.4s var(--ease-soft);
-}
-
-.sound:hover {
-  border-color: rgba(230, 51, 36, 0.4);
-}
-
-.sound:focus-visible {
-  outline: 3px solid var(--color-turmeric);
-  outline-offset: 3px;
-}
-
-.soundBars {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  height: 15px;
-}
-
-.soundBars span {
-  width: 2px;
-  height: 5px;
-  border-radius: 2px;
-  background: rgba(107, 90, 78, 0.7);
-}
-
-.soundBars[data-on="true"] span {
-  background: var(--color-chilli);
-  animation: equalise 1.1s var(--ease-soft) infinite alternate;
-}
-
-.soundBars[data-on="true"] span:nth-child(2) {
-  animation-delay: -0.4s;
-}
-
-.soundBars[data-on="true"] span:nth-child(3) {
-  animation-delay: -0.8s;
-}
-
-@keyframes equalise {
-  from {
-    height: 4px;
-  }
-  to {
-    height: 15px;
-  }
-}
-
-/*
- * The closing wash. By the time the sticky stage lets go, it is already the
- * same cream as the section sliding up behind it, so the room clears out
- * from under the sign-off instead of cutting away.
- */
-.exit {
-  position: absolute;
-  inset: 0;
-  z-index: 6;
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  background: linear-gradient(
-    180deg,
-    var(--color-cream) 0%,
-    var(--color-white) 100%
-  );
-}
-
-/* ============================================================
-   The cinematic layout.
-
-   This query must stay identical to CINEMATIC in Hero.tsx: the
-   stylesheet decides the shape, the script decides whether to
-   build the scroll timeline, and the two have to agree.
-   ============================================================ */
-@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
-  .hero {
-    height: 420vh;
-    height: 420svh;
-  }
-
-  /* The stage is tall enough to walk down now, so the panel can stand at
-     something like eye level and grow into the frame as the camera comes */
-  .screen {
-    top: 38%;
-    width: 78%;
-    max-width: 1120px;
-  }
-
-  /* The copy floats over the room rather than sharing a column with the
-     sign-off, which is pinned to its own band at the foot of the stage.
-     Bottom-anchored while the frame is still narrow enough that the words
-     would otherwise be printed across the panel. */
-  .copy {
-    position: absolute;
-    /* The bottom inset clears the scroll cue, which lives in the same band */
-    inset: calc(var(--nav-height) + 26px) 24px clamp(88px, 12vh, 132px);
-    justify-content: flex-end;
-    margin: 0 auto;
-  }
-
-  /* The copy box is now the height of the stage, so the pool follows the
-     text down to the foot of it rather than spreading across the panel */
-  .copy::before {
-    inset: auto auto -4% 50%;
-    width: min(94%, 820px);
-    height: min(56vh, 470px);
-    transform: translateX(-50%);
-  }
-
-  .storyLine {
-    display: block;
-  }
-
-  .cue {
-    display: flex;
-  }
-
-  .finale {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: clamp(40px, 9vh, 96px);
-    padding: 0 24px;
-    /* Scene four only. The script fades it in; until then it is not just
-       invisible but out of reach, so nothing here can take focus early. */
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
-/* ============================================================
-   Wide screens: the room opens out.
-
-   Below this width the panel is centred and square on, because a narrow
-   frame has nowhere to put copy except over it. Given room to move, the
-   composition splits: the words hold the left of the page and the screen
-   stands off to the right in three-quarter view, with the corridor running
-   between them. The scroll then walks the camera across and around until
-   the panel is centred and face-on — which is why the shift and the yaw are
-   both multiplied by (1 - --p) up in .screen.
-   ============================================================ */
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  .screen {
-    top: 46%;
-    width: 54%;
-    --screen-shift: 13vw;
-    --screen-yaw: -15deg;
-  }
-
-  /* The packs are sized against the viewport rather than against the room, so
-     they only earn their place once the frame is wide enough for them to stand
-     beside the panel instead of level with the copy — something of a known
-     size next to it is what tells the eye how big the panel is and how far off
-     it stands. The panel has moved right, so the near one moves with it. */
-  .cameo {
-    display: block;
-  }
-
-  .cameoLeft {
-    left: 33%;
-  }
-
-  .cameoRight {
-    right: 0;
-  }
-
-  .copy {
-    justify-content: center;
-    align-items: flex-start;
-    text-align: left;
-    max-width: var(--page-max-width);
-    /* Keeps the words clear of the panel without moving the block, so the
-       sign-off underneath is still centred on the page */
-    padding-right: 48%;
-  }
-
-  /* The words are over on the left and centred in the frame now, so the pool
-     goes with them rather than reaching across and fogging the panel */
-  .copy::before {
-    inset: 50% auto auto 0;
-    width: min(56%, 640px);
-    height: min(78vh, 640px);
-    transform: translateY(-50%);
-  }
-
-  .headline {
-    max-width: 11ch;
-  }
-
-  .sub {
-    max-width: 32ch;
-  }
-}
-
-@media (max-width: 900px) {
+@media (max-width: 640px) {
   .stage {
-    gap: 26px;
-    padding: calc(var(--nav-height) + 18px) 20px 36px;
+    padding: calc(var(--nav-height) + 8px) 0 clamp(104px, 20vh, 170px);
   }
 
-  .copy {
-    gap: 18px;
-  }
-}
-
-@media (max-width: 560px) {
-  .stage {
-    gap: 22px;
+  .mask {
+    width: 90vw;
+    height: min(58vh, 500px);
   }
 
-  .copy {
-    gap: 16px;
+  .bandRun {
+    -webkit-text-stroke-width: 1.4px;
   }
 
-  .sound {
-    right: 16px;
-    bottom: 16px;
-  }
-}
-
-/* Laptops with short viewports need the sign-off tucked in tighter */
-@media (min-width: 901px) and (max-height: 780px) {
-  .finale {
-    bottom: 34px;
+  .action {
+    min-width: 0;
+    flex: 1 1 auto;
+    max-width: 46%;
+    padding: 13px 14px;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
   }
 
-  .copy {
-    gap: 16px;
+  .ring {
+    width: 78vmin;
+    height: 54vmin;
   }
 }
 
-/*
- * Reduced motion takes the room down rather than freezing it. Half a room —
- * walls still swung a quarter turn against a camera that no longer moves —
- * is worse than none, so the geometry goes and what is left is the panel
- * itself, square on, lit, and still visibly a screen standing on a page
- * rather than a video stretched across one.
- */
+/* A portrait tablet is a tall room. Left at the landscape proportions the
+   film floats in a field of paper, so it takes more of the height. */
+@media (min-width: 641px) and (max-width: 1023px) and (orientation: portrait) {
+  .mask {
+    width: 88vw;
+    height: min(66vh, 800px);
+  }
+}
+
+/* ------------------------------------------------------------
+   Reduced motion: the still hero. No intro, no drift, no morph.
+   ------------------------------------------------------------ */
+
 @media (prefers-reduced-motion: reduce) {
-  .plume,
-  .mote,
-  .cameoArt,
-  .cueDot::after,
-  .soundBars[data-on="true"] span {
+  .band,
+  .bit,
+  .frame,
+  .mask,
+  .ring {
     animation: none;
   }
 
-  /* The fade-in was the only thing holding these back */
-  .cameoArt {
-    opacity: 1;
-  }
-
-  .backdrop,
-  .wall,
-  .floor,
-  .motes,
-  .cameo {
+  .air {
     display: none;
   }
 
-  .room {
-    transform: none;
-  }
-
-  .screen {
-    transform: translate(-50%, -50%);
-    box-shadow:
-      0 0 0 1px rgba(132, 92, 48, 0.18),
-      0 14px 30px rgba(120, 74, 30, 0.16),
-      0 36px 80px rgba(112, 66, 24, 0.22);
+  .bands {
+    opacity: 0.06;
   }
 }

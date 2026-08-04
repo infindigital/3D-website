@@ -1,7 +1,7 @@
 import { existsSync } from "fs";
 import { join } from "path";
 import type { Metadata } from "next";
-import { Poppins, Manrope } from "next/font/google";
+import { Poppins, Manrope, Anton } from "next/font/google";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
@@ -19,6 +19,19 @@ const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+/**
+ * The signage face: heavy, condensed, and only ever set in caps. It carries
+ * the navigation, the hero's buttons and the giant words drifting behind
+ * the film — the places the site has to read like a restaurant sign rather
+ * than like body copy. Everything else stays on Poppins and Manrope.
+ */
+const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: ["400"],
   display: "swap",
 });
 
@@ -72,7 +85,10 @@ export default function RootLayout({
   );
 
   return (
-    <html lang="en" className={`${poppins.variable} ${manrope.variable}`}>
+    <html
+      lang="en"
+      className={`${poppins.variable} ${manrope.variable} ${anton.variable}`}
+    >
       <body>
         <SmoothScroll>
           <Navigation hasLogo={hasLogo} />

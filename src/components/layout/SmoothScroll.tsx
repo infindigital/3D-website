@@ -31,6 +31,20 @@ export function scrollToElement(target: Element | null) {
 }
 
 /**
+ * Holds the page still, and lets it go again.
+ *
+ * Lenis owns the wheel and the touch drag while it is running, so stopping
+ * it is enough to hold the page — no overflow hidden, and therefore no
+ * scrollbar disappearing out from under the layout. Under reduced motion
+ * Lenis is off, and so is everything that would want the page held.
+ */
+export function setScrollLocked(locked: boolean) {
+  if (!activeLenis) return;
+  if (locked) activeLenis.stop();
+  else activeLenis.start();
+}
+
+/**
  * Scrolls to an absolute document offset. The 3D world's rail needs to land
  * partway through a section rather than at an element, which scrollTo on an
  * element cannot express.

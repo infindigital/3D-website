@@ -1,181 +1,159 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import BuyButtons from "@/components/ui/BuyButtons";
-import { scrollToElement } from "@/components/layout/SmoothScroll";
+import { products } from "@/config/products";
+import { siteConfig } from "@/config/site";
+import {
+  scrollToElement,
+  setScrollLocked,
+} from "@/components/layout/SmoothScroll";
 import { usePointerParallax } from "@/hooks/usePointerParallax";
+import { HERO_OPEN_EVENT } from "@/utils/heroOpen";
 import styles from "./Hero.module.css";
 
-gsap.registerPlugin(ScrollTrigger);
-
-const HEADLINE = ["Where", "Every", "Dish", "Comes", "Alive"];
-
 /**
- * Wide enough for the film, and nobody has asked for less motion. The
- * stylesheet keys the whole cinematic layout off this exact query, so the
- * two must stay in step.
+ * The intro's opening frame is set from script, one tick before the browser
+ * paints, so there is never a frame of the finished hero in front of it.
+ * That has to be a layout effect, and a layout effect on the server is a
+ * warning about nothing.
  */
-const CINEMATIC = "(min-width: 768px) and (prefers-reduced-motion: no-preference)";
+const useIsoLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 export interface HeroAssets {
   videoSrc: string;
   posterSrc: string;
-  /** Ambient sizzle loop. Absent until the owner drops the file in. */
-  ambientSrc?: string;
 }
 
 /**
- * "A Feast in Motion".
- *
- * The kitchen film plays, on its own, at its own speed: the gobi hangs over
- * the plate, the sachet opens, the masala goes on, it fries, and both packs
- * land behind both finished plates. It loops, and it never waits to be
- * driven — a cooking film is a performance, and the scroll is not what
- * should be performing it.
- *
- * The film is not the background. It is a screen standing in a room: a
- * bounded, bezelled panel with a far wall behind it, two side walls running
- * past it, a floor under it catching the pool of light it drops, both packs
- * standing beside it and dust hanging at three separate depths. All of it is
- * one perspective with everything fixed at its own distance inside it, so
- * the pointer swings the whole space at once and the scroll flies the camera
- * down it — the side walls sweeping out past the lens as the panel grows.
- * Nothing is a layer sliding at a scripted speed; the perspective divide
- * does the work.
- *
- * On a wide screen the panel starts off to one side and turned away, with
- * the copy holding the other half of the page; the scroll walks the camera
- * across and around until it is square on. Both the offset and the turn are
- * written into the panel's own transform against the same progress number,
- * so no script touches it per frame.
- *
- * The room is daylit in the site's own white and cream, so the hero is a
- * bright room with a screen in it rather than a dark box bolted onto a
- * bright page. The panel is the darkest thing in frame, which is what makes
- * it read as the light source: the wall beside it warms where it stands,
- * the floor under it catches what it drops, and the shade in the corners is
- * warm brown rather than black.
- *
- * One number carries all of it — the stage gets `--p`, the raw scroll
- * progress, and the stylesheet derives the dolly, the vignette, the light
- * pool under the copy and the closing wash from it, while the copy beats
- * hand over along the same timeline. The room costs transforms and nothing
- * else: one video decoder, no second canvas, and not a single per-frame
- * readback.
- *
- * The tiled wall of this same film is the world below the hero, not this
- * section: here it is the footage itself, played whole.
- *
- * Which of the two layouts applies is decided by a media query in the
- * stylesheet, not by this component, so the hero is already in its final
- * shape on the very first paint. The film then arrives into a stage that is
- * already the right size: it fades in over its own poster frame and starts
- * running, and nothing on screen moves to accommodate it.
- *
- * A phone gets the room and the running film both — the room is static
- * gradients on planes the compositor draws once, and the panel is the same
- * one decoder — in a hero one screen tall with all the copy at once. Only a
- * reader who has asked for reduced motion is served the still frame, and
- * they get the panel alone rather than a room with a camera that cannot move
- * through it.
+ * The intro's beats, in seconds.
  */
-export default function Hero({
-  assets,
-  packs = [],
-  hasLogo = false,
-}: {
-  assets: HeroAssets;
-  /**
-   * Front artwork for the packs that stand in the room, in the same order
-   * they hold at the head of the world below. Owner-supplied and never
-   * generated, so this is empty until the files land and the room is
-   * correct either way.
-   */
-  packs?: string[];
-  hasLogo?: boolean;
-}) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const stageRef = usePointerParallax<HTMLDivElement>();
+const BEAT = {
+  /** the shape starts to creep outward */
+  creep: 0.8,
+  /** it stops creeping and opens out */
+  open: 2.4,
+  /** the orange sheet starts collapsing behind it */
+  wipe: 2.5,
+  /** the room is the hero's; the bar may come down */
+  handover: 2.95,
+  /** the buttons arrive */
+  actions: 3.05,
+  /** everything the intro owned can go */
+  end: 3.7,
+} as const;
+
+/**
+ * Words that drift across the room behind the film. Three rows, each read
+ * as one long line and printed twice so the loop has no seam.
+ */
+const BANDS = [
+  ["Authentic Flavours", "Restaurant Style", "Ground Fresh"],
+  ["Chef'z Special", "Signature Blends", "Slow Roasted"],
+  ["Fresh Ingredients", "Bold Spice", "Made in Mangaluru"],
+];
+
+/** Herbs and spice hanging in the air, by depth. Nearest layer last. */
+const AIR = [
+  [
+    { kind: styles.leaf, at: { top: "17%", left: "8%" } },
+    { kind: styles.chilli, at: { top: "69%", left: "12%" } },
+    { kind: styles.seed, at: { top: "33%", right: "10%" } },
+    { kind: styles.leaf, at: { top: "79%", right: "15%" } },
+  ],
+  [
+    { kind: styles.seed, at: { top: "11%", left: "25%" } },
+    { kind: styles.leaf, at: { top: "57%", right: "5%" } },
+    { kind: styles.chilli, at: { top: "23%", right: "26%" } },
+  ],
+  [
+    { kind: styles.leaf, at: { top: "83%", left: "30%" } },
+    { kind: styles.seed, at: { top: "73%", right: "32%" } },
+    { kind: styles.chilli, at: { top: "7%", left: "47%" } },
+  ],
+];
+
+/**
+ * The opening film.
+ *
+ * The page does not begin on the hero. It begins on a sheet of restaurant
+ * orange with the kitchen film already running inside a small organic
+ * shape, thin outline rings pushing outward past it. Over three seconds the
+ * shape creeps, then opens out, and the orange collapses inward behind it
+ * until there is none of it left to see — and what is standing there is the
+ * hero. No fade and no cut: the same element, grown, and the same decoder,
+ * never restarted, so the film that was playing through the intro is still
+ * playing at the same frame when the hero arrives.
+ *
+ * That is why the film lives in the hero rather than in the intro. An intro
+ * that owns its own video has to hand over to a second one, and a second
+ * one is a second decoder, a second buffer, and a visible jump at the join.
+ *
+ * Behind it, giant outlined words cross the room forever, herbs and seed
+ * hang at three depths and swing with the pointer, and the shape itself
+ * never stops morphing. All of it is transform and opacity on layers the
+ * compositor already owns: one decoder, no canvas, no per-frame readback,
+ * nothing measured during a scroll.
+ *
+ * The hero is exactly one screen tall. Everything below it is the world.
+ *
+ * The stylesheet describes the *finished* hero and nothing else, so a first
+ * paint that script never reaches — reduced motion, a failed bundle — is an
+ * ordinary still hero rather than an intro stuck at frame one. The opening
+ * frame is written by script in a layout effect, before the browser has
+ * painted anything, which is why there is no flash of the hero in front of
+ * its own intro.
+ */
+export default function Hero({ assets }: { assets: HeroAssets }) {
+  const sectionRef = usePointerParallax<HTMLElement>();
+  const shapeRef = useRef<HTMLDivElement>(null);
+  const introRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [cinematic, setCinematic] = useState(false);
-  const [wantsVideo, setWantsVideo] = useState(false);
   const [filmReady, setFilmReady] = useState(false);
-  const [ambient, setAmbient] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
+  /**
+   * "pending" is the server's answer and the answer script never reaches:
+   * the still hero. The real one is decided before the first paint.
+   */
+  const [mode, setMode] = useState<"pending" | "intro" | "still">("pending");
 
-  useEffect(() => {
-    const query = window.matchMedia(CINEMATIC);
-    const update = () => setCinematic(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-
-  /* The film is asked for on the first sign of intent rather than at first
-     paint, so it is not competing with the fonts and the poster for the
-     opening second — with a short fallback, because a hero that waits for a
-     gesture that never comes is a hero nobody sees move.
-
-     Every width gets it. The screen is the section, and a phone showing a
-     still of it is a phone that has been handed the trailer's poster; only a
-     reader who has asked for less motion is served the frozen frame. */
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let armed = false;
-    const events = ["scroll", "wheel", "touchmove", "pointerdown"] as const;
-
-    const arm = () => {
-      if (armed) return;
-      armed = true;
-      window.clearTimeout(timer);
-      events.forEach((type) => window.removeEventListener(type, arm));
-      setWantsVideo(true);
-    };
-
-    /* Half a second of stillness is intent enough. The film is small, but
-       waiting any longer to start fetching it is what a viewer would later
-       experience as the video "not loading". */
-    const timer = window.setTimeout(arm, 500);
-    events.forEach((type) =>
-      window.addEventListener(type, arm, { passive: true }),
+  useIsoLayoutEffect(() => {
+    setMode(
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "still"
+        : "intro",
     );
-
-    return () => {
-      window.clearTimeout(timer);
-      events.forEach((type) => window.removeEventListener(type, arm));
-    };
   }, []);
 
   /*
    * Keeping the picture moving.
    *
    * A muted, looping film needs nothing from us to run, and the element's
-   * own `autoplay` covers the ordinary case. Three cases it does not:
-   *
-   *  - a browser that refused the first attempt but will take one after the
-   *    gesture that armed the fetch;
-   *  - the stretch of page after the hero, where a decoder running behind a
-   *    section nobody is looking at is a battery bill for a picture that is
-   *    not on screen;
-   *  - and a film that has quietly stopped. A video element does not report
-   *    that. It goes on saying it is playing while the frame on screen is
-   *    the same one it was a second ago, whether the pipeline lost its
-   *    decoder, the network went quiet mid-buffer, or the machine simply
-   *    ran out of room for both this and the world below. So rather than
-   *    trust the element, watch the clock it is supposed to be advancing.
+   * own `autoplay` covers the ordinary case. Two cases it does not: a
+   * browser that refused the first attempt, and a film that has quietly
+   * stopped. A video element does not report the second — it goes on
+   * saying it is playing while the frame on screen is the one it was a
+   * second ago. So rather than trust it, watch the clock it is supposed to
+   * be advancing, and escalate: ask it to play, then jog the playhead so
+   * the decoder has to build a fresh frame, then start the element over.
    */
   useEffect(() => {
     const video = videoRef.current;
     const section = sectionRef.current;
     if (!video || !section) return;
 
-    /* React writes `muted` as an attribute, which an element already in the
-       document ignores — and without the property, autoplay is refused and
-       the hero holds its poster forever. */
+    /* React writes `muted` as an attribute, which an element already in
+       the document ignores — and without the property, autoplay is refused
+       and the intro opens on a frozen frame. */
     video.muted = true;
 
     const play = () => void video.play().catch(() => {});
@@ -187,16 +165,10 @@ export default function Hero({
         if (onScreen) play();
         else video.pause();
       },
-      /* A sliver is enough: the sticky stage is on screen for the whole
-         section, so this only ever fires at the two ends of it. */
       { threshold: 0 },
     );
     observer.observe(section);
 
-    /* Escalating, because the cheap fix works far more often than the
-       expensive one and the expensive one costs the viewer a visible
-       hitch: ask it to play, then jog the playhead to make the decoder
-       build a fresh frame, then finally start the whole element over. */
     let mark = -1;
     let stuck = 0;
     const watchdog = window.setInterval(() => {
@@ -230,159 +202,93 @@ export default function Hero({
       observer.disconnect();
       window.clearInterval(watchdog);
     };
-  }, [wantsVideo]);
-
-  /* Opening beat, on load: scene one settles into place. */
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-
-      tl.fromTo(
-        `.${styles.eyebrow}`,
-        { y: 22, autoAlpha: 0, letterSpacing: "0.62em" },
-        { y: 0, autoAlpha: 1, letterSpacing: "0.34em", duration: 1.3 },
-        0.2,
-      );
-
-      tl.fromTo(
-        `.${styles.storyLine}`,
-        { y: 26, autoAlpha: 0 },
-        { y: 0, autoAlpha: 1, duration: 1.4 },
-        0.4,
-      );
-
-      tl.fromTo(
-        `.${styles.word}`,
-        { yPercent: 116, rotate: 3, autoAlpha: 0 },
-        {
-          yPercent: 0,
-          rotate: 0,
-          autoAlpha: 1,
-          duration: 1.3,
-          stagger: 0.07,
-        },
-        0.62,
-      );
-
-      tl.fromTo(
-        `.${styles.sub}`,
-        { y: 24, autoAlpha: 0 },
-        { y: 0, autoAlpha: 1, duration: 1 },
-        "-=0.75",
-      );
-
-      tl.fromTo(
-        `.${styles.explore}`,
-        { y: 20, autoAlpha: 0 },
-        { y: 0, autoAlpha: 1, duration: 0.9 },
-        "-=0.65",
-      );
-
-      tl.fromTo(
-        `.${styles.cue}`,
-        { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.9 },
-        "-=0.4",
-      );
-    }, stageRef);
-
-    return () => ctx.revert();
-  }, [stageRef]);
+  }, [mode, sectionRef]);
 
   /*
-   * The storyboard, wired to the scroll bar.
+   * The intro, start to finish.
    *
-   * Built once, and it touches nothing the film owns: the picture runs on
-   * its own clock underneath, and this only walks the room forward and
-   * hands the copy from one beat to the next. So the video arriving never
-   * tears this timeline down and rebuilds it mid-scroll, and the poster
-   * alone already carries the dolly, the vignette and every copy beat — the
-   * hero is never a dead stretch while the film is still on its way.
+   * Runs before the first paint: the opening frame — small shape, buttons
+   * parked below their line — is written here rather than in the
+   * stylesheet, so the hero the stylesheet describes is the one anybody who
+   * never gets here still sees.
    */
-  useEffect(() => {
-    if (!cinematic) return;
+  useIsoLayoutEffect(() => {
+    if (mode !== "intro") return;
+
+    const shape = shapeRef.current;
+    const intro = introRef.current;
+    if (!shape || !intro) return;
+
+    /* A reload restores the old scroll position, and an intro that opens
+       halfway down the page is an intro nobody sees. */
+    window.scrollTo(0, 0);
+    setScrollLocked(true);
+
+    const wipe = { value: 118 };
 
     const ctx = gsap.context(() => {
-      const stage = stageRef.current;
-      const progress = { value: 0 };
+      gsap.set(shape, { scale: 0.3 });
+      gsap.set(`.${styles.action}`, { y: 30, autoAlpha: 0 });
 
-      const tl = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          end: "bottom bottom",
-          /* Long enough that the picture glides rather than tracks the
-             wheel notch for notch, short enough to still feel driven. */
-          scrub: 0.55,
-        },
-      });
+      const tl = gsap.timeline();
 
-      /* Raw progress for the stylesheet: dolly, vignette, light pool, wash */
+      /* Creep, then open. Two moves rather than one, because a shape that
+         grows at a steady rate for three seconds reads as a progress bar,
+         and one that sits still and then bursts reads as a reveal. */
+      tl.to(shape, { scale: 0.46, duration: 1.6, ease: "power1.inOut" }, BEAT.creep);
+      tl.to(shape, { scale: 1, duration: 0.95, ease: "power3.inOut" }, BEAT.open);
+
+      /* The orange collapses into the shape rather than fading off it. The
+         sheet is a circle closing on the centre, and every part of it still
+         visible is the part outside the film; once the circle is smaller
+         than the film there is no orange left on screen. The shape has
+         taken the room without a frame of crossfade. */
       tl.to(
-        progress,
+        wipe,
         {
-          value: 1,
+          value: 0,
           duration: 1,
+          ease: "power2.inOut",
           onUpdate: () =>
-            stage?.style.setProperty("--p", progress.value.toFixed(4)),
+            intro.style.setProperty("--wipe", `${wipe.value.toFixed(2)}%`),
         },
-        0,
+        BEAT.wipe,
       );
 
-      /* The title card steps aside as the plate starts to come apart */
-      tl.to(`.${styles.storyLine}`, { autoAlpha: 0, y: -30, duration: 0.1 }, 0.14);
-      tl.to(`.${styles.cue}`, { autoAlpha: 0, duration: 0.05 }, 0.1);
-
-      /* The sub steps back for scene 3 so the food can fill the screen.
-         From here the headline is the only copy the macro shots share. */
-      tl.to(`.${styles.sub}`, { autoAlpha: 0, y: -18, duration: 0.08 }, 0.56);
-
-      /* Scene 4: the copy lifts, the walking CTA hands over to the sign-off */
-      tl.to(`.${styles.explore}`, { autoAlpha: 0, y: -14, duration: 0.06 }, 0.72);
-      tl.to(`.${styles.copy}`, { y: -54, duration: 0.16 }, 0.74);
-      tl.fromTo(
-        `.${styles.finale}`,
-        { autoAlpha: 0, y: 34 },
-        { autoAlpha: 1, y: 0, duration: 0.1 },
-        0.8,
+      tl.add(
+        () => window.dispatchEvent(new Event(HERO_OPEN_EVENT)),
+        BEAT.handover,
       );
 
-      /* The film washes out to the cream the rest of the page is built on,
-         so the bright site underneath is already there when it slides up */
-      tl.fromTo(
-        `.${styles.exit}`,
-        { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.05 },
-        0.95,
+      tl.to(
+        `.${styles.action}`,
+        {
+          y: 0,
+          autoAlpha: 1,
+          duration: 0.9,
+          stagger: 0.08,
+          ease: "power3.out",
+          /* Hand the buttons back to the stylesheet: an inline transform
+             left behind here would outrank the hover lift forever. */
+          onComplete: () =>
+            gsap.set(`.${styles.action}`, {
+              clearProps: "transform,opacity,visibility",
+            }),
+        },
+        BEAT.actions,
       );
-    }, stageRef);
 
-    /* Fonts, artwork and the packs above the fold all settle at their own
-       pace, and every section below this one measures from the bottom of a
-       hero several screens tall. Re-measure once it is standing. */
-    ScrollTrigger.refresh();
+      tl.add(() => {
+        setScrollLocked(false);
+        setIntroDone(true);
+      }, BEAT.end);
+    }, sectionRef);
 
-    return () => ctx.revert();
-  }, [cinematic, stageRef]);
-
-  /* Muted by default and never autoplayed: the toggle is the consent. */
-  const toggleAmbient = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (ambient) {
-      audio.pause();
-      setAmbient(false);
-      return;
-    }
-    audio.volume = 0.28;
-    void audio.play().then(
-      () => setAmbient(true),
-      () => setAmbient(false),
-    );
-  }, [ambient]);
+    return () => {
+      setScrollLocked(false);
+      ctx.revert();
+    };
+  }, [mode, sectionRef]);
 
   const explore = useCallback(() => {
     scrollToElement(
@@ -390,41 +296,79 @@ export default function Hero({
         sectionRef.current?.nextElementSibling ??
         null,
     );
-  }, []);
+  }, [sectionRef]);
 
   return (
     <section
       ref={sectionRef}
       className={styles.hero}
-      data-film={filmReady ? "true" : "false"}
       aria-label="RS Chef'z"
     >
-      <div ref={stageRef} className={styles.stage}>
-        {/* The room, hung inside the stage's perspective */}
-        <div className={styles.scene} aria-hidden="true">
-          <div className={styles.room}>
-            {/* The room itself: far wall, two side walls, floor */}
-            <div className={styles.backdrop} />
-            <div className={`${styles.wall} ${styles.wallLeft}`} />
-            <div className={`${styles.wall} ${styles.wallRight}`} />
-            <div className={styles.floor} />
+      {/* The page needs a heading and the hero has no room for one: the
+          brand is the header, and the words behind the film are scenery. */}
+      <h1 className={styles.srOnly}>
+        {siteConfig.name} — {siteConfig.tagline}
+      </h1>
 
-            {/* The screen standing in it. Bounded, bezelled, throwing its own
-                light onto the surfaces around it — a thing in the room, not
-                the surface the room is painted on. */}
-            <div className={styles.screen}>
+      {/* Scenery: huge outlined words crossing the room, forever */}
+      <div className={styles.bands} aria-hidden="true">
+        {BANDS.map((row, index) => (
+          <div key={index} className={styles.band} data-row={index}>
+            <span className={styles.bandRun}>{row.join(" — ")} — </span>
+            <span className={styles.bandRun}>{row.join(" — ")} — </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Herbs and seed at three depths, each drifting on its own and the
+          whole layer swinging with the pointer */}
+      <div className={styles.air} aria-hidden="true">
+        {AIR.map((layer, depth) => (
+          <div key={depth} className={styles.airLayer} data-depth={depth}>
+            {layer.map((bit, index) => (
+              <span
+                key={index}
+                className={`${styles.bit} ${bit.kind}`}
+                style={bit.at}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* The intro sheet: behind the film from the first frame, and gone by
+          the time the film has finished opening */}
+      {mode === "intro" && !introDone && (
+        <div ref={introRef} className={styles.intro} aria-hidden="true">
+          <div className={styles.wash} />
+          <div className={styles.rings}>
+            <span className={styles.ring} />
+            <span className={styles.ring} />
+            <span className={styles.ring} />
+            <span className={styles.ring} />
+            <span className={styles.ring} />
+          </div>
+        </div>
+      )}
+
+      {/* The film. One element for the whole three seconds and everything
+          after them — the intro grows this, it does not hand over to it. */}
+      <div className={styles.stage}>
+        <div ref={shapeRef} className={styles.shape}>
+          <div className={styles.shift}>
+            <div className={styles.mask}>
               <Image
-                className={styles.plate}
+                className={styles.frame}
                 src={assets.posterSrc}
                 alt=""
                 fill
                 priority
-                sizes="(min-width: 1024px) 54vw, 92vw"
+                sizes="(min-width: 1024px) 84vw, 92vw"
               />
-              {wantsVideo && (
+              {mode === "intro" && (
                 <video
                   ref={videoRef}
-                  className={`${styles.plate} ${styles.video}`}
+                  className={`${styles.frame} ${styles.video}`}
                   data-ready={filmReady ? "true" : "false"}
                   src={assets.videoSrc}
                   autoPlay
@@ -432,136 +376,33 @@ export default function Hero({
                   muted
                   playsInline
                   preload="auto"
-                  /* Not `canplaythrough`: the picture is only crossfading up
-                     over its own frame zero, so the moment there is a frame to
-                     show is the moment to start showing it. */
+                  /* Not `canplaythrough`: the picture only has to cross
+                     over its own frame zero, so the moment there is a frame
+                     to show is the moment to show it. */
                   onLoadedData={() => setFilmReady(true)}
                 />
               )}
-              <span className={styles.glass} />
-            </div>
-
-            {/* Both packs, standing on the floor beside the screen in the
-                poses they hold at the head of the world below. Owner artwork
-                only, so a pack whose file has not been supplied is not
-                there. */}
-            {packs.slice(0, 2).map((src, index) => (
-              <div
-                key={src}
-                className={`${styles.cameo} ${
-                  index === 0 ? styles.cameoLeft : styles.cameoRight
-                }`}
-              >
-                <Image
-                  className={styles.cameoArt}
-                  src={src}
-                  alt=""
-                  width={640}
-                  height={900}
-                  sizes="22vw"
-                />
-              </div>
-            ))}
-
-            <div className={styles.motes}>
-              <span className={styles.mote} />
-              <span className={styles.mote} />
-              <span className={styles.mote} />
+              <span className={styles.grade} />
             </div>
           </div>
-
-          {/* Steam keeps rising whether or not anyone is scrolling */}
-          <div className={styles.steam}>
-            <span className={styles.plume} />
-            <span className={styles.plume} />
-            <span className={styles.plume} />
-          </div>
-
-          <div className={styles.flare} />
-          <div className={styles.vignette} />
         </div>
+      </div>
 
-        <div className={styles.copy}>
-          <p className={styles.eyebrow}>RS Chef&apos;z Masalas</p>
-          <p className={styles.storyLine}>Every Bite Has a Story.</p>
-          <h1 className={styles.headline}>
-            {HEADLINE.map((word) => (
-              <span key={word} className={styles.mask}>
-                <span
-                  className={`${styles.word} ${
-                    word === "Alive" ? styles.wordAccent : ""
-                  }`}
-                >
-                  {word}
-                </span>
-              </span>
-            ))}
-          </h1>
-          <p className={styles.sub}>
-            Fresh ingredients. Bold spices. Authentic flavors. Crafted to
-            delight every craving.
-          </p>
-          <button type="button" className={styles.explore} onClick={explore}>
-            Explore the Menu
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M12 5v14" />
-              <path d="m5 12 7 7 7-7" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Scene 4: the dish has landed, so the brand signs it off */}
-        <div className={styles.finale}>
-          {hasLogo ? (
-            <Image
-              className={styles.finaleLogo}
-              src="/assets/brand/logo.png"
-              alt="RS Chef'z"
-              width={1000}
-              height={426}
-              sizes="180px"
-            />
-          ) : (
-            <p className={styles.finaleMark}>RS Chef&apos;z</p>
-          )}
-          <BuyButtons className={styles.finaleCtas} />
-        </div>
-
-        <div className={styles.cue} aria-hidden="true">
-          <span className={styles.cueDot} />
-          <span className={styles.cueLabel}>Scroll to explore</span>
-        </div>
-
-        {assets.ambientSrc && (
-          <>
-            <audio ref={audioRef} src={assets.ambientSrc} loop preload="none" />
-            <button
-              type="button"
-              className={styles.sound}
-              onClick={toggleAmbient}
-              aria-pressed={ambient}
-              aria-label={
-                ambient ? "Mute kitchen ambience" : "Play kitchen ambience"
-              }
-            >
-              <span className={styles.soundBars} data-on={ambient}>
-                <span />
-                <span />
-                <span />
-              </span>
-            </button>
-          </>
-        )}
-
-        <div className={styles.exit} aria-hidden="true" />
+      <div className={styles.actions}>
+        <button type="button" className={styles.action} onClick={explore}>
+          Explore Menu
+        </button>
+        <Link className={styles.action} href={`/products/${products[0].slug}`}>
+          Our Masalas
+        </Link>
+        <a
+          className={styles.action}
+          href={siteConfig.amazonStoreUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Order Online
+        </a>
       </div>
     </section>
   );

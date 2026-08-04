@@ -37,6 +37,9 @@
   /* Type */
   --font-heading: var(--font-poppins), sans-serif;
   --font-body: var(--font-manrope), sans-serif;
+  /* Signage: heavy and condensed, caps only. Navigation, hero buttons and
+     the giant words behind the hero film — nothing that runs as prose. */
+  --font-display: var(--font-anton), "Arial Narrow", sans-serif;
 
   /* Motion */
   --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);

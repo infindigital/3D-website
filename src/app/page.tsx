@@ -14,25 +14,18 @@ function has(publicPath: string): boolean {
 
 /**
  * The hero plays the same owner-shot kitchen film the world below it is
- * built from — one file, served from this origin.
- *
- * Same-origin is not incidental. The hero scrubs the film against the
- * scroll, which means fetching the whole thing into a blob so every seek is
- * local; a cross-origin host that sends no CORS headers kills that fetch
- * and the hero silently degrades to unscrubbable streaming.
+ * built from — one file, served from this origin, and the only video the
+ * page above the fold has to fetch.
  *
  * The poster is the film's own first frame, so the still and the video line
- * up exactly and the dissolve between them is invisible.
+ * up exactly and the crossfade between them is invisible: the intro can
+ * open on the poster the instant the HTML lands and let the picture take
+ * over underneath it without anything on screen moving.
  */
 function getHeroAssets(): HeroAssets {
   return {
     videoSrc: FILM_SRC,
     posterSrc: "/assets/hero/hero-poster.webp",
-    /* Optional and owner-supplied. The hero only draws its sound toggle
-       when this file exists, and never plays it unprompted either way. */
-    ambientSrc: has("/assets/hero/ambience.mp3")
-      ? "/assets/hero/ambience.mp3"
-      : undefined,
   };
 }
 
@@ -55,23 +48,18 @@ function getStagePacks(): StagePack[] {
 }
 
 /**
- * The home page is two acts. The hero is a film the scroll plays; below it
- * everything else — the lineup, the story, both packs, the ritual and the
- * promise — is one continuous flight through a single 3D world rather than
- * a stack of separate sections.
+ * The home page is two acts. The hero is one screen: an intro that opens
+ * into the kitchen film, cut to an organic shape and standing in a room of
+ * drifting type. Below it everything else — the lineup, the story, both
+ * packs, the ritual and the promise — is one continuous flight through a
+ * single 3D world rather than a stack of separate sections.
  */
 export default function HomePage() {
   const stagePacks = getStagePacks();
 
   return (
     <main id="main">
-      <Hero
-        assets={getHeroAssets()}
-        /* The same packs, in the same order, so the pair standing in the
-           hero's room is the pair waiting at the head of the world below */
-        packs={stagePacks.map((pack) => pack.front)}
-        hasLogo={has("/assets/brand/logo.png")}
-      />
+      <Hero assets={getHeroAssets()} />
       <HomeWorld packs={stagePacks} products={products} />
     </main>
   );

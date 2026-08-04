@@ -9,6 +9,11 @@
   pointer-events: none;
 }
 
+/*
+ * At the top of a page the bar is nothing but its own type: no pill, no
+ * glass, no line. It takes a surface only once the page has moved under
+ * it and there is something behind it worth separating from.
+ */
 .bar {
   pointer-events: auto;
   display: flex;
@@ -17,19 +22,21 @@
   width: min(1040px, calc(100% - 28px));
   padding: 10px 12px 10px 18px;
   border-radius: 999px;
-  background: var(--surface-glass);
-  border: 1px solid var(--surface-glass-border);
-  backdrop-filter: blur(18px) saturate(1.5);
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  background: transparent;
+  border: 1px solid transparent;
   transition:
     box-shadow 0.5s var(--ease-soft),
     border-color 0.5s var(--ease-soft),
+    backdrop-filter 0.5s var(--ease-soft),
     background 0.5s var(--ease-soft);
 }
 
 .scrolled {
   background: rgba(255, 255, 255, 0.82);
+  border-color: var(--surface-glass-border);
   box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
 }
 
 /*
@@ -133,26 +140,30 @@
   list-style: none;
 }
 
+/* Signage type: heavy, condensed, caps, generously tracked */
 .link {
   position: relative;
   display: inline-block;
   padding: 8px 14px;
   border-radius: 999px;
-  font-size: 0.94rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-family: var(--font-display), var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-primary);
   transition:
     color 0.35s var(--ease-soft),
     background 0.35s var(--ease-soft);
 }
 
 .link:hover {
-  color: var(--text-primary);
+  color: var(--color-chilli);
   background: rgba(245, 179, 1, 0.14);
 }
 
 .linkActive {
-  color: var(--text-primary);
+  color: var(--color-chilli);
 }
 
 .linkActive::after {
@@ -172,9 +183,11 @@
   border-radius: 999px;
   background: linear-gradient(135deg, var(--color-chilli) 0%, var(--color-orange) 100%);
   color: var(--text-on-accent);
-  font-family: var(--font-heading);
-  font-size: 0.92rem;
-  font-weight: 600;
+  font-family: var(--font-display), var(--font-heading);
+  font-size: 0.86rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   box-shadow: 0 10px 26px rgba(230, 51, 36, 0.3);
   transition:
     transform 0.4s var(--ease-cinematic),
@@ -252,10 +265,11 @@
 }
 
 .overlayLink {
-  font-family: var(--font-heading);
-  font-size: clamp(1.8rem, 7vw, 2.6rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display), var(--font-heading);
+  font-size: clamp(1.9rem, 8vw, 3rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-primary);
 }
 
@@ -266,9 +280,11 @@
   border-radius: 999px;
   background: linear-gradient(135deg, var(--color-chilli) 0%, var(--color-orange) 100%);
   color: var(--text-on-accent);
-  font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-family: var(--font-display), var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   box-shadow: 0 16px 40px rgba(230, 51, 36, 0.32);
 }
 
