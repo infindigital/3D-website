@@ -69,10 +69,10 @@
   gap: clamp(6px, 1.6vh, 26px);
   pointer-events: none;
   transform: rotate(-7deg);
-  /* Held low enough to stay scenery. Orange on warm paper is a quieter
-     pairing than ink on paper was, so it can carry a little more of itself
-     than the 8.5% the ink version needed. */
-  opacity: 0.16;
+  /* Printed, not ghosted. The words carry the brand's own orange at close
+     to its real weight — held back only enough that the film in front of
+     them still reads as the subject. */
+  opacity: 0.5;
 }
 
 .band {
@@ -105,27 +105,22 @@
 }
 
 /*
- * The words run in the room's own orange, and alternate between drawn and
- * plain. Outline throughout is a wireframe; solid throughout is a poster
- * behind the film. Alternating gives the band a beat, and gives the eye a
- * reason to read it as depth rather than as one printed sheet.
+ * The words are solid brand orange — the ink itself, not an outline of it.
+ * Hollow letters read as a wireframe placed behind the film; filled ones
+ * read as a poster the film is standing in front of.
+ *
+ * They alternate between the orange and its deep end, which is the same
+ * orange the intro sheet falls to at its edges. Two tones of one colour
+ * give the band a beat without introducing a second colour into the room.
  */
 .bandWord {
   padding-right: 0.22em;
   white-space: nowrap;
-}
-
-.bandWord[data-ink="line"] {
-  color: transparent;
-  -webkit-text-stroke: 2px var(--ember);
-}
-
-.bandWord[data-ink="plain"] {
   color: var(--ember);
-  -webkit-text-stroke-width: 0;
-  /* A filled glyph covers several times the area an outlined one does, so
-     at matched alpha it would shout over its neighbours */
-  opacity: 0.55;
+}
+
+.bandWord[data-ink="deep"] {
+  color: #b8420f;
 }
 
 /* Two identical runs, so half the band's width is exactly one run */
@@ -276,8 +271,8 @@
 .ring {
   position: absolute;
   /* Sized off the film, so they read as the shape pushing outward */
-  width: 52vmin;
-  height: 35vmin;
+  width: 44vmin;
+  height: 30vmin;
   border: 2px solid rgba(255, 244, 232, 0.6);
   /* The same organic outline the film is cut to, so the rings read as the
      shape pushing outward rather than as decoration around it */
@@ -353,11 +348,22 @@
 
 .mask {
   position: relative;
-  /* Held back from the edges of the room. The film is the subject, not the
-     backdrop: paper around it is what makes it read as an object standing
-     in the hero rather than as a window cut into it. */
-  width: min(70vw, 860px);
-  height: min(52vh, 510px);
+  /*
+   * Held well back from the edges of the room. The film is the subject, not
+   * the backdrop: paper around it is what makes it read as an object
+   * standing in the hero rather than as a window cut into it.
+   *
+   * Only the width is chosen — the height follows the film's own 16:9, so
+   * the shape can never become a frame that crops the shot. Setting the two
+   * separately is how a landscape kitchen turns into a close-up of a plate
+   * on the first narrow screen it meets.
+   *
+   * The third term is the short-window guard: below roughly 230px of room
+   * for the bar above and the buttons below, the width gives way rather
+   * than the ratio.
+   */
+  width: min(58vw, 700px, calc((100svh - 230px) * 16 / 9));
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: var(--color-cream-deep);
   /* Organic, and never the same shape twice */
@@ -481,43 +487,65 @@
    ------------------------------------------------------------ */
 
 @media (max-width: 640px) {
+  /* Room at the bottom for three buttons in a column rather than two on one
+     line and one stranded underneath */
   .stage {
-    padding: calc(var(--nav-height) + 8px) 0 clamp(104px, 20vh, 170px);
+    padding: calc(var(--nav-height) + 8px) 0 clamp(186px, 27vh, 244px);
   }
 
-  /* A tall frame around a landscape shot is a crop, not a composition: the
-     plate fills it and the kitchen it was shot in disappears. So on a
-     portrait screen the shape stays wider than it is tall. */
+  /*
+   * Nearly the full width of the phone, and a shade squarer than the film.
+   * A phone has width to spare and height to save, and 3:2 costs the shot
+   * an eighth of its sides — the pan stays in frame, which is all the
+   * earlier near-square crop threw away.
+   */
   .mask {
-    width: 88vw;
-    height: min(38vh, 320px);
+    width: min(92vw, calc((100svh - 290px) * 3 / 2));
+    aspect-ratio: 3 / 2;
   }
 
-  .bandWord[data-ink="line"] {
-    -webkit-text-stroke-width: 1.4px;
+  /* A phone shows one word of a band at a time, so the type has to be
+     smaller than the viewport-derived size or the room reads as a single
+     letter sliding past */
+  .bandRun {
+    font-size: clamp(2.4rem, 13vw, 3.6rem);
+  }
+
+  .bands {
+    gap: 10px;
+  }
+
+  /*
+   * Three buttons across a phone is three cramped labels; two across and
+   * one stranded underneath is worse. A single column of equal buttons is
+   * the only arrangement of three that does not look like an accident.
+   */
+  .actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    bottom: clamp(22px, 4vh, 40px);
   }
 
   .action {
+    width: min(76vw, 300px);
     min-width: 0;
-    flex: 1 1 auto;
-    max-width: 46%;
-    padding: 13px 14px;
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
+    padding: 13px 18px;
+    font-size: 0.74rem;
+    letter-spacing: 0.09em;
   }
 
   .ring {
-    width: 68vmin;
-    height: 46vmin;
+    width: 62vmin;
+    height: 40vmin;
   }
 }
 
-/* A portrait tablet is a tall room. Left at the landscape proportions the
-   film floats in a field of paper, so it takes more of the height. */
+/* A portrait tablet is a tall room, and the film would float in it at the
+   landscape width */
 @media (min-width: 641px) and (max-width: 1023px) and (orientation: portrait) {
   .mask {
-    width: 80vw;
-    height: min(42vh, 520px);
+    width: min(84vw, 620px, calc((100svh - 280px) * 16 / 9));
   }
 }
 

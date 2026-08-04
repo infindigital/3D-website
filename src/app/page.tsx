@@ -30,6 +30,33 @@ function getHeroAssets(): HeroAssets {
 }
 
 /**
+ * Warming the film.
+ *
+ * The film is the heaviest thing on this page, and the element that plays
+ * it is not in the first HTML: the hero chooses between the intro and the
+ * still hero after hydration, so left alone the download does not start
+ * until the bundle has landed and run. On a phone that is seconds of the
+ * poster sitting there.
+ *
+ * This asks for the bytes while the parser is still in the page. The
+ * element it makes never enters the document and never plays — it exists to
+ * fill the HTTP cache, which the real <video> reads from instead of the
+ * network a moment later.
+ *
+ * `<link rel="preload">` cannot do this job. Chrome rejects `as="video"`
+ * outright ("unsupported `as` value") and fetches nothing, and the other
+ * `as` values fetch under a different credentials mode, which costs a
+ * second download rather than saving the first.
+ *
+ * The media query is the reduced-motion promise kept: that visitor is shown
+ * the poster and never mounts a player, so they must not be made to pay for
+ * one. `Hero` drops the reference once its own element has a frame.
+ */
+const WARM_FILM = `(function(){try{if(!matchMedia("(prefers-reduced-motion: no-preference)").matches)return;var v=document.createElement("video");v.preload="auto";v.muted=true;v.src=${JSON.stringify(
+  FILM_SRC,
+)};window.__warmFilm=v}catch(e){}})()`;
+
+/**
  * The 3D world needs at least the front artwork for a pack to appear in it.
  * The back face reuses the front until the back scan lands. Package artwork
  * is owner-supplied and never generated, so a pack whose file is missing is
@@ -59,6 +86,7 @@ export default function HomePage() {
 
   return (
     <main id="main">
+      <script id="warm-film" dangerouslySetInnerHTML={{ __html: WARM_FILM }} />
       <Hero assets={getHeroAssets()} />
       <HomeWorld packs={stagePacks} products={products} />
     </main>

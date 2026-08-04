@@ -66,6 +66,36 @@ and it is resolved before first paint:
 The `<video>` is rendered only in `"intro"`, so the still hero never costs a
 download.
 
+## Starting the download before the bundle
+
+That split has a cost: the element that plays the film is not in the first
+HTML, because `mode` is not known until hydration. Left alone the film would
+not be *asked for* until the bundle had landed and run — measurably a third
+of a second on a local server, and seconds on a phone.
+
+`WARM_FILM` in `app/page.tsx` is an inline script that asks for the bytes
+while the parser is still in the page, using a video element that never
+enters the document and never plays. It exists to fill the HTTP cache, which
+the real `<video>` reads from a moment later. Measured here: the request
+moves from ~287ms to ~56ms, and there is still exactly **one** of it.
+
+Two things about it are load-bearing:
+
+- **It is guarded by the reduced-motion media query.** That visitor is shown
+  the poster and never mounts a player, so they must never be made to pay
+  for one. Verified by counting requests for the mp4 with
+  `reducedMotion: "reduce"`: it is zero.
+- **`<link rel="preload">` cannot do this job.** Chrome rejects `as="video"`
+  outright — "`<link rel=preload> uses an unsupported as value`" — and
+  fetches nothing at all, which is easy to mistake for success because the
+  page still works. The other `as` values do fetch, under a credentials mode
+  the video element will not reuse, so they cost a second download rather
+  than saving the first.
+
+`Hero` drops the warm element on `loadeddata`, and again at the end of the
+intro in case that event never came; holding it costs a second buffer of the
+same film.
+
 ## The room around the film
 
 All of it is transform and opacity on layers the compositor already owns.
@@ -74,8 +104,9 @@ No canvas, no per-frame readback, nothing measured during a scroll.
 - **Words** — three bands of huge display type crossing the room at
   different speeds, the middle one running the other way. Each band prints
   its words twice and travels exactly `-50%`, so the loop has no seam. The
-  words are in the room's own orange and alternate drawn/plain: outline
-  throughout is a wireframe, solid throughout is a poster behind the film.
+  words are printed in the brand's own orange, alternating with its deep
+  end. They are ink, not outline: hollow letters read as a wireframe placed
+  behind the film, filled ones as a poster the film is standing in front of.
 - **Herbs** — curry leaf, chilli and peppercorn at three depths. Each bit
   drifts on its own clock (`.bit`), and the whole depth layer swings with
   the pointer (`.airLayer`). Two transforms on two elements — never both on
@@ -89,6 +120,17 @@ No canvas, no per-frame readback, nothing measured during a scroll.
 `.shape` is the script's (the intro grows it) and `.shift` is the pointer's.
 Keeping them on separate elements is why the growth and the parallax never
 overwrite each other.
+
+**Only the shape's width is ever chosen.** Its height comes from
+`aspect-ratio`, so no breakpoint can turn the frame into a crop. Setting the
+two independently is how a landscape kitchen becomes a close-up of a plate:
+the first narrow screen makes the frame taller than it is wide, `object-fit:
+cover` fills it from the middle, and the room the film was shot in is gone.
+The width's third `min()` term is the short-window guard — when there is not
+enough height for the bar above and the buttons below, the width gives way
+rather than the ratio. A phone is the one place the ratio itself changes, to
+3:2: it has width to spare and height to save, and an eighth off the sides
+still leaves the whole pan in frame.
 
 ## Keeping it moving
 
@@ -104,10 +146,15 @@ before any of them is changed back.
 
   ```
   ffmpeg -i in.mp4 -an -c:v libx264 -profile:v main -pix_fmt yuv420p \
-    -crf 26 -preset veryslow -tune film \
+    -crf 29 -preset veryslow -tune film \
     -g 12 -keyint_min 12 -sc_threshold 0 -movflags +faststart \
     public/assets/home/kitchen-film.mp4
   ```
+
+  Resolution is worth more here than bitrate, and it is not close: at a
+  matched file size, keeping 1280×720 and spending the saving on the
+  quantiser measured better than downscaling to 1024×576 and encoding it
+  richly (SSIM 0.987 against 0.983). Cut the quantiser before the pixels.
 
 - **Nothing blurs the picture.** A `backdrop-filter` is not a layer drawn
   over the film — it is the film read back out of the frame buffer, blurred
@@ -153,7 +200,7 @@ once the page has moved.
 
 | File | Purpose | Source |
 | ---- | ------- | ------ |
-| `public/assets/home/kitchen-film.mp4` | The film. Played whole by the hero, cut into six segments by the world. 1280×720, 10s, silent, 0.5s keyframes | owner-supplied, re-encoded |
+| `public/assets/home/kitchen-film.mp4` | The film. Played whole by the hero, cut into six segments by the world. 1280×720, 10s, silent, 0.5s keyframes, ~1.6 MB | owner-supplied, re-encoded |
 | `public/assets/hero/hero-poster.webp` | The hero's poster, and the whole picture under reduced motion. The film's own frame 0 | pulled from the film |
 | `public/assets/home/kitchen-film-poster.webp` | Poster for the flat layout's ordinary `<video>`. Also frame 0 | pulled from the film |
 | `public/assets/textures/ingredients-scatter.png` | Scattered ingredients, reserved for the brand story section | generated |
@@ -194,7 +241,14 @@ regression test for the `rootMargin` above.
 Worth checking on every hero change, because each has broken once: the hero
 is exactly one viewport tall at 1440×900, 1180×820, 820×1180 and 390×844;
 `scrollWidth === clientWidth` on all four; scroll is unlocked after the
-intro; and reduced motion mounts zero `<video>` elements.
+intro; and reduced motion mounts zero `<video>` elements. Add a short window
+(1440×620) to that list for the film's own sizing — that is the one where
+the shape and the buttons will collide if the width's short-window term goes
+missing.
+
+Two counts are worth taking on any change to how the film is fetched: how
+many requests go out for the mp4 (one), and how many go out under
+`reducedMotion: "reduce"` (none).
 
 `next start` snapshots `/public` at build time, and it holds its build
 manifest in memory — deleting `.next` under a running server leaves it

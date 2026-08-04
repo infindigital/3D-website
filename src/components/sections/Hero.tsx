@@ -35,6 +35,20 @@ export interface HeroAssets {
 }
 
 /**
+ * The page starts the film downloading from an inline script, before this
+ * bundle exists, using a video element that never enters the document (see
+ * `WARM_FILM` in `app/page.tsx`). Once the real element has a frame of its
+ * own, that one is holding a second buffer of the same film for nothing.
+ */
+function releaseWarmFilm() {
+  const held = window as Window & { __warmFilm?: HTMLVideoElement };
+  if (held.__warmFilm) {
+    held.__warmFilm.removeAttribute("src");
+    delete held.__warmFilm;
+  }
+}
+
+/**
  * The intro's beats, in seconds.
  */
 const BEAT = {
@@ -86,9 +100,9 @@ const AIR = [
  * One pass of a band's words. Printed twice per row, so half the row's
  * width is exactly one pass and the loop has no seam.
  *
- * The words alternate between drawn and plain, and the row's own index
- * shifts which of the two a row opens on, so no two rows sit their solid
- * words in a column.
+ * The words alternate between the brand orange and its deep end, and the
+ * row's own index shifts which of the two a row opens on, so no two rows
+ * sit their darker words in a column.
  */
 function BandRun({ row, offset }: { row: string[]; offset: number }) {
   return (
@@ -97,7 +111,7 @@ function BandRun({ row, offset }: { row: string[]; offset: number }) {
         <span
           key={word}
           className={styles.bandWord}
-          data-ink={(index + offset) % 2 ? "plain" : "line"}
+          data-ink={(index + offset) % 2 ? "deep" : "ember"}
         >
           {word} —
         </span>
@@ -122,7 +136,7 @@ function BandRun({ row, offset }: { row: string[]; offset: number }) {
  * that owns its own video has to hand over to a second one, and a second
  * one is a second decoder, a second buffer, and a visible jump at the join.
  *
- * Behind it, giant outlined words cross the room forever, herbs and seed
+ * Behind it, giant words in the brand's orange cross the room forever, herbs and seed
  * hang at three depths and swing with the pointer, and the shape itself
  * never stops morphing. All of it is transform and opacity on layers the
  * compositor already owns: one decoder, no canvas, no per-frame readback,
@@ -293,6 +307,10 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
       tl.add(() => {
         setScrollLocked(false);
         setIntroDone(true);
+        /* Backstop for the warm-up element, in case the film never reached
+           `loadeddata` — by now the hero's own player has been fetching for
+           three seconds and nothing is waiting on the warm copy. */
+        releaseWarmFilm();
       }, BEAT.end);
     }, sectionRef);
 
@@ -322,7 +340,7 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         {siteConfig.name} — {siteConfig.tagline}
       </h1>
 
-      {/* Scenery: huge outlined words crossing the room, forever */}
+      {/* Scenery: huge words in the room's own orange, crossing it forever */}
       <div className={styles.bands} aria-hidden="true">
         {BANDS.map((row, index) => (
           <div key={index} className={styles.band} data-row={index}>
@@ -391,7 +409,10 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
                   /* Not `canplaythrough`: the picture only has to cross
                      over its own frame zero, so the moment there is a frame
                      to show is the moment to show it. */
-                  onLoadedData={() => setFilmReady(true)}
+                  onLoadedData={() => {
+                    setFilmReady(true);
+                    releaseWarmFilm();
+                  }}
                 />
               )}
               <span className={styles.grade} />
