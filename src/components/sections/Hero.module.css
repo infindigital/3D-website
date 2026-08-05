@@ -664,22 +664,33 @@
    * matters — the dish, the pan and the garnish coming down are all in the
    * middle of the frame, and the middle is exactly what a centre crop keeps.
    *
-   * The width still stops short of the edges, and the rings are the reason.
-   * They are cut from these same two values, so a film across the full width
-   * of a phone leaves them nowhere to be rings: every one would be wider
-   * than the screen and show only its top and bottom edge, which reads as
-   * stripes ruled across the room. At 82vw the first ring closes on both
-   * sides inside the screen and the rest are read as its wake. The film
-   * keeps that size afterwards, because the one thing it must never do is
-   * change size.
+   * The width stops well short of the edges, for two reasons.
    *
-   * The third term is the short-phone guard: where there is not the height
+   * The rings are cut from these same two values, so a film across the full
+   * width of a phone leaves them nowhere to be rings: every one would be
+   * wider than the screen and show only its top and bottom edge, which reads
+   * as stripes ruled across the room. And the words run behind the film, so
+   * a film that reaches the edges hides the middle of every line and leaves
+   * two ragged ends — scenery that has been cut in half rather than passed
+   * behind something. At 70vw the first ring closes on both sides inside the
+   * screen, and there is a hand's width of paper down each flank for the
+   * words to be read in. The film keeps that size afterwards, because the
+   * one thing it must never do is change size.
+   *
+   * The second term is the short-phone guard: where there is not the height
    * for a portrait film above the buttons, the width gives way rather than
    * the ratio.
    */
   .hero {
-    --film-w: min(82vw, calc((100svh - 310px) * 4 / 5));
+    --film-w: min(70vw, calc((100svh - 310px) * 4 / 5));
     --film-ar: 4 / 5;
+
+    /* The column under the film — the line of copy and the buttons — is set
+       to the film's own width, so the three of them share one pair of edges.
+       The floor is there for the short phones where the guard above takes
+       the film below a comfortable width for a label; the ceiling keeps that
+       floor inside a narrow screen. */
+    --phone-col: min(max(var(--film-w), 240px), 82vw);
 
     /* The outline, made for a portrait box. The percentages are read off
        each axis separately, so the desktop cut — built for a frame twice as
@@ -761,7 +772,7 @@
      word anywhere is a page that looks unfinished rather than quiet. */
   .pitch {
     display: block;
-    width: min(78vw, 320px);
+    width: var(--phone-col);
     margin-bottom: 6px;
     font-family: var(--font-heading);
     font-size: 0.95rem;
@@ -774,7 +785,7 @@
   }
 
   .action {
-    width: min(76vw, 300px);
+    width: var(--phone-col);
     min-width: 0;
     padding: 13px 18px;
     font-size: 0.74rem;
