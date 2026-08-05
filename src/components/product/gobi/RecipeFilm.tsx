@@ -10,16 +10,28 @@ import styles from "./RecipeFilm.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
+/** The forty-five minutes, for the bar and for the line above it */
+const totalMinutes = gobiRecipe.timeline.reduce(
+  (sum, span) => sum + span.minutes,
+  0,
+);
+const waitingMinutes = gobiRecipe.timeline
+  .filter((span) => span.kind === "wait")
+  .reduce((sum, span) => sum + span.minutes, 0);
+
 /**
- * The recipe, with the film doing the explaining.
+ * The recipe, led by the clock rather than by the pictures.
  *
- * The picture holds still at the top of the screen while the four steps pass
- * it, and the step level with the film is the one lit — so the reader is
- * always looking at the sentence for the thing the film is doing. On a phone
- * there is no room to stand a portrait film beside anything, so it leads and
- * the steps follow underneath.
+ * The heading claims most of the cooking is waiting, so the section proves it
+ * before it explains anything: one bar drawn to scale, the marinade twice the
+ * length of the pan, with a marker running along it as the page passes. The
+ * four steps sit under it as a pair of doors on each side, swinging open off
+ * their hinges as they arrive and standing off the page when pointed at.
  *
- * The film is muted, looping and gated on visibility: a decoder running for a
+ * The film is the section's spine down the left — a slab with a real edge,
+ * turned by the scroll — rather than a picture the reader has to track.
+ *
+ * It is muted, looping and gated on visibility: a decoder running for a
  * section nobody is looking at is a section further down the page dropping
  * frames.
  */
@@ -110,33 +122,70 @@ export default function RecipeFilm({ product }: { product: Product }) {
         0.16,
       );
 
-      /* Each step arrives on its own, and lights while it is level with the
-         film rather than merely once it has been seen. */
-      const steps = gsap.utils.toArray<HTMLElement>(`.${styles.step}`);
-      for (const step of steps) {
-        gsap.fromTo(
-          step,
-          { "--enter-y": "44px", opacity: 0.001 },
-          {
-            "--enter-y": "0px",
-            opacity: 1,
-            duration: 0.85,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: step,
-              start: "top 88%",
-              toggleActions: "play none none reverse",
-            },
+      /*
+       * The bar is wiped open from the left, so the marinade is laid down
+       * first and the fifteen minutes at the pan arrive on the end of it —
+       * which is the order the evening actually happens in. Clipped rather
+       * than scaled, because scaling a bar with words in it stretches them.
+       */
+      gsap.fromTo(
+        `.${styles.barTrack}`,
+        /* The clip is let out well past the strip at rest, or it would cut off
+           the shadow the strip casts on the page as well. */
+        { clipPath: "inset(0 100% -44px 0)" },
+        {
+          clipPath: "inset(0 -44px -44px 0)",
+          duration: 1.15,
+          ease: "power3.inOut",
+          scrollTrigger: {
+            trigger: `.${styles.clock}`,
+            start: "top 86%",
+            toggleActions: "play none none reverse",
           },
-        );
+        },
+      );
 
-        ScrollTrigger.create({
-          trigger: step,
-          start: "top 62%",
-          end: "bottom 42%",
-          toggleClass: { targets: step, className: styles.stepOn },
-        });
-      }
+      /* The marker walks the bar as the section passes — the section's own
+         scroll standing in for the three quarters of an hour. */
+      gsap.fromTo(
+        `.${styles.pip}`,
+        /* Stopped just short of either end, so the marker is always standing on
+           the strip rather than hanging off the corner of it. */
+        { "--pip": "1%" },
+        {
+          "--pip": "97%",
+          ease: "none",
+          scrollTrigger: {
+            trigger: `.${styles.stage}`,
+            start: "top 78%",
+            end: "bottom 55%",
+            scrub: 0.7,
+          },
+        },
+      );
+
+      /*
+       * Each step swings in off its hinge. The angle is a variable inside the
+       * card's own transform rather than a rotation set by GSAP, because the
+       * card also lifts toward the reader on hover and an inline transform
+       * would replace that rather than add to it.
+       */
+      gsap.fromTo(
+        `.${styles.step}`,
+        { "--open": "-58deg", opacity: 0.001 },
+        {
+          "--open": "0deg",
+          opacity: 1,
+          duration: 0.9,
+          stagger: 0.11,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: `.${styles.steps}`,
+            start: "top 84%",
+            toggleActions: "play none none reverse",
+          },
+        },
+      );
 
       /* The dashes travel along the thread as the section passes. Sliding the
          dash offset keeps the line dashed the whole way, which drawing it with
@@ -178,7 +227,7 @@ export default function RecipeFilm({ product }: { product: Product }) {
 
     /*
      * The slab turns as the page goes past it. Only where it is standing beside
-     * the steps: below that break it is stacked in its own column and already
+     * the method: below that break it is stacked in its own column and already
      * facing the reader, and turning something that is not held still just
      * makes it swim.
      */
@@ -218,88 +267,129 @@ export default function RecipeFilm({ product }: { product: Product }) {
       aria-label="How to cook it"
     >
       <div className={styles.inner}>
+        {/* The claim on the left, the facts that back it on the right, so the
+            head is one band deep instead of four stacked ones. */}
         <header className={styles.head}>
-          <p className={styles.eyebrow}>Cook it</p>
-          <h2 className={styles.heading}>
-            Thirty minutes,
-            <br />
-            mostly waiting.
-          </h2>
-          <dl className={styles.meta}>
-            <div className={styles.metaItem}>
-              <dt>Makes</dt>
-              <dd>{gobiRecipe.yield}</dd>
-            </div>
-            <div className={styles.metaItem}>
-              <dt>Takes</dt>
-              <dd>{gobiRecipe.time}</dd>
-            </div>
-            <div className={styles.metaItem}>
-              <dt>Masala</dt>
-              <dd>{product.ratio.masala} per batch</dd>
-            </div>
-          </dl>
-          <ul className={styles.chips} aria-label="What else you need">
-            {gobiRecipe.ingredients.map((ingredient) => (
-              <li className={styles.chip} key={ingredient}>
-                {ingredient}
-              </li>
-            ))}
-          </ul>
+          <div className={styles.headClaim}>
+            <p className={styles.eyebrow}>Cook it</p>
+            <h2 className={styles.heading}>
+              Thirty minutes,
+              <br />
+              mostly waiting.
+            </h2>
+          </div>
+
+          <div className={styles.headFacts}>
+            <dl className={styles.meta}>
+              <div className={styles.metaItem}>
+                <dt>Makes</dt>
+                <dd>{gobiRecipe.yield}</dd>
+              </div>
+              <div className={styles.metaItem}>
+                <dt>Takes</dt>
+                <dd>{gobiRecipe.time}</dd>
+              </div>
+              <div className={styles.metaItem}>
+                <dt>Masala</dt>
+                <dd>{product.ratio.masala} per batch</dd>
+              </div>
+            </dl>
+            <ul className={styles.chips} aria-label="What else you need">
+              {gobiRecipe.ingredients.map((ingredient) => (
+                <li className={styles.chip} key={ingredient}>
+                  {ingredient}
+                </li>
+              ))}
+            </ul>
+          </div>
         </header>
 
         <div className={styles.stage}>
+          {/*
+            The frame is a slab rather than a picture: the edge beside it is a
+            real face standing at a right angle to it, so when the scroll
+            turns the slab you see its thickness. It has to live outside
+            the frame — the frame clips the video, and a clipping box
+            flattens everything inside it back onto one plane.
+          */}
           <div className={styles.filmCol}>
-            <div className={styles.filmSticky}>
-              {/*
-                The frame is a slab rather than a picture: the edge below is a
-                real face standing at a right angle to it, so when the scroll
-                turns the slab you see its thickness. It has to live outside
-                the frame — the frame clips the video, and a clipping box
-                flattens everything inside it back onto one plane.
-              */}
-              <div className={styles.filmSlab}>
-                <span className={styles.filmEdge} aria-hidden="true" />
-                <div className={styles.filmFrame}>
-                  <video
-                    ref={videoRef}
-                    className={styles.video}
-                    src={gobiAssets.film}
-                    poster={gobiAssets.filmPoster}
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    aria-label={`Cooking ${product.name} from pack to plate`}
-                  />
-                  <span className={styles.sheen} aria-hidden="true" />
-                  <span className={styles.filmTag}>Pack to plate</span>
-                </div>
+            <div className={styles.filmSlab}>
+              <span className={styles.filmEdge} aria-hidden="true" />
+              <div className={styles.filmFrame}>
+                <video
+                  ref={videoRef}
+                  className={styles.video}
+                  src={gobiAssets.film}
+                  poster={gobiAssets.filmPoster}
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label={`Cooking ${product.name} from pack to plate`}
+                />
+                <span className={styles.sheen} aria-hidden="true" />
+                <span className={styles.filmTag}>Pack to plate</span>
               </div>
             </div>
           </div>
 
-          <ol className={styles.steps}>
-            {gobiRecipe.steps.map((step, index) => (
-              <li className={styles.step} key={step.title}>
-                <span className={styles.stepIndex}>
-                  {String(index + 1).padStart(2, "0")}
+          <div className={styles.method}>
+            {/*
+              The heading's claim, drawn. The two blocks are as wide as the
+              minutes they stand for, so the marinade is twice the pan without
+              anyone having to say so.
+            */}
+            <figure className={styles.clock}>
+              <figcaption className={styles.clockHead}>
+                <span className={styles.clockTotal}>{totalMinutes} min</span>
+                <span className={styles.clockNote}>
+                  start to plate — {waitingMinutes}
+                  {" of them the marinade’s, not yours"}
                 </span>
-                <div className={styles.stepBody}>
-                  <h3 className={styles.stepTitle}>{step.title}</h3>
-                  <p className={styles.stepText}>{step.body}</p>
+              </figcaption>
+
+              <div className={styles.bar}>
+                <div className={styles.barTrack}>
+                  {gobiRecipe.timeline.map((span) => (
+                    <div
+                      key={span.label}
+                      className={`${styles.span} ${
+                        span.kind === "wait" ? styles.wait : styles.work
+                      }`}
+                      style={{ "--share": span.minutes } as React.CSSProperties}
+                    >
+                      <span className={styles.spanTime}>{span.minutes} min</span>
+                      <span className={styles.spanName}>{span.label}</span>
+                    </div>
+                  ))}
                 </div>
-              </li>
-            ))}
-            <li className={`${styles.step} ${styles.note}`}>
-              <span className={styles.stepIndex} aria-hidden="true">
+                <span className={styles.pip} aria-hidden="true" />
+              </div>
+            </figure>
+
+            <ol className={styles.steps}>
+              {gobiRecipe.steps.map((step, index) => (
+                <li className={styles.step} key={step.title}>
+                  <span className={styles.stepIndex}>
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className={styles.stepBody}>
+                    <h3 className={styles.stepTitle}>{step.title}</h3>
+                    <p className={styles.stepText}>{step.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {/* The one line on the pack people miss, so it is a warning
+                beside the method rather than a fifth thing to do */}
+            <p className={styles.note}>
+              <span className={styles.noteMark} aria-hidden="true">
                 !
               </span>
-              <div className={styles.stepBody}>
-                <p className={styles.stepText}>{gobiRecipe.note}</p>
-              </div>
-            </li>
-          </ol>
+              {gobiRecipe.note}
+            </p>
+          </div>
         </div>
 
         <div className={styles.moves}>

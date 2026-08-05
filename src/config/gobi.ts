@@ -97,9 +97,19 @@ export interface PrepMove {
   body: string;
 }
 
+/** One stretch of the cook's time, either theirs or the marinade's */
+export interface RecipeSpan {
+  minutes: number;
+  label: string;
+  /** `wait` is time the cook is not in the kitchen for */
+  kind: "wait" | "work";
+}
+
 export interface GobiRecipe {
   yield: string;
   time: string;
+  /** The same two numbers `time` prints, kept apart so they can be drawn to scale */
+  timeline: RecipeSpan[];
   ingredients: string[];
   steps: RecipeStep[];
   moves: PrepMove[];
@@ -114,6 +124,10 @@ export interface GobiRecipe {
 export const gobiRecipe: GobiRecipe = {
   yield: "500 g cauliflower",
   time: "30 min marinade, 15 min cook",
+  timeline: [
+    { minutes: 30, label: "Marinating", kind: "wait" },
+    { minutes: 15, label: "At the pan", kind: "work" },
+  ],
   ingredients: [
     "500 g cauliflower",
     "1 tbsp ginger garlic paste",

@@ -24,10 +24,18 @@
   padding: 0 24px;
 }
 
-/* The heading is measured, but the facts and the ingredient chips under it
-   are lists — holding those to the heading's width only wraps them early. */
+/* ---- the head, one band deep ----------------------------------------- */
+
+/* The claim and the facts that back it, side by side. Stacked they were four
+   blocks of head before the reader reached a single instruction. */
 .head {
-  margin-bottom: clamp(20px, 3vh, 34px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(20px, 3vw, 48px);
+  align-items: end;
+  margin-bottom: clamp(22px, 3.2vh, 36px);
+  padding-bottom: clamp(18px, 2.4vh, 26px);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .eyebrow {
@@ -41,7 +49,7 @@
 }
 
 /* Smaller than the page's other headings on purpose. This section is the how,
-   not an argument, and the film beside it is doing the talking. */
+   not an argument, and the bar under it is doing the talking. */
 .heading {
   max-width: 22ch;
   font-size: clamp(1.8rem, 3.6vw, 2.6rem);
@@ -52,10 +60,7 @@
 .meta {
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(18px, 2.6vw, 36px);
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  gap: clamp(16px, 2.2vw, 30px);
 }
 
 .metaItem dt {
@@ -80,7 +85,7 @@
   flex-wrap: wrap;
   gap: 7px;
   list-style: none;
-  margin: 18px 0 0;
+  margin: 14px 0 0;
   padding: 0;
 }
 
@@ -94,42 +99,26 @@
   color: var(--text-primary);
 }
 
-/* ---- the film and the steps beside it -------------------------------- */
+/* ---- the film beside the method -------------------------------------- */
 
 .stage {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
-  gap: clamp(28px, 4vw, 60px);
+  grid-template-columns: clamp(230px, 25vw, 320px) minmax(0, 1fr);
+  gap: clamp(24px, 3.4vw, 52px);
   align-items: start;
 }
 
+/* The depth the slab is turned in. Set on the column rather than the slab so
+   the edge and the face share one vanishing point. */
 .filmCol {
-  /* The sticky child needs a column tall enough to travel inside, which is
-     what the steps beside it provide; nothing here may clip it. */
-  position: relative;
-  height: 100%;
-}
-
-.filmSticky {
-  position: sticky;
-  top: calc(var(--nav-height) + 24px);
-  /* The depth the slab is turned in. Set here rather than on the slab so the
-     edge and the face share one vanishing point. */
   perspective: 1200px;
   perspective-origin: 50% 44%;
 }
 
 .filmSlab {
   position: relative;
-  /*
-   * A portrait film has to be sized from its height, or a wide column makes it
-   * taller than the window and the sticky frame can never be seen whole. So the
-   * height cap is turned into a width and the aspect ratio supplies the rest —
-   * capping the height directly would only break the ratio instead.
-   */
-  width: min(100%, calc(min(58vh, 470px) * 9 / 16));
+  width: 100%;
   aspect-ratio: 9 / 16;
-  margin: 0 auto;
   transform-style: preserve-3d;
   will-change: transform;
 }
@@ -205,50 +194,213 @@
   color: var(--text-primary);
 }
 
-.steps {
-  list-style: none;
+/* ---- the clock -------------------------------------------------------- */
+
+.clock {
   margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(10px, 1.4vw, 16px);
 }
 
-/* The step's arrival and the step's being lit both want to move it, so each
-   is a variable the one transform adds up — a second transform rule, or an
-   inline one from GSAP, would simply cancel the other. */
-@property --slide-x {
+.clockHead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.clockTotal {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  line-height: 1;
+  color: var(--accent);
+}
+
+.clockNote {
+  font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.bar {
+  position: relative;
+}
+
+/*
+ * One strip lying on the page, thick enough to have a side. The thickness is
+ * the strip's own dark background showing below the blocks rather than a
+ * shadow, so the wipe that opens the bar cannot clip it away.
+ */
+.barTrack {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  padding-bottom: 8px;
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 46%, #3a1d0d) 0%,
+    color-mix(in srgb, var(--accent) 62%, #24110a) 100%
+  );
+  box-shadow: 0 18px 34px rgba(120, 60, 20, 0.18);
+}
+
+/*
+ * As wide as the minutes it stands for. Flex-grow rather than a width, so the
+ * two blocks divide whatever the column turns out to be — and the inset is on
+ * the words rather than on the block, because padding sits outside a zero
+ * flex-basis and would put the ratio a couple of per cent out.
+ */
+.span {
+  position: relative;
+  flex: var(--share) 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: clamp(56px, 6.4vw, 72px);
+}
+
+.spanTime,
+.spanName {
+  position: relative;
+  padding: 0 clamp(12px, 1.6vw, 18px);
+}
+
+.spanTime {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(0.95rem, 1.7vw, 1.15rem);
+  line-height: 1.1;
+}
+
+.spanName {
+  font-size: clamp(0.74rem, 1.2vw, 0.84rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.wait {
+  background: color-mix(in srgb, var(--accent) 9%, var(--color-white));
+  color: var(--text-primary);
+}
+
+.wait .spanName {
+  color: var(--text-secondary);
+}
+
+/* Minute ticks walking across the empty half hour. Vertical, so the drift
+   repeats exactly on its own period and never jumps. */
+.wait::before {
+  content: "";
+  position: absolute;
+  inset: 0 -30% 0 -30%;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 20%, transparent) 0 1.5px,
+    transparent 1.5px 22px
+  );
+  pointer-events: none;
+}
+
+.work {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
+.work .spanName {
+  color: color-mix(in srgb, var(--text-on-accent) 78%, transparent);
+}
+
+/* The marker walking the bar. It reaches past both ends of the strip so it
+   reads as something passing over it rather than something inside it. */
+.pip {
+  position: absolute;
+  top: -11px;
+  bottom: 1px;
+  left: var(--pip, 0%);
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 72%, #2b1508);
+  pointer-events: none;
+}
+
+.pip::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 13px;
+  height: 13px;
+  margin-left: -6.5px;
+  border-radius: 50%;
+  background: var(--color-white);
+  border: 2.5px solid color-mix(in srgb, var(--accent) 72%, #2b1508);
+  box-shadow: 0 4px 10px rgba(120, 60, 20, 0.24);
+}
+
+/* ---- the four steps, as doors ---------------------------------------- */
+
+/* Both are read inside the card's one transform: the hinge angle the entrance
+   animates, and the lift the pointer transitions. Two transform rules — or an
+   inline one from GSAP — would cancel each other instead of adding up. */
+@property --open {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --lift {
   syntax: "<length>";
   inherits: false;
   initial-value: 0px;
 }
 
+.steps {
+  list-style: none;
+  margin: clamp(20px, 2.6vh, 30px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 1.5vw, 18px);
+  perspective: 1100px;
+}
+
 .step {
   display: flex;
-  gap: clamp(14px, 1.6vw, 20px);
-  padding: clamp(16px, 2vw, 24px);
-  border-radius: 20px;
+  gap: clamp(12px, 1.4vw, 18px);
+  padding: clamp(14px, 1.8vw, 20px);
+  border-radius: 18px;
   background: var(--color-white);
   border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
   box-shadow: 0 12px 30px rgba(120, 60, 20, 0.06);
-  transform: translate3d(var(--slide-x), var(--enter-y, 0px), 0);
-  transition: border-color 0.5s var(--ease-soft),
-    box-shadow 0.5s var(--ease-soft), --slide-x 0.5s var(--ease-soft);
+  /* Hinged on the outer edge of its own column, so the pair swings apart */
+  transform-origin: left center;
+  transform: translate3d(0, 0, var(--lift, 0px)) rotateY(var(--open, 0deg));
+  transition: --lift 0.45s var(--ease-soft),
+    box-shadow 0.45s var(--ease-soft), border-color 0.45s var(--ease-soft);
   will-change: transform;
 }
 
-/* The step level with the film. It is a border and a lift, not a colour
-   change, so the eye is drawn without the page changing temperature. */
-.stepOn {
-  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
-  box-shadow: 0 22px 50px rgba(120, 60, 20, 0.14);
-  --slide-x: 6px;
+.step:nth-child(even) {
+  transform-origin: right center;
+  transform: translate3d(0, 0, var(--lift, 0px))
+    rotateY(calc(var(--open, 0deg) * -1));
+}
+
+.step:hover,
+.step:focus-within {
+  --lift: 26px;
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 26px 54px rgba(120, 60, 20, 0.16);
 }
 
 .stepIndex {
   flex: none;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -256,12 +408,13 @@
   border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--accent);
-  transition: background 0.5s var(--ease-soft), color 0.5s var(--ease-soft);
+  transition: background 0.45s var(--ease-soft), color 0.45s var(--ease-soft);
 }
 
-.stepOn .stepIndex {
+.step:hover .stepIndex,
+.step:focus-within .stepIndex {
   background: var(--accent);
   color: var(--text-on-accent);
 }
@@ -269,39 +422,50 @@
 .stepBody {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .stepTitle {
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: clamp(1.05rem, 2vw, 1.32rem);
+  font-size: clamp(1rem, 1.8vw, 1.18rem);
   color: var(--text-primary);
 }
 
 .stepText {
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  line-height: 1.65;
+  font-size: clamp(0.86rem, 1.4vw, 0.95rem);
+  line-height: 1.6;
   color: var(--text-secondary);
 }
 
 /* The one line on the pack people miss, so it is a warning and not a step */
 .note {
-  background: color-mix(in srgb, var(--color-turmeric) 12%, var(--color-white));
-  border-color: color-mix(in srgb, var(--color-turmeric) 40%, transparent);
+  display: flex;
   align-items: center;
-}
-
-.note .stepIndex {
-  background: var(--color-turmeric);
-  border-color: var(--color-turmeric);
-  color: var(--text-primary);
-  font-size: 1.1rem;
-}
-
-.note .stepText {
-  color: var(--text-primary);
+  gap: 12px;
+  margin-top: clamp(14px, 1.8vh, 20px);
+  padding: clamp(12px, 1.6vw, 16px) clamp(14px, 1.8vw, 20px);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--color-turmeric) 13%, var(--color-white));
+  border: 1px solid color-mix(in srgb, var(--color-turmeric) 42%, transparent);
+  font-size: clamp(0.88rem, 1.45vw, 0.98rem);
   font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.noteMark {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-turmeric);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-primary);
 }
 
 /* ---- the four drawings ----------------------------------------------- */
@@ -428,30 +592,29 @@
 /* ---- narrower screens ------------------------------------------------ */
 
 @media (max-width: 900px) {
-  .stage {
+  .head {
     grid-template-columns: minmax(0, 1fr);
-    gap: clamp(28px, 5vw, 44px);
+    gap: clamp(16px, 3vw, 24px);
+    align-items: start;
   }
 
-  .filmSticky {
-    position: static;
+  .filmCol {
     perspective: none;
-  }
-
-  /* Stacked rather than beside, so the film is bounded by the column it now has
-     to itself instead of by the height of the window — and wider than on a
-     phone, because a narrow portrait film in a tablet-width column leaves more
-     empty page either side of it than the film itself takes up. */
-  .filmSlab {
-    width: min(100%, 345px);
   }
 
   .filmEdge {
     display: none;
   }
 
-  .stepOn {
-    --slide-x: 0px;
+  /* One door at a time, all hinged the same way, since there is no longer a
+     pair of them standing side by side to open apart */
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .step:nth-child(even) {
+    transform-origin: left center;
+    transform: translate3d(0, 0, var(--lift, 0px)) rotateY(var(--open, 0deg));
   }
 
   /* Two up rather than four, and the thread goes — an arc drawn for four
@@ -466,22 +629,61 @@
   }
 }
 
+/*
+ * A tablet is too narrow to hold four step cards two abreast and too wide to
+ * stack the film above them — laid flat, a portrait film leaves more empty page
+ * either side of it than the film itself takes up. So the film stays beside the
+ * method and is pinned instead: it holds at the top of the screen while the
+ * four steps go past, and the column it is in never runs out under it.
+ */
+@media (min-width: 641px) and (max-width: 900px) {
+  .stage {
+    grid-template-columns: clamp(200px, 30%, 280px) minmax(0, 1fr);
+    gap: clamp(20px, 3vw, 32px);
+  }
+
+  .filmCol {
+    position: sticky;
+    top: calc(var(--nav-height) + 20px);
+    align-self: start;
+  }
+}
+
 @media (max-width: 640px) {
   .film {
     padding-top: clamp(40px, 6vh, 60px);
   }
 
+  /* Stacked, because at this width there is no second column to stand it in */
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(24px, 5vw, 34px);
+  }
+
   .filmSlab {
     width: min(100%, 264px);
+    margin: 0 auto;
   }
 
   .filmFrame {
     border-radius: 22px;
   }
 
+  /* The two blocks stay side by side — drawn to scale is the whole point — and
+     only lose a little height, because the fifteen-minute one is a third of a
+     phone's width and its two lines need the room. */
+  .span {
+    min-height: 62px;
+  }
+
+  .spanTime,
+  .spanName {
+    padding: 0 11px;
+  }
+
   .step {
-    padding: 16px;
-    gap: 14px;
+    padding: 15px;
+    gap: 13px;
   }
 
   .stepIndex {
@@ -526,9 +728,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .step,
-  .stepOn {
-    --slide-x: 0px;
-    --enter-y: 0px;
+  .step:hover,
+  .step:focus-within {
+    --open: 0deg;
+    --lift: 0px;
     transition: none;
+  }
+
+  .pip {
+    display: none;
   }
 }
