@@ -246,8 +246,9 @@
   padding: 0;
   overflow: hidden;
   /* This tile sets the height of the whole first row, so the four cards beside
-     it are only ever as empty underneath as this is tall. */
-  min-height: clamp(280px, 32vw, 420px);
+     it are only ever as empty underneath as this is tall. It came down when
+     the cards did: a line of copy each does not hold up a 420px row. */
+  min-height: clamp(250px, 27vw, 350px);
   /* The picture is behind the tiles beside it, so it takes the lighter half
      of the pointer drift and they take the heavier one. */
   --depth-x: 6px;

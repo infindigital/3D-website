@@ -395,7 +395,7 @@ export default function RecipeFilm({ product }: { product: Product }) {
         <div className={styles.moves}>
           <h3 className={styles.movesHeading}>
             <span className={styles.movesLabel}>Or, without the pan</span>
-            The whole method in four moves
+            The method in four moves
           </h3>
 
           <div className={styles.movesBody}>

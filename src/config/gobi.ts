@@ -61,27 +61,32 @@ export interface GobiFeature {
   body: string;
 }
 
-/** The five product features from the owner's bullet-point brief. */
+/**
+ * The five product features from the owner's bullet-point brief.
+ *
+ * A line each. They are read at a glance off five small cards, and a card
+ * that takes three lines to make one point is a card nobody finishes.
+ */
 export const gobiFeatures: GobiFeature[] = [
   {
     title: "One mix, every vegetable",
-    body: "Blended to bring restaurant-style flavour to cauliflower, paneer, mushroom and potato alike.",
+    body: "Cauliflower, paneer, mushroom or potato.",
   },
   {
     title: "A coating that stays crisp",
-    body: "Golden and extra-crunchy every time, whether it goes into a deep fryer, an air fryer or a pan.",
+    body: "Golden from a deep fryer, an air fryer or a pan.",
   },
   {
     title: "No second shelf of spices",
-    body: "No extra salt, no flour, no long list. Mix with a splash of water, coat, and cook.",
+    body: "No salt, no flour, no long list. Add water, coat, cook.",
   },
   {
     title: "Clean all the way through",
-    body: "Zero artificial colours and zero preservatives — high-quality, authentic spices and nothing else.",
+    body: "No artificial colours, no preservatives. Spices and nothing else.",
   },
   {
     title: "Snack, starter or side",
-    body: "An evening snack, a party appetiser, a lunchbox filler or a crisp side for a daily meal.",
+    body: "Evening snack, party starter, lunchbox, or a side.",
   },
 ];
 
@@ -117,9 +122,11 @@ export interface GobiRecipe {
 }
 
 /**
- * The recipe card, transcribed. The ingredient list is the owner's own list in
- * the owner's own order, and the three steps are the three paragraphs printed
- * under METHOD — split at their own full stops, not rewritten.
+ * The recipe card. The ingredient list is the owner's own list in the owner's
+ * own order, and the steps are the paragraphs printed under METHOD, cut down
+ * to the instructions themselves: every ingredient, quantity, temperature and
+ * order of work the card gives is still here, and only the words around them
+ * are gone. Someone cooking from a screen is reading with their hands full.
  */
 export const gobiRecipe: GobiRecipe = {
   yield: "500 g cauliflower",
@@ -141,19 +148,19 @@ export const gobiRecipe: GobiRecipe = {
   steps: [
     {
       title: "Cut, marinate, fry",
-      body: "Cut the cauliflower into bite-sized pieces, and clean and wash it. Marinate with a paste made of 50 g of gobi masala powder and a little water. Fry the marinated gobi in hot oil till golden.",
+      body: "Cut into bite-sized pieces, wash and drain. Marinate in a paste of 50 g masala and a little water. Fry in hot oil till golden.",
     },
     {
       title: "Build the sauce",
-      body: "In a pan, heat oil and sauté the chopped onion, green chilli, ginger-garlic paste, soy sauce, tomato sauce, hot and sweet tomato sauce, and corn sauce for a few minutes.",
+      body: "Heat oil and sauté the onion, green chilli and ginger-garlic paste, then the soy, tomato, hot-and-sweet and corn sauces.",
     },
     {
       title: "Fold the gobi through",
-      body: "Now add the fried gobi to this sauce and sauté it.",
+      body: "Add the fried gobi and sauté.",
     },
     {
       title: "Garnish and serve",
-      body: "Remove from the flame and garnish with chopped spring onion. Now it's ready to serve.",
+      body: "Off the flame, garnish with spring onion. Serve hot.",
     },
   ],
   /**
@@ -165,12 +172,12 @@ export const gobiRecipe: GobiRecipe = {
     {
       id: "mix",
       label: "Mix",
-      body: "Take masala with curd or water and ginger garlic paste, and mix well.",
+      body: "Masala with curd or water and ginger garlic paste.",
     },
     {
       id: "coat",
       label: "Coat",
-      body: "Apply this paste to gobi, mushroom or paneer pieces and marinate for 30 minutes.",
+      body: "Gobi, mushroom or paneer. Marinate 30 minutes.",
     },
     {
       id: "fry",
@@ -180,7 +187,7 @@ export const gobiRecipe: GobiRecipe = {
     {
       id: "grill",
       label: "Or grill",
-      body: "Fry in a pan, or use a charcoal oven or a gas grill on low heat.",
+      body: "A pan, a charcoal oven or a gas grill, on low.",
     },
   ],
   /** The line the card prints in brackets, and the one people most often miss. */
@@ -203,19 +210,19 @@ export interface CrustLayer {
 export const gobiCrust: CrustLayer[] = [
   {
     name: "Golden crust",
-    body: "Corn starch in the mix sets hard the moment it meets hot oil.",
+    body: "Corn starch, set hard by the hot oil.",
     r: 86,
     tone: "#e2952f",
   },
   {
     name: "Masala and water",
-    body: "A thin paste, so the seasoning goes right through instead of sitting on top.",
+    body: "A thin paste, so the seasoning goes right through.",
     r: 62,
     tone: "#c8461f",
   },
   {
     name: "The gobi",
-    body: "Bite-sized, washed, drained — dry enough for the paste to hold.",
+    body: "Bite-sized, washed, drained.",
     r: 40,
     tone: "#f2e7cc",
   },
@@ -333,7 +340,11 @@ export interface ServingIdea {
   dip: string;
 }
 
-/** The three plating ideas from the owner's serving sheet, in that order. */
+/**
+ * The three plating ideas from the owner's serving sheet, in that order. One
+ * of the three is on screen at a time beside its photograph, and the
+ * photograph is doing most of the describing.
+ */
 export const gobiServings: ServingIdea[] = [
   {
     id: "dry",
@@ -342,9 +353,9 @@ export const gobiServings: ServingIdea[] = [
     style: "Appetiser",
     image: gobiAssets.platters.dry,
     presentation:
-      "Serve the fried cauliflower on skewers upright in a glass, or flat on a platter for a modern street-food look.",
-    garnish: "Chopped spring onions, cilantro and sesame seeds.",
-    dip: "Schezwan or sweet chilli sauce in small bowls.",
+      "On skewers standing in a glass, or flat on a platter — street food, plated.",
+    garnish: "Spring onion, cilantro, sesame.",
+    dip: "Schezwan or sweet chilli.",
   },
   {
     id: "semi",
@@ -353,9 +364,9 @@ export const gobiServings: ServingIdea[] = [
     style: "Side dish",
     image: gobiAssets.platters.semi,
     presentation:
-      "Spoon it over a bed of fried rice or noodles in a shallow bowl, with bell peppers and onions layered through.",
-    garnish: "Fresh cilantro and chopped spring onions.",
-    dip: "A mild chilli-garlic sauce or a soy-based dip on the side.",
+      "Spooned over fried rice or noodles, peppers and onions layered through.",
+    garnish: "Cilantro and spring onion.",
+    dip: "Mild chilli-garlic, or soy.",
   },
   {
     id: "gravy",
@@ -363,10 +374,9 @@ export const gobiServings: ServingIdea[] = [
     name: "Gravy Gobi Manchurian",
     style: "Main course",
     image: gobiAssets.platters.gravy,
-    presentation:
-      "Serve it gravy-rich in deep bowls, as the main course rather than the starter.",
-    garnish: "Chopped green onions and a drizzle of sesame oil.",
-    dip: "A light soy or chilli-garlic dip, if you want one at all.",
+    presentation: "Gravy-rich in deep bowls, as the main rather than the starter.",
+    garnish: "Green onion and a drizzle of sesame oil.",
+    dip: "Light soy or chilli-garlic, if any.",
   },
 ];
 
@@ -390,7 +400,7 @@ export const gobiPacks: PackSize[] = [
     id: "30g",
     size: "30 g",
     unit: "Pack of 10",
-    who: "One sachet per fry, nothing left open",
+    who: "One sachet per fry",
     yields: "About 400 g of gobi per sachet",
     scale: 0.72,
     order:

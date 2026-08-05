@@ -189,8 +189,8 @@ export default function CrispCase({ product }: { product: Product }) {
             .
           </h2>
           <p className={styles.lead}>
-            One ready mix does the marinade, the crust and the seasoning at
-            once — so the only thing left to get right is the heat.
+            One mix does the marinade, the crust and the seasoning. The heat is
+            the only thing left to get right.
           </p>
         </header>
 

@@ -161,8 +161,8 @@ export default function PackShelf({ product }: { product: Product }) {
             A sack for the kitchen.
           </h2>
           <p className={styles.lead}>
-            The same masala in four sizes, so a single fry at home and a
-            week&rsquo;s service in a canteen both come out of the right pack.
+            The same masala in four sizes — one fry at home, or a week&rsquo;s
+            service.
           </p>
         </header>
 
@@ -258,8 +258,8 @@ export default function PackShelf({ product }: { product: Product }) {
             <h3 className={styles.specHeading}>The pouch, actual size</h3>
             <p className={styles.specLine}>
               {gobiPackSpec.width} across, {gobiPackSpec.height} tall,{" "}
-              {gobiPackSpec.depth} deep — flat enough for a shelf, small enough
-              for a drawer, and sealed until you open it.
+              {gobiPackSpec.depth} deep. Flat for a shelf, sealed until you open
+              it.
             </p>
             <ul className={styles.claims}>
               {gobiPackSpec.claims.map((claim) => (

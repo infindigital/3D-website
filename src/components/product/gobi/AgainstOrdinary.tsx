@@ -147,8 +147,7 @@ export default function AgainstOrdinary({ product }: { product: Product }) {
           <p className={styles.eyebrow}>The difference</p>
           <h2 className={styles.heading}>Why settle for ordinary?</h2>
           <p className={styles.lead}>
-            The restaurant-style version is a pack and a pan away. Here is what
-            separates it from the masala sitting next to it on the shelf.
+            What separates it from the masala sitting beside it on the shelf.
           </p>
         </header>
 

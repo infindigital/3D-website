@@ -95,9 +95,8 @@ export default function GobiClose({ product }: { product: Product }) {
             or your kitchen&rsquo;s kitchen.
           </h2>
           <p className={styles.body}>
-            One evening&rsquo;s snack out of a 30 g sachet, or a night&rsquo;s
-            service out of the 5 kg sack — the crunch, the colour and the
-            quantity of masala per plate come out the same either way.
+            A 30 g sachet or a 5 kg sack — the same crunch, the same colour, the
+            same masala per plate.
           </p>
           <BuyButtons
             className={styles.buys}
