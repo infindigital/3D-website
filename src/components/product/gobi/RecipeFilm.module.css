@@ -31,7 +31,9 @@
 .head {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  gap: clamp(26px, 3.6vw, 60px);
+  /* Across only. The second row is the ingredient run, which sets its own
+     distance from the facts above it — a row gap here would be added to it. */
+  gap: 0 clamp(26px, 3.6vw, 60px);
   align-items: end;
   margin-bottom: clamp(32px, 4.4vh, 50px);
   padding-bottom: clamp(24px, 3.2vh, 34px);
@@ -80,27 +82,63 @@
   color: var(--text-primary);
 }
 
-/* The shopping list, and the densest thing on the page — eight of these wrap
-   into three rows, so they need more air between them than a row of chips
-   normally would or the rows read as one grey block. */
+/*
+ * The shopping list. It is the least important thing in the head — a reminder
+ * of what is already in the kitchen — so it is set as one small run under both
+ * columns rather than eight boxes beside the facts, and given the full width
+ * of the head so it has a chance of staying on one line.
+ */
+/* Everything in here is one paragraph's worth of inline flow — the label, the
+   items and the dots between them — so the label sits at the front of the
+   first line instead of claiming a line of its own. */
+.also {
+  grid-column: 1 / -1;
+  margin-top: clamp(14px, 2vh, 20px);
+  line-height: 1.75;
+  /* Eight items rarely divide evenly into the width, and the leftover is a
+     single item stranded on a line of its own. Balanced, the run breaks into
+     even lines instead. Ignored where it is unsupported, which only costs the
+     orphan back. */
+  text-wrap: balance;
+}
+
+.alsoLabel {
+  display: inline;
+  margin-right: 10px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
 .chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: inline;
   list-style: none;
-  margin: 20px 0 0;
+  margin: 0;
   padding: 0;
 }
 
 .chip {
-  padding: 7px 14px;
-  line-height: 1.35;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 8%, var(--color-white));
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
-  font-size: clamp(0.76rem, 1.3vw, 0.85rem);
-  font-weight: 600;
-  color: var(--text-primary);
+  display: inline;
+  font-size: clamp(0.76rem, 1.05vw, 0.82rem);
+  color: var(--text-secondary);
+}
+
+/* The dot belongs to the item in front of it, so a line that wraps never
+   starts with a separator hanging off its left edge. */
+/*
+ * The dot belongs to the item in front of it. The space is on the far side of
+ * it only, so that is the one place a line can break — a leading space would
+ * let a wrap strand the dot at the start of the next line.
+ */
+.chip:not(:last-child)::after {
+  content: "· ";
+  padding-left: clamp(5px, 0.7vw, 8px);
+  padding-right: clamp(2px, 0.3vw, 4px);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 /* ---- the film beside the method -------------------------------------- */
@@ -602,6 +640,12 @@
     grid-template-columns: minmax(0, 1fr);
     gap: clamp(22px, 3.6vw, 30px);
     align-items: start;
+  }
+
+  /* Stacked, the head is one column of rows and the grid's own gap already
+     separates the run from the facts — its margin would count twice. */
+  .also {
+    margin-top: 0;
   }
 
   .filmCol {

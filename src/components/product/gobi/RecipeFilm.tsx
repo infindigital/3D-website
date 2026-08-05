@@ -102,17 +102,12 @@ export default function RecipeFilm({ product }: { product: Product }) {
         { y: 0, opacity: 1, duration: 0.75 },
         0.3,
       );
+      /* One run of small type now, so it arrives as one line rather than as
+         eight things popping in one after another. */
       enter.fromTo(
-        `.${styles.chip}`,
-        { y: 18, opacity: 0.001, scale: 0.9 },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.55,
-          stagger: 0.05,
-          ease: "back.out(1.6)",
-        },
+        `.${styles.also}`,
+        { y: 14, opacity: 0.001 },
+        { y: 0, opacity: 1, duration: 0.6 },
         0.36,
       );
       enter.fromTo(
@@ -270,7 +265,7 @@ export default function RecipeFilm({ product }: { product: Product }) {
         {/* The claim on the left, the facts that back it on the right, so the
             head is one band deep instead of four stacked ones. */}
         <header className={styles.head}>
-          <div className={styles.headClaim}>
+          <div>
             <p className={styles.eyebrow}>Cook it</p>
             <h2 className={styles.heading}>
               Thirty minutes,
@@ -279,22 +274,34 @@ export default function RecipeFilm({ product }: { product: Product }) {
             </h2>
           </div>
 
-          <div className={styles.headFacts}>
-            <dl className={styles.meta}>
-              <div className={styles.metaItem}>
-                <dt>Makes</dt>
-                <dd>{gobiRecipe.yield}</dd>
-              </div>
-              <div className={styles.metaItem}>
-                <dt>Takes</dt>
-                <dd>{gobiRecipe.time}</dd>
-              </div>
-              <div className={styles.metaItem}>
-                <dt>Masala</dt>
-                <dd>{product.ratio.masala} per batch</dd>
-              </div>
-            </dl>
-            <ul className={styles.chips} aria-label="What else you need">
+          <dl className={styles.meta}>
+            <div className={styles.metaItem}>
+              <dt>Makes</dt>
+              <dd>{gobiRecipe.yield}</dd>
+            </div>
+            <div className={styles.metaItem}>
+              <dt>Takes</dt>
+              <dd>{gobiRecipe.time}</dd>
+            </div>
+            <div className={styles.metaItem}>
+              <dt>Masala</dt>
+              <dd>{product.ratio.masala} per batch</dd>
+            </div>
+          </dl>
+
+          {/* The shopping list, run along one line under both columns rather
+              than boxed up beside the facts. Eight pills wrapped into three
+              rows read as a block of their own; the same words set small and
+              separated by a dot read as the single aside they are. */}
+          <div className={styles.also}>
+            <p className={styles.alsoLabel}>You also need</p>
+            {/* Laid out inline, which is enough for some screen readers to
+                stop announcing it as a list — hence the explicit role. */}
+            <ul
+              className={styles.chips}
+              role="list"
+              aria-label="What else you need"
+            >
               {gobiRecipe.ingredients.map((ingredient) => (
                 <li className={styles.chip} key={ingredient}>
                   {ingredient}
