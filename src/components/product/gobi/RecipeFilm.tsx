@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { gobiAssets, gobiRecipe } from "@/config/gobi";
@@ -136,6 +137,43 @@ export default function RecipeFilm({ product }: { product: Product }) {
           toggleClass: { targets: step, className: styles.stepOn },
         });
       }
+
+      /* The dashes travel along the thread as the section passes. Sliding the
+         dash offset keeps the line dashed the whole way, which drawing it with
+         a growing dash would not — that only works on a solid stroke. */
+      gsap.fromTo(
+        `.${styles.threadPath}`,
+        { strokeDashoffset: 0 },
+        {
+          strokeDashoffset: -140,
+          ease: "none",
+          scrollTrigger: {
+            trigger: `.${styles.moves}`,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.8,
+          },
+        },
+      );
+
+      /* The drawings sit far below the head, so they get their own trigger
+         rather than riding the section's entrance timeline. */
+      gsap.fromTo(
+        `.${styles.move}`,
+        { y: 40, opacity: 0.001 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          stagger: 0.1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: `.${styles.moves}`,
+            start: "top 84%",
+            toggleActions: "play none none reverse",
+          },
+        },
+      );
     });
 
     return () => mm.revert();
@@ -220,6 +258,54 @@ export default function RecipeFilm({ product }: { product: Product }) {
               </div>
             </li>
           </ol>
+        </div>
+
+        <div className={styles.moves}>
+          <h3 className={styles.movesHeading}>
+            <span className={styles.movesLabel}>Or, without the pan</span>
+            The whole method in four moves
+          </h3>
+
+          <div className={styles.movesBody}>
+            {/* The card's dashed thread, redrawn so a scroll can draw it. It
+                hops the gaps between the drawings the way the printed one
+                does, and is decoration only — the list carries the meaning. */}
+            <svg
+              className={styles.thread}
+              viewBox="0 0 1000 60"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                className={styles.threadPath}
+                d="M 125 50 C 190 -2, 310 -2, 375 50 C 440 -2, 560 -2, 625 50 C 690 -2, 810 -2, 875 50"
+                fill="none"
+              />
+            </svg>
+
+            <ol className={styles.moveList}>
+              {gobiRecipe.moves.map((move, index) => (
+                <li className={styles.move} key={move.id}>
+                  <div className={styles.moveArt}>
+                    <Image
+                      src={
+                        gobiAssets.moves[move.id as keyof typeof gobiAssets.moves]
+                      }
+                      alt=""
+                      width={320}
+                      height={320}
+                      sizes="(max-width: 640px) 72px, (max-width: 1100px) 22vw, 128px"
+                    />
+                    <span className={styles.moveNum} aria-hidden="true">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <p className={styles.moveLabel}>{move.label}</p>
+                  <p className={styles.moveText}>{move.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       </div>
     </section>

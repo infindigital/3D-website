@@ -24,6 +24,13 @@ export const gobiAssets = {
   spread: "/assets/products/gobi-manchurian/spread.webp",
   film: "/assets/products/gobi-manchurian/recipe.mp4",
   filmPoster: "/assets/products/gobi-manchurian/recipe-poster.webp",
+  /** The card's own four drawings, lifted off their grey tile */
+  moves: {
+    mix: "/assets/products/gobi-manchurian/move-mix.webp",
+    coat: "/assets/products/gobi-manchurian/move-coat.webp",
+    fry: "/assets/products/gobi-manchurian/move-fry.webp",
+    grill: "/assets/products/gobi-manchurian/move-grill.webp",
+  },
 } as const;
 
 /** The short claims that run across the top of the page. */
@@ -70,50 +77,194 @@ export interface RecipeStep {
   body: string;
 }
 
+export interface PrepMove {
+  /** Which of the four illustrations on the card this is */
+  id: string;
+  label: string;
+  body: string;
+}
+
 export interface GobiRecipe {
   yield: string;
   time: string;
   ingredients: string[];
   steps: RecipeStep[];
+  moves: PrepMove[];
   note: string;
 }
 
-/** The method printed on the recipe card, as four steps. */
+/**
+ * The recipe card, transcribed. The ingredient list is the owner's own list in
+ * the owner's own order, and the three steps are the three paragraphs printed
+ * under METHOD — split at their own full stops, not rewritten.
+ */
 export const gobiRecipe: GobiRecipe = {
   yield: "500 g cauliflower",
-  time: "30 min rest, 15 min cook",
-  /** Everything the sauce needs; the coating needs only the masala and water. */
+  time: "30 min marinade, 15 min cook",
   ingredients: [
     "500 g cauliflower",
     "1 tbsp ginger garlic paste",
     "1 tbsp soy sauce",
     "2 tbsp tomato sauce",
-    "2 tbsp hot & sweet tomato sauce",
+    "2 tbsp hot and sweet tomato sauce",
     "1 tbsp corn sauce",
     "2 spring onions",
-    "Chopped onion & green chilli",
+    "Chopped onion and green chilli",
   ],
   steps: [
     {
-      title: "Mix the masala",
-      body: "Work 50 g of masala into a smooth paste with a little water or curd and the ginger-garlic paste.",
+      title: "Cut, marinate, fry",
+      body: "Cut the cauliflower into bite-sized pieces, and clean and wash it. Marinate with a paste made of 50 g of gobi masala powder and a little water. Fry the marinated gobi in hot oil till golden.",
     },
     {
-      title: "Coat and rest",
-      body: "Cut the cauliflower into bite-sized pieces, wash and drain, then turn them through the paste and leave for 30 minutes.",
+      title: "Build the sauce",
+      body: "In a pan, heat oil and sauté the chopped onion, green chilli, ginger-garlic paste, soy sauce, tomato sauce, hot and sweet tomato sauce, and corn sauce for a few minutes.",
     },
     {
-      title: "Fry till golden",
-      body: "Deep fry on a moderate flame until the coating turns golden. A pan, an air fryer or a charcoal grill on low heat does the same job.",
+      title: "Fold the gobi through",
+      body: "Now add the fried gobi to this sauce and sauté it.",
     },
     {
-      title: "Finish in the sauce",
-      body: "Sauté onion, green chilli and ginger-garlic with the soy, tomato, hot-and-sweet and corn sauces, fold the fried gobi through, and garnish with spring onion.",
+      title: "Garnish and serve",
+      body: "Remove from the flame and garnish with chopped spring onion. Now it's ready to serve.",
     },
   ],
-  /** The line the pack prints in brackets, and the one people most often miss. */
+  /**
+   * The four pictures that run along the foot of the card. They are the same
+   * method told without a pan in front of you — which is why they carry the
+   * curd, the 30 minutes and the three ways to cook that the paragraphs skip.
+   */
+  moves: [
+    {
+      id: "mix",
+      label: "Mix",
+      body: "Take masala with curd or water and ginger garlic paste, and mix well.",
+    },
+    {
+      id: "coat",
+      label: "Coat",
+      body: "Apply this paste to gobi, mushroom or paneer pieces and marinate for 30 minutes.",
+    },
+    {
+      id: "fry",
+      label: "Fry",
+      body: "Deep fry on a moderate flame. Serve hot.",
+    },
+    {
+      id: "grill",
+      label: "Or grill",
+      body: "Fry in a pan, or use a charcoal oven or a gas grill on low heat.",
+    },
+  ],
+  /** The line the card prints in brackets, and the one people most often miss. */
   note: "Do not add chilli or salt — the masala already carries both.",
 };
+
+export interface CrustLayer {
+  name: string;
+  body: string;
+  /** Radius on the 220-unit cross-section, and the colour of that layer */
+  r: number;
+  tone: string;
+}
+
+/**
+ * The coating, read from the outside in. It is the claim the section makes —
+ * that the crust is a recipe rather than a knack — so it is drawn rather than
+ * asserted, and every layer here is one the pack's own method produces.
+ */
+export const gobiCrust: CrustLayer[] = [
+  {
+    name: "Golden crust",
+    body: "Corn starch in the mix sets hard the moment it meets hot oil.",
+    r: 86,
+    tone: "#e2952f",
+  },
+  {
+    name: "Masala and water",
+    body: "A thin paste, so the seasoning goes right through instead of sitting on top.",
+    r: 62,
+    tone: "#c8461f",
+  },
+  {
+    name: "The gobi",
+    body: "Bite-sized, washed, drained — dry enough for the paste to hold.",
+    r: 40,
+    tone: "#f2e7cc",
+  },
+];
+
+export interface ComparisonRow {
+  feature: string;
+  /** What this masala does */
+  ours: string;
+  /** What the owner's sheet says an ordinary local masala does */
+  theirs: string;
+}
+
+/**
+ * The owner's comparison sheet, kept row for row. It is the only place on the
+ * page where the product is set against anything else, so it stays factual and
+ * short rather than becoming a sales table.
+ */
+export const gobiComparison: ComparisonRow[] = [
+  {
+    feature: "Flavour profile",
+    ours: "Bold, authentic Indo-Chinese",
+    theirs: "Bland or overpowering",
+  },
+  {
+    feature: "Taste consistency",
+    ours: "Same great taste every time",
+    theirs: "Inconsistent flavour",
+  },
+  {
+    feature: "Spice balance",
+    ours: "Perfectly balanced",
+    theirs: "Too spicy or too flat",
+  },
+  { feature: "Aroma", ours: "Fresh and inviting", theirs: "Artificial or weak" },
+  {
+    feature: "Versatility",
+    ours: "Gobi gravy, Manchurian, tikka",
+    theirs: "Limited use",
+  },
+  {
+    feature: "Ingredients",
+    ours: "Real garlic, ginger, spices",
+    theirs: "Synthetic additives",
+  },
+];
+
+export interface BlendPart {
+  name: string;
+  /** What it is doing in the blend */
+  role: string;
+  /** The colour it contributes, used for its disc */
+  tone: string;
+}
+
+/**
+ * What is in the pack, in the order the owner's ingredients sheet reads them
+ * off. The tones are taken from the spices themselves and are what the section
+ * is drawn from — there is no artificial colour in the blend or on the page.
+ */
+export const gobiBlend: BlendPart[] = [
+  { name: "Chilli", role: "The heat, and all of the red", tone: "#d02d1c" },
+  { name: "Turmeric", role: "The warm ground note", tone: "#e9a41a" },
+  { name: "Corn starch", role: "What turns the coat crisp", tone: "#f3e6cd" },
+  { name: "Ginger", role: "The lift behind the heat", tone: "#c98a3f" },
+  { name: "Salt", role: "Already measured in", tone: "#e8eef2" },
+  { name: "Natural spices", role: "The rest of the Indo-Chinese", tone: "#8c5a2b" },
+];
+
+/** The pack's own measurements, from the owner's dimension sheet. */
+export const gobiPackSpec = {
+  width: "11 cm",
+  height: "16 cm",
+  depth: "2 cm",
+  claims: ["Easy to cook", "Ready-mix masala", "Long shelf life"],
+} as const;
 
 export interface ServingIdea {
   id: string;

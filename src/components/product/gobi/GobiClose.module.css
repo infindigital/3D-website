@@ -1,6 +1,6 @@
 .close {
   position: relative;
-  padding: clamp(64px, 10vh, 120px) 0 clamp(72px, 11vh, 130px);
+  padding: clamp(56px, 8vh, 96px) 0 clamp(64px, 9vh, 110px);
   background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 100%);
   overflow: hidden;
 }

@@ -7,8 +7,10 @@ import DishParade from "@/components/product/DishParade";
 import BlendStory from "@/components/product/BlendStory";
 import OtherPack from "@/components/product/OtherPack";
 import CrispCase from "@/components/product/gobi/CrispCase";
+import BlendMakeup from "@/components/product/gobi/BlendMakeup";
 import RecipeFilm from "@/components/product/gobi/RecipeFilm";
 import PlatterStage from "@/components/product/gobi/PlatterStage";
+import AgainstOrdinary from "@/components/product/gobi/AgainstOrdinary";
 import PackShelf from "@/components/product/gobi/PackShelf";
 import GobiClose from "@/components/product/gobi/GobiClose";
 import { getProduct, products } from "@/config/products";
@@ -72,8 +74,10 @@ export default async function ProductPage({ params }: Props) {
       {isGobi ? (
         <>
           <CrispCase product={product} />
+          <BlendMakeup product={product} />
           <RecipeFilm product={product} />
           <PlatterStage product={product} />
+          <AgainstOrdinary product={product} />
           <PackShelf product={product} />
           <GobiClose product={product} />
         </>

@@ -5,7 +5,7 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePointerParallax } from "@/hooks/usePointerParallax";
-import { gobiAssets, gobiFeatures, gobiPromises } from "@/config/gobi";
+import { gobiAssets, gobiCrust, gobiFeatures, gobiPromises } from "@/config/gobi";
 import type { Product } from "@/config/products";
 import styles from "./CrispCase.module.css";
 
@@ -72,6 +72,46 @@ export default function CrispCase({ product }: { product: Product }) {
         0.22,
       );
 
+      /* The pen goes under the word once the heading has finished arriving.
+         A solid stroke, so growing the dash really does draw it. */
+      const mark = sectionRef.current?.querySelector<SVGPathElement>(
+        `.${styles.markPath}`,
+      );
+      if (mark) {
+        const length = mark.getTotalLength();
+        mark.style.strokeDasharray = `${length}`;
+        enter.fromTo(
+          mark,
+          { strokeDashoffset: length },
+          { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" },
+          0.62,
+        );
+      }
+
+      /* The floret is built up from the middle out, which is the order the
+         cook builds it in — gobi, then paste, then crust. */
+      enter.fromTo(
+        `.${styles.crustRing}`,
+        { scale: 0.3, opacity: 0 },
+        {
+          scale: 1,
+          opacity: 1,
+          duration: 0.8,
+          stagger: { each: 0.14, from: "end" },
+          ease: "back.out(1.5)",
+          /* The origin is left to the stylesheet, which puts it at the
+             circle's own centre via `transform-box: fill-box` — naming user
+             units here would fight that and scale each ring off-centre. */
+        },
+        0.5,
+      );
+      enter.fromTo(
+        `.${styles.crustGrit}`,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6 },
+        1.1,
+      );
+
       /* The picture rises through its own frame as the panel passes, so the
          bento never sits completely still while it is on screen. */
       gsap.fromTo(
@@ -128,7 +168,25 @@ export default function CrispCase({ product }: { product: Product }) {
           <h2 className={styles.heading}>
             Crisp is not luck.
             <br />
-            It is the coating.
+            It is the{" "}
+            <span className={styles.marked}>
+              coating
+              {/* Drawn under the word rather than typed as an underline, so
+                  it keeps the wobble of a pen and can be stroked on. */}
+              <svg
+                className={styles.mark}
+                viewBox="0 0 200 18"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path
+                  className={styles.markPath}
+                  d="M4 12 C 46 4, 92 15, 138 7 C 162 3, 182 9, 196 6"
+                  fill="none"
+                />
+              </svg>
+            </span>
+            .
           </h2>
           <p className={styles.lead}>
             One ready mix does the marinade, the crust and the seasoning at
@@ -181,15 +239,58 @@ export default function CrispCase({ product }: { product: Product }) {
             <p className={styles.ratioNote}>{product.usage}</p>
           </div>
 
-          <div className={`${styles.tile} ${styles.blend}`}>
-            <span className={styles.blendLabel}>In the blend</span>
-            <ul className={styles.chips}>
-              {product.ingredients.map((ingredient) => (
-                <li className={styles.chip} key={ingredient}>
-                  {ingredient}
-                </li>
-              ))}
-            </ul>
+          <div className={`${styles.tile} ${styles.crust}`}>
+            <span className={styles.blendLabel}>The coat, in section</span>
+
+            <div className={styles.crustBody}>
+              <svg
+                className={styles.crustArt}
+                viewBox="0 0 220 220"
+                role="img"
+                aria-label="A fried floret cut through: golden crust outside, masala paste under it, cauliflower at the centre"
+              >
+                {gobiCrust.map((layer) => (
+                  <circle
+                    className={styles.crustRing}
+                    key={layer.name}
+                    cx="110"
+                    cy="110"
+                    r={layer.r}
+                    fill={layer.tone}
+                  />
+                ))}
+                {/* A dozen flecks of crust, so the outer ring reads as fried
+                    rather than as a flat disc. */}
+                <g className={styles.crustGrit} aria-hidden="true">
+                  {Array.from({ length: 14 }, (_, i) => {
+                    const a = (i / 14) * Math.PI * 2 + 0.4;
+                    const r = 68 + (i % 3) * 6;
+                    return (
+                      <circle
+                        key={i}
+                        cx={110 + Math.cos(a) * r}
+                        cy={110 + Math.sin(a) * r}
+                        r={i % 2 ? 3.4 : 2.2}
+                      />
+                    );
+                  })}
+                </g>
+              </svg>
+
+              <ol className={styles.crustList}>
+                {gobiCrust.map((layer) => (
+                  <li className={styles.crustItem} key={layer.name}>
+                    <span
+                      className={styles.crustSwatch}
+                      style={{ background: layer.tone }}
+                      aria-hidden="true"
+                    />
+                    <span className={styles.crustName}>{layer.name}</span>
+                    <span className={styles.crustText}>{layer.body}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
       </div>

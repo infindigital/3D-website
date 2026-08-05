@@ -1,6 +1,6 @@
 .serving {
   position: relative;
-  padding: clamp(72px, 11vh, 140px) 0 clamp(80px, 12vh, 150px);
+  padding: clamp(56px, 8vh, 96px) 0 clamp(60px, 8.5vh, 104px);
   background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 48%, var(--color-white) 100%);
   overflow: hidden;
 }
@@ -13,7 +13,6 @@
 }
 
 .head {
-  max-width: 40ch;
   margin-bottom: clamp(24px, 4vh, 44px);
 }
 
@@ -28,6 +27,7 @@
 }
 
 .heading {
+  max-width: 18ch;
   font-size: clamp(2.1rem, 5vw, 3.5rem);
   line-height: 1.06;
   color: var(--text-primary);

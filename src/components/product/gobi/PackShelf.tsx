@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { gobiPacks } from "@/config/gobi";
+import { gobiPackSpec, gobiPacks } from "@/config/gobi";
 import type { Product } from "@/config/products";
 import { getWhatsAppUrl, siteConfig } from "@/config/site";
 import styles from "./PackShelf.module.css";
@@ -111,6 +111,35 @@ export default function PackShelf({ product }: { product: Product }) {
         },
         0.3,
       );
+
+      /* The measurements are drawn on, the way they would be on a spec sheet:
+         the rules run out from their corners, then the figures land. */
+      const spec = gsap.timeline({
+        scrollTrigger: {
+          trigger: `.${styles.spec}`,
+          start: "top 82%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      spec.fromTo(
+        `.${styles.rule}`,
+        { scale: 0 },
+        { scale: 1, duration: 0.75, stagger: 0.12, ease: "power2.inOut" },
+        0,
+      );
+      spec.fromTo(
+        `.${styles.figure}`,
+        { opacity: 0.001, y: 6 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.12, ease: "power2.out" },
+        0.35,
+      );
+      spec.fromTo(
+        `.${styles.claim}`,
+        { y: 16, opacity: 0.001 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: "power3.out" },
+        0.3,
+      );
     });
 
     return () => mm.revert();
@@ -194,6 +223,53 @@ export default function PackShelf({ product }: { product: Product }) {
             );
           })}
         </ul>
+
+        <div className={styles.spec}>
+          {/* The pouch measured, as the owner's dimension sheet has it. The
+              rules are CSS boxes rather than an SVG so they can be scaled from
+              their own corner without any viewBox arithmetic. */}
+          <div className={styles.specArt}>
+            <span className={styles.dimTop} aria-hidden="true">
+              <span className={styles.rule} />
+              <span className={styles.figure}>{gobiPackSpec.width}</span>
+            </span>
+
+            <Image
+              className={styles.specImg}
+              src={product.images.front}
+              alt=""
+              width={700}
+              height={850}
+              sizes="(max-width: 640px) 40vw, 190px"
+            />
+
+            <span className={styles.dimSide} aria-hidden="true">
+              <span className={styles.rule} />
+              <span className={styles.figure}>{gobiPackSpec.height}</span>
+            </span>
+
+            <span className={styles.dimDepth} aria-hidden="true">
+              <span className={styles.rule} />
+              <span className={styles.figure}>{gobiPackSpec.depth}</span>
+            </span>
+          </div>
+
+          <div className={styles.specBody}>
+            <h3 className={styles.specHeading}>The pouch, actual size</h3>
+            <p className={styles.specLine}>
+              {gobiPackSpec.width} across, {gobiPackSpec.height} tall,{" "}
+              {gobiPackSpec.depth} deep — flat enough for a shelf, small enough
+              for a drawer, and sealed until you open it.
+            </p>
+            <ul className={styles.claims}>
+              {gobiPackSpec.claims.map((claim) => (
+                <li className={styles.claim} key={claim}>
+                  {claim}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
   );

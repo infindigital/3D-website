@@ -1,6 +1,6 @@
 .case {
   position: relative;
-  padding: clamp(64px, 10vh, 120px) 0 clamp(80px, 12vh, 150px);
+  padding: clamp(56px, 8vh, 96px) 0 clamp(60px, 8.5vh, 104px);
   background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 60%, var(--color-white) 100%);
   overflow: hidden;
 }
@@ -67,7 +67,7 @@
   padding: 14px 0;
   border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
-  margin-bottom: clamp(52px, 8vh, 96px);
+  margin-bottom: clamp(34px, 5vh, 58px);
   /* Fade both ends into the page so the strip reads as continuous rather
      than as something that starts and stops at the window edge. */
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
@@ -135,8 +135,7 @@
 }
 
 .head {
-  max-width: 46ch;
-  margin-bottom: clamp(36px, 5vh, 62px);
+  margin-bottom: clamp(28px, 4vh, 48px);
 }
 
 .eyebrow {
@@ -150,13 +149,42 @@
 }
 
 .heading {
+  max-width: 18ch;
   font-size: clamp(2.1rem, 5vw, 3.5rem);
   line-height: 1.06;
   color: var(--text-primary);
 }
 
+/* The one word the whole section is about, so it gets the accent and the pen.
+   The stroke is hung under the word and cannot affect the line box. */
+.marked {
+  position: relative;
+  display: inline-block;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.16em;
+  width: 100%;
+  height: 0.2em;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.markPath {
+  stroke: color-mix(in srgb, var(--color-turmeric) 92%, var(--accent));
+  stroke-width: 5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
 .lead {
   margin-top: 20px;
+  max-width: 52ch;
   font-size: clamp(1rem, 1.8vw, 1.12rem);
   line-height: 1.7;
   color: var(--text-secondary);
@@ -168,7 +196,7 @@
   grid-template-areas:
     "pic pic f1 f2"
     "pic pic f3 f4"
-    "ratio f5 f5 blend";
+    "ratio f5 crust crust";
   gap: clamp(12px, 1.4vw, 20px);
 }
 
@@ -334,32 +362,86 @@
   color: var(--text-secondary);
 }
 
-.blend {
-  grid-area: blend;
+/* ---- the coat, in section -------------------------------------------- */
+
+.crust {
+  grid-area: crust;
   display: flex;
   flex-direction: column;
   gap: 14px;
   justify-content: center;
 }
 
-.chips {
+.crustBody {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(16px, 2vw, 26px);
+}
+
+.crustArt {
+  width: clamp(110px, 12vw, 156px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 10px 18px rgba(120, 60, 20, 0.18));
+}
+
+/* Named so the entrance has something to hold on to. Without a rule here the
+   module exports nothing for it, the circles go out with no class, and the
+   build-up animation quietly targets nothing at all. */
+.crustRing {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.crustGrit circle {
+  fill: rgba(255, 255, 255, 0.42);
+}
+
+.crustList {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
   list-style: none;
   margin: 0;
   padding: 0;
+  counter-reset: layer;
 }
 
-.chip {
-  padding: 7px 13px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 9%, var(--color-white));
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
-  font-size: clamp(0.76rem, 1.3vw, 0.85rem);
+/* The swatch is the join between the words and the drawing — it is the ring's
+   own colour, so no leader lines are needed to point at it. */
+.crustItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "swatch name"
+    ".      text";
+  column-gap: 10px;
+  row-gap: 2px;
+  align-items: center;
+}
+
+.crustSwatch {
+  grid-area: swatch;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(120, 60, 20, 0.18);
+}
+
+.crustName {
+  grid-area: name;
+  font-family: var(--font-heading);
   font-weight: 600;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
   color: var(--text-primary);
-  white-space: nowrap;
+}
+
+.crustText {
+  grid-area: text;
+  font-size: clamp(0.78rem, 1.3vw, 0.87rem);
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
 /* ---- narrower screens ------------------------------------------------ */
@@ -372,11 +454,22 @@
       "f1 f2"
       "f3 f4"
       "f5 f5"
-      "ratio blend";
+      "ratio crust";
   }
 
   .pic {
     min-height: clamp(280px, 52vw, 420px);
+  }
+
+  /* Two narrow columns cannot hold a drawing beside three paragraphs */
+  .crustBody {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: left;
+  }
+
+  .crustArt {
+    width: 118px;
   }
 }
 
@@ -395,7 +488,16 @@
       "f4"
       "f5"
       "ratio"
-      "blend";
+      "crust";
+  }
+
+  .crustBody {
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: start;
+  }
+
+  .crustArt {
+    width: 96px;
   }
 
   .pic {

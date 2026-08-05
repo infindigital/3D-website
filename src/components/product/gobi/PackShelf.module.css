@@ -1,6 +1,6 @@
 .shelf {
   position: relative;
-  padding: clamp(72px, 11vh, 140px) 0 clamp(80px, 12vh, 150px);
+  padding: clamp(56px, 8vh, 96px) 0 clamp(60px, 8.5vh, 104px);
   background: var(--color-white);
   overflow: hidden;
 }
@@ -25,8 +25,7 @@
 }
 
 .head {
-  max-width: 52ch;
-  margin-bottom: clamp(40px, 6vh, 76px);
+  margin-bottom: clamp(28px, 4.2vh, 52px);
 }
 
 .eyebrow {
@@ -40,6 +39,7 @@
 }
 
 .heading {
+  max-width: 18ch;
   font-size: clamp(2.1rem, 5vw, 3.5rem);
   line-height: 1.06;
   color: var(--text-primary);
@@ -222,6 +222,191 @@
   color: var(--text-on-accent);
 }
 
+/* ---- the pouch, measured ---------------------------------------------- */
+
+.spec {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 68px);
+  margin-top: clamp(38px, 5.5vh, 68px);
+  padding-top: clamp(28px, 4vh, 46px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* Room is left above and to the right of the pack for the rules to run in */
+.specArt {
+  position: relative;
+  width: clamp(120px, 16vw, 186px);
+  padding: 30px 40px 26px 0;
+}
+
+.specImg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 16px 22px rgba(90, 45, 15, 0.22));
+}
+
+.dimTop,
+.dimSide,
+.dimDepth {
+  position: absolute;
+  display: block;
+}
+
+.dimTop {
+  top: 12px;
+  left: 0;
+  right: 40px;
+  height: 1px;
+}
+
+.dimSide {
+  top: 30px;
+  bottom: 26px;
+  right: 16px;
+  width: 1px;
+}
+
+.dimDepth {
+  left: 0;
+  bottom: 8px;
+  width: 26%;
+  height: 1px;
+}
+
+/* One rule, scaled from the end it starts at, with a tick at each end drawn
+   by its own pseudo-elements so there is nothing else to animate. */
+.rule {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: left center;
+}
+
+.dimSide .rule {
+  transform-origin: center top;
+}
+
+.rule::before,
+.rule::after {
+  content: "";
+  position: absolute;
+  background: var(--accent);
+}
+
+.dimTop .rule::before,
+.dimTop .rule::after,
+.dimDepth .rule::before,
+.dimDepth .rule::after {
+  top: -4px;
+  width: 1px;
+  height: 9px;
+}
+
+.dimTop .rule::before,
+.dimDepth .rule::before {
+  left: 0;
+}
+
+.dimTop .rule::after,
+.dimDepth .rule::after {
+  right: 0;
+}
+
+.dimSide .rule::before,
+.dimSide .rule::after {
+  left: -4px;
+  width: 9px;
+  height: 1px;
+}
+
+.dimSide .rule::before {
+  top: 0;
+}
+
+.dimSide .rule::after {
+  bottom: 0;
+}
+
+.figure {
+  position: absolute;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(0.68rem, 1.1vw, 0.78rem);
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  background: var(--color-white);
+  padding: 0 5px;
+  white-space: nowrap;
+}
+
+.dimTop .figure {
+  left: 50%;
+  top: -0.62em;
+  transform: translateX(-50%);
+}
+
+.dimSide .figure {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Under its rule rather than on it — the depth line is short enough that the
+   figure would otherwise sit on top of both end ticks. */
+.dimDepth .figure {
+  left: 50%;
+  top: 7px;
+  transform: translateX(-50%);
+}
+
+.specHeading {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+  color: var(--text-primary);
+}
+
+.specLine {
+  margin-top: 10px;
+  max-width: 46ch;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.claims {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+}
+
+.claim {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-green) 9%, var(--color-white));
+  border: 1px solid color-mix(in srgb, var(--color-green) 26%, transparent);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.78rem, 1.3vw, 0.86rem);
+  color: var(--text-primary);
+}
+
+.claim::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-green);
+}
+
 /* ---- narrower screens ------------------------------------------------ */
 
 @media (max-width: 1100px) {
@@ -273,6 +458,20 @@
   .actions {
     grid-area: actions;
     padding-top: 14px;
+  }
+
+  /* The drawing over the words rather than beside them — a 120px pack next to
+     a paragraph leaves neither of them room. */
+  .spec {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    justify-items: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rule {
+    transform: none;
   }
 }
 
