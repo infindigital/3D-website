@@ -345,8 +345,14 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
 
     const wipe = { value: 118 };
 
+    /* The buttons, and on a phone the line of copy standing above them.
+       They arrive together because they are one block there — see `.pitch`
+       in the stylesheet, which is the only place that decides whether the
+       line exists at all. */
+    const arriving = `.${styles.pitch}, .${styles.action}`;
+
     const ctx = gsap.context(() => {
-      gsap.set(`.${styles.action}`, { y: 30, autoAlpha: 0 });
+      gsap.set(arriving, { y: 30, autoAlpha: 0 });
 
       const tl = gsap.timeline();
 
@@ -445,7 +451,7 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
       tl.add(() => window.dispatchEvent(new Event(HERO_BRAND_EVENT)), landed);
 
       tl.to(
-        `.${styles.action}`,
+        arriving,
         {
           y: 0,
           autoAlpha: 1,
@@ -455,7 +461,7 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
           /* Hand the buttons back to the stylesheet: an inline transform
              left behind here would outrank the hover lift forever. */
           onComplete: () =>
-            gsap.set(`.${styles.action}`, {
+            gsap.set(arriving, {
               clearProps: "transform,opacity,visibility",
             }),
         },
@@ -573,7 +579,19 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
       </div>
 
       <div className={styles.actions}>
-        <button type="button" className={styles.action} onClick={explore}>
+        {/* A phone has no room for words beside the film and too much room
+            below it. The line only exists at that width — the stylesheet
+            decides — and it is hidden from assistive tech because the page
+            heading above already says exactly this. */}
+        <p className={styles.pitch} aria-hidden="true">
+          {siteConfig.tagline}
+        </p>
+
+        <button
+          type="button"
+          className={`${styles.action} ${styles.actionLead}`}
+          onClick={explore}
+        >
           Explore Menu
         </button>
         <Link className={styles.action} href={`/products/${products[0].slug}`}>

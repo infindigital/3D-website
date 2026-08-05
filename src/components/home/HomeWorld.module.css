@@ -406,17 +406,85 @@
     gap: 1.75rem;
   }
 
+  /*
+   * The three statements, read as one stanza rather than as three screens.
+   *
+   * They are one sentence in three parts, and on a desktop they are three
+   * panels dissolving into each other over the same piece of film, which is
+   * what makes that true there. Laid flat on a phone the dissolve is gone
+   * and all that is left of it is the spacing — three short lines, each
+   * centred in its own half-screen of nothing, with no way to tell they
+   * belong together. So on a phone they are set as a stanza instead: hung
+   * off one rule running down the margin, close enough to be read in a
+   * single breath, and the rule fades in above the first line and out below
+   * the last so the block has a beginning and an end.
+   */
+  .beat[data-beat^="story"] {
+    position: relative;
+    align-items: stretch;
+    padding-block: 0.5rem;
+  }
+
+  .beat[data-beat="story0"] {
+    padding-top: clamp(3rem, 10vw, 4.5rem);
+  }
+
+  .beat[data-beat="story2"] {
+    padding-bottom: clamp(3rem, 10vw, 4.5rem);
+  }
+
+  /* The rule. One per beat, and they meet: the three boxes are stacked
+     with nothing between them, so the three segments read as one line. */
+  .beat[data-beat^="story"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    /* The page's own gutter, which is also where the copy's column starts */
+    left: clamp(1.25rem, 5vw, 3rem);
+    width: 2px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--color-chilli) 34%, transparent);
+  }
+
+  .beat[data-beat="story0"]::before {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--color-chilli) 34%, transparent) 46%
+    );
+  }
+
+  .beat[data-beat="story2"]::before {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-chilli) 34%, transparent) 42%,
+      transparent 100%
+    );
+  }
+
   .statement {
-    font-size: clamp(2rem, 9vw, 2.9rem);
-    max-width: 14ch;
+    font-size: clamp(1.6rem, 7.4vw, 2.15rem);
+    line-height: 1.14;
+    /* Hung off the rule, so the three lines share one left edge */
+    text-align: left;
+    max-width: none;
+    padding-left: 1.05rem;
   }
 
   .links {
     margin-top: 1.5rem;
+    flex-direction: column;
   }
 
   /* Full-width and stacked. Two long labels side by side on a phone wrap
-     inside their own pills, which reads as a mistake rather than a pair. */
+     inside their own pills, which reads as a mistake rather than a pair.
+
+     The first selector is the magnetic wrapper each link is inside: it is
+     an inline-flex box that shrinks to its content, so a link set to the
+     full width of *that* is as wide as its own label and no wider — which
+     is how two pills meant to match came out two different sizes. */
+  .links > *,
   .links,
   .linkCard,
   .cta {

@@ -589,6 +589,13 @@
   outline-offset: 3px;
 }
 
+/* The line of copy above the buttons. It belongs to the phone alone — see
+   the narrow-screen block at the bottom of this file — because it is the
+   answer to a problem only a phone has. */
+.pitch {
+  display: none;
+}
+
 /* ------------------------------------------------------------
    The travelling mark
 
@@ -647,48 +654,93 @@
 
 @media (max-width: 640px) {
   /*
-   * Nearly the full width of the phone, and a shade squarer than the film.
-   * A phone has width to spare and height to save, and 3:2 costs the shot
-   * an eighth of its sides — the pan stays in frame, which is all the
-   * earlier near-square crop threw away.
+   * A phone is a portrait window, so the film is a portrait picture.
    *
-   * The opening's rings are cut from the same two values, and they are what
-   * stops this going any wider. A film across the whole width of a phone
-   * leaves them nowhere to be rings: every one is wider than the screen, so
-   * all that shows is their top and bottom edges and the opening reads as a
-   * set of horizontal stripes. At 84vw the first ring closes on both sides
-   * inside the screen, which is enough for the eye to read the rest as
-   * rings running off it. The film keeps that width afterwards, because the
-   * one thing it must never do is change size.
+   * It was landscape here for as long as the desktop composition was being
+   * copied down, and that is what left the hero looking half-empty: a 3:2
+   * frame across a phone is a little over two hundred pixels tall standing
+   * in five hundred pixels of room, so a third of the screen was paper with
+   * nothing on it. 4:5 fills that room, and it costs the shot nothing that
+   * matters — the dish, the pan and the garnish coming down are all in the
+   * middle of the frame, and the middle is exactly what a centre crop keeps.
+   *
+   * The width still stops short of the edges, and the rings are the reason.
+   * They are cut from these same two values, so a film across the full width
+   * of a phone leaves them nowhere to be rings: every one would be wider
+   * than the screen and show only its top and bottom edge, which reads as
+   * stripes ruled across the room. At 82vw the first ring closes on both
+   * sides inside the screen and the rest are read as its wake. The film
+   * keeps that size afterwards, because the one thing it must never do is
+   * change size.
+   *
+   * The third term is the short-phone guard: where there is not the height
+   * for a portrait film above the buttons, the width gives way rather than
+   * the ratio.
    */
   .hero {
-    --film-w: min(84vw, calc((100svh - 290px) * 3 / 2));
-    --film-ar: 3 / 2;
+    --film-w: min(82vw, calc((100svh - 310px) * 4 / 5));
+    --film-ar: 4 / 5;
 
-    /* Three buttons in a column rather than two on one line and one
-       stranded underneath, which needs most of the bottom of the screen.
-       The film rides up out of the way, and — because these are the same
-       two numbers the ring layer is padded by and the wipe is centred on —
-       the rings and the closing orange ride up with it. */
+    /* The outline, made for a portrait box. The percentages are read off
+       each axis separately, so the desktop cut — built for a frame twice as
+       wide as it is tall — turns into a lozenge when the box stands up. */
+    --film-cut: 13% 15% 12% 14% / 9% 10.5% 8.5% 10%;
+
+    /* The room below holds the line of copy and three buttons in a column,
+       rather than two buttons on one line and one stranded underneath. The
+       film rides up out of the way, and — because these are the same two
+       numbers the ring layer is padded by and the wipe is centred on — the
+       rings and the closing orange ride up with it.
+
+       The floor of this is what that block actually measures — a line of
+       copy, three buttons and the gap they stand on — and not a pixel less,
+       or the picture is drawn straight through the first button. */
     --film-top: calc(var(--nav-height) + 8px);
-    --film-bottom: clamp(186px, 27vh, 244px);
+    --film-bottom: clamp(250px, 30vh, 272px);
   }
 
-  /* A phone shows one word of a band at a time, so the type has to be
-     smaller than the viewport-derived size or the room reads as a single
-     letter sliding past */
+  /* The morph is written in per-axis percentages too, so a portrait box
+     needs its own. Same amount of wander, read off the taller frame. */
+  .mask {
+    animation-name: morphTall;
+  }
+
+  @keyframes morphTall {
+    0% {
+      border-radius: 13% 15% 12% 14% / 9% 10.5% 8.5% 10%;
+    }
+    34% {
+      border-radius: 15% 12% 14% 13% / 10.5% 8.5% 10% 9%;
+    }
+    67% {
+      border-radius: 12% 14% 13% 15% / 8.5% 10% 9% 10.5%;
+    }
+    100% {
+      border-radius: 13% 15% 12% 14% / 9% 10.5% 8.5% 10%;
+    }
+  }
+
+  /*
+   * The words behind it come down with the film.
+   *
+   * A phone is narrow enough that a band at the viewport-derived size shows
+   * a word and a half at a time, and half a word is a fragment — the room
+   * stops reading as writing and starts reading as clutter. Smaller type
+   * puts two or three whole words on screen per row, which is what makes it
+   * scenery again.
+   */
   .bandRun {
-    font-size: clamp(2.4rem, 13vw, 3.6rem);
+    font-size: clamp(1.9rem, 9.4vw, 2.7rem);
   }
 
   .bands {
-    gap: 10px;
+    gap: 8px;
   }
 
   /* A stroke is an absolute width: left at the desktop weight it would be
      three times the share of a letter this size */
   .bandWord[data-ink="line"] {
-    -webkit-text-stroke-width: 1.6px;
+    -webkit-text-stroke-width: 1.4px;
   }
 
   /*
@@ -703,12 +755,65 @@
     bottom: clamp(22px, 4vh, 40px);
   }
 
+  /* The one line the hero says out loud. On a wider screen the film has
+     paper either side of it to be composed against; here it has the length
+     of the screen, and a picture with three buttons under it and not one
+     word anywhere is a page that looks unfinished rather than quiet. */
+  .pitch {
+    display: block;
+    width: min(78vw, 320px);
+    margin-bottom: 6px;
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--text-primary);
+  }
+
   .action {
     width: min(76vw, 300px);
     min-width: 0;
     padding: 13px 18px;
     font-size: 0.74rem;
     letter-spacing: 0.09em;
+  }
+
+  /* One of the three is where the page actually wants you to go. Three
+     identical outlines in a column read as a form to be filled in; filling
+     the first one is what turns the column back into a hero's call to
+     action with two ways past it. */
+  .actionLead {
+    background: var(--ember);
+    border-color: var(--ember);
+    color: var(--text-on-accent);
+    box-shadow: 0 14px 30px rgba(217, 90, 26, 0.28);
+  }
+}
+
+/*
+ * A short phone cannot hold all three.
+ *
+ * A picture worth looking at, a line of copy and three buttons want
+ * something like eight hundred pixels of window between them; on a phone
+ * with six hundred and sixty, keeping the line costs the film a third of
+ * its size. The line is the one of the three the hero can do without — the
+ * page heading says the same words, and the picture is what the visitor
+ * came for.
+ *
+ * After the block above, not inside it: this has to outrank the rule that
+ * puts the line on the page, and at equal weight that is decided by which
+ * one is written last.
+ */
+@media (max-width: 640px) and (max-height: 720px) {
+  .pitch {
+    display: none;
+  }
+
+  .hero {
+    --film-bottom: clamp(198px, 26vh, 216px);
   }
 }
 
