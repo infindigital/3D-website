@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { gobiBlend } from "@/config/gobi";
+import { gobiBlend, gobiIngredientImages } from "@/config/gobi";
 import type { Product } from "@/config/products";
 import styles from "./BlendMakeup.module.css";
 
@@ -15,8 +15,9 @@ gsap.registerPlugin(ScrollTrigger);
  *
  * Six things, hung either side of the pack on the owner's own dashed leads —
  * three to the left, three to the right, each line running straight in to the
- * pack it came out of. The colour on each is the spice's, which is the point
- * of the seal in the corner: everything red on this page is chilli.
+ * pack it came out of. Each one is the ingredient itself, cut off its studio
+ * white and lit from behind in its own colour, which is the point of the seal
+ * in the corner: everything red on this page is chilli.
  */
 export default function BlendMakeup({ product }: { product: Product }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -81,6 +82,29 @@ export default function BlendMakeup({ product }: { product: Product }) {
   const left = gobiBlend.slice(0, 3);
   const right = gobiBlend.slice(3);
 
+  const parts = (items: typeof gobiBlend) =>
+    items.map((part) => (
+      <li
+        className={styles.part}
+        key={part.name}
+        style={{ "--tone": part.tone } as React.CSSProperties}
+      >
+        <span className={styles.shot}>
+          <Image
+            src={gobiIngredientImages[part.id]}
+            alt=""
+            width={420}
+            height={420}
+            sizes="(max-width: 640px) 68px, (max-width: 860px) 12vw, 96px"
+          />
+        </span>
+        <span className={styles.partBody}>
+          <span className={styles.partName}>{part.name}</span>
+          <span className={styles.partRole}>{part.role}</span>
+        </span>
+      </li>
+    ));
+
   return (
     <section
       ref={sectionRef}
@@ -99,21 +123,7 @@ export default function BlendMakeup({ product }: { product: Product }) {
         </header>
 
         <div className={styles.board}>
-          <ul className={`${styles.column} ${styles.left}`}>
-            {left.map((part) => (
-              <li
-                className={styles.part}
-                key={part.name}
-                style={{ "--tone": part.tone } as React.CSSProperties}
-              >
-                <span className={styles.disc} aria-hidden="true" />
-                <span className={styles.partBody}>
-                  <span className={styles.partName}>{part.name}</span>
-                  <span className={styles.partRole}>{part.role}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          <ul className={`${styles.column} ${styles.left}`}>{parts(left)}</ul>
 
           <div className={styles.stage}>
             <div className={styles.pack}>
@@ -145,21 +155,7 @@ export default function BlendMakeup({ product }: { product: Product }) {
             </div>
           </div>
 
-          <ul className={`${styles.column} ${styles.right}`}>
-            {right.map((part) => (
-              <li
-                className={styles.part}
-                key={part.name}
-                style={{ "--tone": part.tone } as React.CSSProperties}
-              >
-                <span className={styles.disc} aria-hidden="true" />
-                <span className={styles.partBody}>
-                  <span className={styles.partName}>{part.name}</span>
-                  <span className={styles.partRole}>{part.role}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          <ul className={`${styles.column} ${styles.right}`}>{parts(right)}</ul>
         </div>
       </div>
     </section>

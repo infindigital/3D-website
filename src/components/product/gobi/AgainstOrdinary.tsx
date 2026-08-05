@@ -13,14 +13,20 @@ gsap.registerPlugin(ScrollTrigger);
  * The owner's comparison sheet, set up as a match rather than a table.
  *
  * The feature runs down the middle on a single spine, this masala on one side
- * of it and an ordinary local masala on the other, and each pair closes in
- * from its own edge as the row arrives. It is still a table underneath — the
- * markup is a real one with row headers, and the grid is laid over it with
- * `display: contents` — because six features compared across two columns is
- * exactly what a table is for, whatever it ends up looking like.
+ * of it and an ordinary local masala on the other. The two are not level: the
+ * board is a real perspective and the pair leans out of it like an open book,
+ * ours toward the reader and theirs set back — so the argument is made by
+ * where the two sides stand before a word of it is read.
+ *
+ * Rows arrive one at a time on their own feature rather than all together on
+ * the section, and the tally at the foot counts them off as they land. It is
+ * still a table underneath — a real one with row headers, laid out as a grid
+ * with `display: contents` — because six features compared across two columns
+ * is exactly what a table is for, whatever it ends up looking like.
  */
 export default function AgainstOrdinary({ product }: { product: Product }) {
   const sectionRef = useRef<HTMLElement>(null);
+  const tallyRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const mm = gsap.matchMedia(sectionRef);
@@ -68,26 +74,62 @@ export default function AgainstOrdinary({ product }: { product: Product }) {
         0.42,
       );
 
-      /* Each side comes in from its own edge, so the pair reads as two claims
-         meeting at the feature between them. */
-      enter.fromTo(
-        `.${styles.ours}`,
-        { x: -34, opacity: 0.001 },
-        { x: 0, opacity: 1, duration: 0.7, stagger: 0.07 },
-        0.5,
+      /*
+       * A row at a time, each on its own feature. The two sides slide in from
+       * their own edges through a variable rather than through `x`, because the
+       * lean out of the board is a transform on the same element and an inline
+       * one from GSAP would simply replace it.
+       */
+      const rows = gsap.utils.toArray<HTMLTableRowElement>(
+        `.${styles.table} tbody tr`,
       );
-      enter.fromTo(
-        `.${styles.theirs}`,
-        { x: 34, opacity: 0.001 },
-        { x: 0, opacity: 0.72, duration: 0.7, stagger: 0.07 },
-        0.56,
-      );
-      enter.fromTo(
-        `.${styles.feature}`,
-        { opacity: 0.001 },
-        { opacity: 1, duration: 0.5, stagger: 0.07 },
-        0.54,
-      );
+
+      const tally = tallyRef.current;
+      const setTally = (n: number) => {
+        if (tally) tally.textContent = String(n);
+      };
+      setTally(0);
+
+      rows.forEach((row, index) => {
+        const feature = row.querySelector(`.${styles.feature}`);
+        const ours = row.querySelector(`.${styles.ours}`);
+        const theirs = row.querySelector(`.${styles.theirs}`);
+        if (!feature || !ours || !theirs) return;
+
+        const arrive = gsap.timeline({
+          defaults: { ease: "power3.out" },
+          scrollTrigger: {
+            trigger: feature,
+            start: "top 88%",
+            toggleActions: "play none none reverse",
+            onEnter: () => setTally(index + 1),
+            onLeaveBack: () => setTally(index),
+          },
+        });
+
+        arrive.fromTo(
+          feature,
+          { opacity: 0.001 },
+          { opacity: 1, duration: 0.45 },
+          0,
+        );
+        arrive.fromTo(
+          ours,
+          { "--enter-x": "-38px", opacity: 0.001 },
+          { "--enter-x": "0px", opacity: 1, duration: 0.7 },
+          0.04,
+        );
+        arrive.fromTo(
+          theirs,
+          { "--enter-x": "38px", opacity: 0.001 },
+          { "--enter-x": "0px", opacity: 0.72, duration: 0.7 },
+          0.1,
+        );
+      });
+
+      /* The count is written straight into the node, so putting it back is
+         this branch's own job — reverting a timeline cannot undo it. */
+      return () => setTally(gobiComparison.length);
     });
 
     return () => mm.revert();
@@ -154,6 +196,20 @@ export default function AgainstOrdinary({ product }: { product: Product }) {
               ))}
             </tbody>
           </table>
+
+          {/*
+            The count of rows that have landed. It reads as a score because
+            that is what the sheet is — six things put side by side, and the
+            same side answering all six.
+          */}
+          <p className={styles.tally}>
+            <span className={styles.tallyNum} ref={tallyRef}>
+              {gobiComparison.length}
+            </span>
+            <span className={styles.tallyOf}>
+              of {gobiComparison.length} answered by the pack, not the cook
+            </span>
+          </p>
         </div>
       </div>
     </section>

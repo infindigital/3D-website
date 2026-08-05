@@ -1,6 +1,6 @@
 .serving {
   position: relative;
-  padding: clamp(56px, 8vh, 96px) 0 clamp(60px, 8.5vh, 104px);
+  padding: clamp(40px, 5.4vh, 66px) 0 clamp(44px, 6vh, 74px);
   background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 48%, var(--color-white) 100%);
   overflow: hidden;
 }
@@ -13,22 +13,22 @@
 }
 
 .head {
-  margin-bottom: clamp(24px, 4vh, 44px);
+  margin-bottom: clamp(20px, 3vh, 34px);
 }
 
 .eyebrow {
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .heading {
   max-width: 18ch;
-  font-size: clamp(2.1rem, 5vw, 3.5rem);
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
   line-height: 1.06;
   color: var(--text-primary);
 }
@@ -42,7 +42,9 @@
   --spin: 0deg;
 
   position: relative;
-  height: clamp(340px, 44vw, 520px);
+  /* Only as tall as the ring needs. The platters never filled the old height,
+     so the extra read as a gap above the turntable and another below it. */
+  height: clamp(300px, 36vw, 430px);
   perspective: 1000px;
   perspective-origin: 50% 44%;
   /* The drag is horizontal, so the page keeps the vertical axis and a swipe
@@ -130,9 +132,9 @@
 .foot {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: clamp(24px, 4vw, 56px);
+  gap: clamp(20px, 3.2vw, 44px);
   align-items: start;
-  margin-top: clamp(28px, 4vh, 48px);
+  margin-top: clamp(20px, 2.8vh, 34px);
 }
 
 .detail {

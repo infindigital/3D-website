@@ -33,6 +33,19 @@ export const gobiAssets = {
   },
 } as const;
 
+/**
+ * The six things in the blend, photographed and cut off their studio white.
+ * Keyed by the same id the blend list uses so the two cannot drift apart.
+ */
+export const gobiIngredientImages = {
+  chilli: "/assets/products/gobi-manchurian/ing-chilli.webp",
+  turmeric: "/assets/products/gobi-manchurian/ing-turmeric.webp",
+  cornstarch: "/assets/products/gobi-manchurian/ing-cornstarch.webp",
+  ginger: "/assets/products/gobi-manchurian/ing-ginger.webp",
+  salt: "/assets/products/gobi-manchurian/ing-salt.webp",
+  spices: "/assets/products/gobi-manchurian/ing-spices.webp",
+} as const;
+
 /** The short claims that run across the top of the page. */
 export const gobiPromises = [
   "No artificial colours",
@@ -237,25 +250,52 @@ export const gobiComparison: ComparisonRow[] = [
 ];
 
 export interface BlendPart {
+  /** Keys the photograph in gobiIngredientImages */
+  id: keyof typeof gobiIngredientImages;
   name: string;
   /** What it is doing in the blend */
   role: string;
-  /** The colour it contributes, used for its disc */
+  /** The colour it contributes, used for the light behind its photograph */
   tone: string;
 }
 
 /**
  * What is in the pack, in the order the owner's ingredients sheet reads them
  * off. The tones are taken from the spices themselves and are what the section
- * is drawn from — there is no artificial colour in the blend or on the page.
+ * is lit with — there is no artificial colour in the blend or on the page.
  */
 export const gobiBlend: BlendPart[] = [
-  { name: "Chilli", role: "The heat, and all of the red", tone: "#d02d1c" },
-  { name: "Turmeric", role: "The warm ground note", tone: "#e9a41a" },
-  { name: "Corn starch", role: "What turns the coat crisp", tone: "#f3e6cd" },
-  { name: "Ginger", role: "The lift behind the heat", tone: "#c98a3f" },
-  { name: "Salt", role: "Already measured in", tone: "#e8eef2" },
-  { name: "Natural spices", role: "The rest of the Indo-Chinese", tone: "#8c5a2b" },
+  {
+    id: "chilli",
+    name: "Chilli",
+    role: "The heat, and all of the red",
+    tone: "#d02d1c",
+  },
+  {
+    id: "turmeric",
+    name: "Turmeric",
+    role: "The warm ground note",
+    tone: "#e9a41a",
+  },
+  {
+    id: "cornstarch",
+    name: "Corn starch",
+    role: "What turns the coat crisp",
+    tone: "#f3e6cd",
+  },
+  {
+    id: "ginger",
+    name: "Ginger",
+    role: "The lift behind the heat",
+    tone: "#c98a3f",
+  },
+  { id: "salt", name: "Salt", role: "Already measured in", tone: "#e8eef2" },
+  {
+    id: "spices",
+    name: "Natural spices",
+    role: "The rest of the Indo-Chinese",
+    tone: "#8c5a2b",
+  },
 ];
 
 /** The pack's own measurements, from the owner's dimension sheet. */

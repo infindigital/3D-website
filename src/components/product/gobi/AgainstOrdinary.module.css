@@ -1,6 +1,6 @@
 .against {
   position: relative;
-  padding: clamp(56px, 8vh, 96px) 0 clamp(60px, 8.5vh, 104px);
+  padding: clamp(40px, 5.4vh, 66px) 0 clamp(44px, 6vh, 74px);
   background: var(--color-cream);
   overflow: hidden;
 }
@@ -16,31 +16,31 @@
    the wrapper's font, which is body size — so it wraps the heading at about
    half the width it was meant to have. */
 .head {
-  margin-bottom: clamp(30px, 4.5vh, 54px);
+  margin-bottom: clamp(20px, 3vh, 34px);
 }
 
 .eyebrow {
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .heading {
   max-width: 18ch;
-  font-size: clamp(2.1rem, 5vw, 3.5rem);
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
   line-height: 1.06;
   color: var(--text-primary);
 }
 
 .lead {
-  margin-top: 18px;
+  margin-top: 14px;
   max-width: 54ch;
-  font-size: clamp(1rem, 1.8vw, 1.1rem);
-  line-height: 1.7;
+  font-size: clamp(0.96rem, 1.6vw, 1.05rem);
+  line-height: 1.65;
   color: var(--text-secondary);
 }
 
@@ -48,11 +48,15 @@
 
 .board {
   position: relative;
-  padding: clamp(24px, 3.4vw, 40px) clamp(18px, 2.6vw, 34px);
-  border-radius: 28px;
+  padding: clamp(20px, 2.8vw, 32px) clamp(16px, 2.2vw, 30px);
+  border-radius: 26px;
   background: var(--color-white);
   border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
   box-shadow: 0 30px 70px rgba(120, 60, 20, 0.09);
+  /* The depth the two sides lean out of. Shallow enough that the rows at the
+     top and the foot are not distorted differently from the ones in between. */
+  perspective: 1700px;
+  perspective-origin: 50% 50%;
 }
 
 /* The line the two sides meet at. It is drawn behind the middle column and
@@ -83,9 +87,11 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: clamp(10px, 1.4vh, 16px) clamp(14px, 2.4vw, 34px);
+  gap: clamp(8px, 1.1vh, 13px) clamp(12px, 2vw, 28px);
   width: 100%;
   border-collapse: collapse;
+  /* So the cells can stand off the board rather than being flattened onto it */
+  transform-style: preserve-3d;
 }
 
 .table thead,
@@ -176,28 +182,42 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: clamp(11px, 1.5vw, 15px) clamp(13px, 1.6vw, 18px);
+  padding: clamp(10px, 1.3vw, 14px) clamp(12px, 1.5vw, 17px);
   border-radius: 14px;
   font-size: clamp(0.85rem, 1.45vw, 0.98rem);
   line-height: 1.4;
 }
 
-/* The side being sold: full colour, a tick, and it reads right-to-left into
-   the spine so the two claims face each other. */
+/*
+ * The two sides lean out of the board like a book opening toward the reader,
+ * hinged on the feature between them. The slide-in is a variable inside the
+ * same transform, because a second one — or an inline one from GSAP — would
+ * replace the lean instead of adding to it.
+ */
 .ours {
   flex-direction: row-reverse;
   text-align: right;
+  /* Hugging the spine rather than filling the column: a card stretched to the
+     full width would be mostly empty on its outer side, and the two claims are
+     supposed to meet in the middle. */
+  justify-self: end;
   background: color-mix(in srgb, var(--accent) 7%, var(--color-white));
   border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   font-weight: 600;
   color: var(--text-primary);
+  /* Nearer, which is the whole point of standing them up */
+  transform: translate3d(var(--enter-x, 0px), 0, 26px) rotateY(5deg);
+  box-shadow: 0 10px 22px rgba(120, 60, 20, 0.09);
 }
 
-/* The side being compared against: no border, no weight, and held back a
-   little — it is context, not an accusation. */
+/* The side being compared against: no border, no weight, set back and held
+   down a little — it is context, not an accusation. */
+/* Turned less far than the side facing it: there is no card under this text to
+   carry the angle, and past about three degrees the letters start to soften. */
 .theirs {
   opacity: 0.72;
   color: var(--text-secondary);
+  transform: translate3d(var(--enter-x, 0px), 0, -14px) rotateY(-3deg);
 }
 
 .tick,
@@ -243,6 +263,37 @@
   opacity: 0.6;
 }
 
+/* ---- the tally -------------------------------------------------------- */
+
+.tally {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  margin-top: clamp(16px, 2.2vh, 26px);
+  padding-top: clamp(14px, 1.9vh, 20px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+  text-align: center;
+}
+
+.tallyNum {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 2.9rem);
+  line-height: 1;
+  color: var(--accent);
+  /* The digit swaps as rows land, so the box it sits in must not resize */
+  min-width: 1.1em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tallyOf {
+  font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
 /* ---- narrower screens ------------------------------------------------- */
 
 @media (max-width: 860px) {
@@ -259,6 +310,18 @@
   .table thead,
   .table tbody {
     display: block;
+  }
+
+  /* Stacked, so there are no two sides to stand facing each other */
+  .board {
+    perspective: none;
+  }
+
+  .ours,
+  .theirs {
+    transform: translate3d(var(--enter-x, 0px), 0, 0);
+    box-shadow: none;
+    justify-self: stretch;
   }
 
   .table tbody tr {
@@ -295,6 +358,11 @@
     padding: clamp(16px, 3vw, 22px) 0 8px;
     background: none;
     color: var(--accent);
+  }
+
+  /* The disc above it already stands the first pair off the top of the board */
+  .table tbody tr:first-child .feature {
+    padding-top: 0;
   }
 
   .ours {

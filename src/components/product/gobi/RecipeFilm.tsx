@@ -104,7 +104,7 @@ export default function RecipeFilm({ product }: { product: Product }) {
         0.36,
       );
       enter.fromTo(
-        `.${styles.filmFrame}`,
+        `.${styles.filmSlab}`,
         { y: 70, opacity: 0.001, scale: 0.96 },
         { y: 0, opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" },
         0.16,
@@ -176,6 +176,37 @@ export default function RecipeFilm({ product }: { product: Product }) {
       );
     });
 
+    /*
+     * The slab turns as the page goes past it. Only where it is standing beside
+     * the steps: below that break it is stacked in its own column and already
+     * facing the reader, and turning something that is not held still just
+     * makes it swim.
+     */
+    mm.add(
+      "(min-width: 901px) and (prefers-reduced-motion: no-preference)",
+      () => {
+        const travel = {
+          trigger: `.${styles.stage}`,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.9,
+        } as const;
+
+        gsap.fromTo(
+          `.${styles.filmSlab}`,
+          { rotationY: 10, rotationX: 4 },
+          { rotationY: -8, rotationX: -3, ease: "none", scrollTrigger: travel },
+        );
+
+        /* The light running over the glass, which is what sells the turn */
+        gsap.fromTo(
+          `.${styles.sheen}`,
+          { xPercent: -75 },
+          { xPercent: 75, ease: "none", scrollTrigger: travel },
+        );
+      },
+    );
+
     return () => mm.revert();
   }, []);
 
@@ -220,19 +251,30 @@ export default function RecipeFilm({ product }: { product: Product }) {
         <div className={styles.stage}>
           <div className={styles.filmCol}>
             <div className={styles.filmSticky}>
-              <div className={styles.filmFrame}>
-                <video
-                  ref={videoRef}
-                  className={styles.video}
-                  src={gobiAssets.film}
-                  poster={gobiAssets.filmPoster}
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  aria-label={`Cooking ${product.name} from pack to plate`}
-                />
-                <span className={styles.filmTag}>Pack to plate</span>
+              {/*
+                The frame is a slab rather than a picture: the edge below is a
+                real face standing at a right angle to it, so when the scroll
+                turns the slab you see its thickness. It has to live outside
+                the frame — the frame clips the video, and a clipping box
+                flattens everything inside it back onto one plane.
+              */}
+              <div className={styles.filmSlab}>
+                <span className={styles.filmEdge} aria-hidden="true" />
+                <div className={styles.filmFrame}>
+                  <video
+                    ref={videoRef}
+                    className={styles.video}
+                    src={gobiAssets.film}
+                    poster={gobiAssets.filmPoster}
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    aria-label={`Cooking ${product.name} from pack to plate`}
+                  />
+                  <span className={styles.sheen} aria-hidden="true" />
+                  <span className={styles.filmTag}>Pack to plate</span>
+                </div>
               </div>
             </div>
           </div>
