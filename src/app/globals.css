@@ -23,9 +23,14 @@
   --tint-green: #e4f7ea;
   --tint-orange: #ffedd8;
 
-  /* Text */
+  /* Text.
+
+     Headings carry the warmth; the prose under them is black. Every
+     description on the site is set in the second of these, and every
+     surface it is ever set on is light — the palette has no dark
+     backgrounds — so there is nowhere black can go wrong. */
   --text-primary: #2b1d16;
-  --text-secondary: #6b5a4e;
+  --text-secondary: #000000;
   --text-on-accent: #ffffff;
 
   /* Surfaces */
