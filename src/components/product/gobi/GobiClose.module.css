@@ -1,0 +1,73 @@
+.close {
+  position: relative;
+  padding: clamp(64px, 10vh, 120px) 0 clamp(72px, 11vh, 130px);
+  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 100%);
+  overflow: hidden;
+}
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+
+.shot {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  aspect-ratio: 3 / 2;
+  background: var(--color-cream-deep);
+  box-shadow: 0 40px 90px rgba(120, 60, 20, 0.2),
+    0 4px 14px rgba(120, 60, 20, 0.08);
+}
+
+.shotImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Oversized so the scrubbed drift never pulls an edge into view */
+  transform: scale(1.08);
+  will-change: transform;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.heading {
+  font-size: clamp(2rem, 4.4vw, 3.1rem);
+  line-height: 1.08;
+  color: var(--text-primary);
+}
+
+.body {
+  font-size: clamp(1rem, 1.7vw, 1.1rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 46ch;
+}
+
+.buys {
+  margin-top: 6px;
+}
+
+@media (max-width: 900px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(24px, 5vw, 36px);
+  }
+}
+
+@media (max-width: 640px) {
+  .shot {
+    border-radius: 22px;
+    aspect-ratio: 4 / 3;
+  }
+}

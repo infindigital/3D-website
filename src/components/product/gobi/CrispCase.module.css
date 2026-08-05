@@ -1,0 +1,425 @@
+.case {
+  position: relative;
+  padding: clamp(64px, 10vh, 120px) 0 clamp(80px, 12vh, 150px);
+  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 60%, var(--color-white) 100%);
+  overflow: hidden;
+}
+
+/* Three soft specks of spice colour, drifting. They are the only decoration
+   in the section that is not content, so they stay well under the type. */
+.motes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.motes span {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(46px);
+  opacity: 0.5;
+  will-change: transform;
+  animation: drift 22s var(--ease-soft) infinite alternate;
+}
+
+.motes span:nth-child(1) {
+  width: 320px;
+  height: 320px;
+  top: 6%;
+  left: -6%;
+  background: var(--tint-turmeric);
+}
+
+.motes span:nth-child(2) {
+  width: 260px;
+  height: 260px;
+  top: 52%;
+  right: -4%;
+  background: var(--tint-chilli);
+  animation-duration: 27s;
+  animation-delay: -8s;
+}
+
+.motes span:nth-child(3) {
+  width: 220px;
+  height: 220px;
+  bottom: 4%;
+  left: 32%;
+  background: var(--tint-green);
+  animation-duration: 31s;
+  animation-delay: -15s;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(38px, -30px, 0) scale(1.12);
+  }
+}
+
+/* ---- the claim strip ------------------------------------------------- */
+
+.ticker {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  margin-bottom: clamp(52px, 8vh, 96px);
+  /* Fade both ends into the page so the strip reads as continuous rather
+     than as something that starts and stops at the window edge. */
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.tickerTrack {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: slide 34s linear infinite;
+}
+
+.ticker:hover .tickerTrack {
+  animation-play-state: paused;
+}
+
+.tickerRun {
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 4vw, 56px);
+  padding-right: clamp(28px, 4vw, 56px);
+  list-style: none;
+  margin: 0;
+}
+
+.promise {
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 4vw, 56px);
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.78rem, 1.5vw, 0.95rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.promise::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+
+@keyframes slide {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    /* Exactly one run, so the second copy lands where the first began */
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ---- the panel ------------------------------------------------------- */
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.head {
+  max-width: 46ch;
+  margin-bottom: clamp(36px, 5vh, 62px);
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.heading {
+  font-size: clamp(2.1rem, 5vw, 3.5rem);
+  line-height: 1.06;
+  color: var(--text-primary);
+}
+
+.lead {
+  margin-top: 20px;
+  font-size: clamp(1rem, 1.8vw, 1.12rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-areas:
+    "pic pic f1 f2"
+    "pic pic f3 f4"
+    "ratio f5 f5 blend";
+  gap: clamp(12px, 1.4vw, 20px);
+}
+
+/*
+ * Three things move a tile — the pointer drift, the hover lift and the
+ * entrance — and all three have to share one transform. So each is a variable
+ * the transform below adds up, rather than a rule that overwrites the others:
+ * GSAP animates the entrance pair, the pointer writes the drift on the grid,
+ * and the lift is a registered property so it can still be transitioned.
+ */
+@property --lift-y {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* Every tile shares one surface, one radius and one lift, which is what
+   holds a grid of different shapes together as a single object. */
+.tile {
+  position: relative;
+  border-radius: 22px;
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(20px, 2.4vw, 30px);
+  transform: translate3d(
+      calc(var(--parallax-x, 0) * var(--depth-x, 0px)),
+      calc(
+        var(--parallax-y, 0) * var(--depth-y, 0px) + var(--enter-y, 0px) +
+          var(--lift-y)
+      ),
+      0
+    )
+    scale(var(--enter-s, 1));
+  transition: --lift-y 0.5s var(--ease-soft), box-shadow 0.5s var(--ease-soft);
+}
+
+.tile:hover {
+  --lift-y: -4px;
+  box-shadow: var(--shadow-lift);
+}
+
+.pic {
+  grid-area: pic;
+  padding: 0;
+  overflow: hidden;
+  min-height: clamp(320px, 44vw, 520px);
+  /* The picture is behind the tiles beside it, so it takes the lighter half
+     of the pointer drift and they take the heavier one. */
+  --depth-x: 6px;
+  --depth-y: 5px;
+}
+
+.picImg {
+  position: absolute;
+  inset: -6% 0;
+  width: 100%;
+  height: 112%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+.picCaption {
+  position: absolute;
+  left: clamp(14px, 1.6vw, 20px);
+  right: clamp(14px, 1.6vw, 20px);
+  bottom: clamp(14px, 1.6vw, 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.picCaptionTitle {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.98rem, 1.7vw, 1.1rem);
+  color: var(--text-primary);
+}
+
+.picCaptionBody {
+  font-size: clamp(0.84rem, 1.4vw, 0.92rem);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Opposite the picture, and further, so the two planes separate */
+  --depth-x: -10px;
+  --depth-y: -8px;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1rem, 1.7vw, 1.16rem);
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.cardBody {
+  font-size: clamp(0.86rem, 1.4vw, 0.95rem);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.ratio {
+  grid-area: ratio;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--accent) 12%, var(--color-white)) 0%,
+    var(--color-white) 100%
+  );
+}
+
+.ratioLabel,
+.blendLabel {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.76rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ratioLine {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ratioValue {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.ratioArrow {
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  color: var(--accent);
+}
+
+.ratioNote {
+  font-size: clamp(0.8rem, 1.3vw, 0.88rem);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.blend {
+  grid-area: blend;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  justify-content: center;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 9%, var(--color-white));
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  font-size: clamp(0.76rem, 1.3vw, 0.85rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* ---- narrower screens ------------------------------------------------ */
+
+@media (max-width: 1100px) {
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "pic pic"
+      "f1 f2"
+      "f3 f4"
+      "f5 f5"
+      "ratio blend";
+  }
+
+  .pic {
+    min-height: clamp(280px, 52vw, 420px);
+  }
+}
+
+@media (max-width: 640px) {
+  .case {
+    padding-bottom: clamp(64px, 10vh, 100px);
+  }
+
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "pic"
+      "f1"
+      "f2"
+      "f3"
+      "f4"
+      "f5"
+      "ratio"
+      "blend";
+  }
+
+  .pic {
+    min-height: 260px;
+  }
+
+  /* A tile that lifts under a finger only ever looks like a mis-tap */
+  .tile:hover {
+    --lift-y: 0px;
+    box-shadow: var(--shadow-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motes span,
+  .tickerTrack {
+    animation: none;
+  }
+
+  .tile,
+  .tile:hover {
+    --lift-y: 0px;
+    --enter-y: 0px;
+    --enter-s: 1;
+    transition: none;
+  }
+}

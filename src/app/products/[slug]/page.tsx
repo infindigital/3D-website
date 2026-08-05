@@ -6,7 +6,19 @@ import ProductHero from "@/components/product/ProductHero";
 import DishParade from "@/components/product/DishParade";
 import BlendStory from "@/components/product/BlendStory";
 import OtherPack from "@/components/product/OtherPack";
+import CrispCase from "@/components/product/gobi/CrispCase";
+import RecipeFilm from "@/components/product/gobi/RecipeFilm";
+import PlatterStage from "@/components/product/gobi/PlatterStage";
+import PackShelf from "@/components/product/gobi/PackShelf";
+import GobiClose from "@/components/product/gobi/GobiClose";
 import { getProduct, products } from "@/config/products";
+
+/**
+ * The slug whose page has its own set of sections below the hero, built from
+ * the photography, recipe film and plating sheet the owner supplied for it.
+ * Every other product falls back to the shared story.
+ */
+const GOBI_SLUG = "gobi-manchurian-masala";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -36,8 +48,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * The full product experience: pinned 3D pack flip, the dishes it cooks,
- * what is inside the blend, then a hand-off to the other pack. All package
+ * The full product experience: pinned 3D pack flip, then the story of the
+ * pack, then a hand-off to the other one. Gobi Manchurian has photography,
+ * a recipe film and a plating sheet of its own, so below the shared hero it
+ * runs its own sections; everything else keeps the shared pair. All package
  * imagery is owner-supplied and file-gated, never generated.
  */
 export default async function ProductPage({ params }: Props) {
@@ -46,6 +60,7 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const other = products.find((p) => p.slug !== product.slug);
+  const isGobi = product.slug === GOBI_SLUG;
 
   return (
     <main>
@@ -54,8 +69,20 @@ export default async function ProductPage({ params }: Props) {
         hasFront={has(product.images.front)}
         hasBack={has(product.images.back)}
       />
-      <DishParade product={product} />
-      <BlendStory product={product} hasBack={has(product.images.back)} />
+      {isGobi ? (
+        <>
+          <CrispCase product={product} />
+          <RecipeFilm product={product} />
+          <PlatterStage product={product} />
+          <PackShelf product={product} />
+          <GobiClose product={product} />
+        </>
+      ) : (
+        <>
+          <DishParade product={product} />
+          <BlendStory product={product} hasBack={has(product.images.back)} />
+        </>
+      )}
       {other && (
         <OtherPack product={other} hasFront={has(other.images.front)} />
       )}
