@@ -13,6 +13,8 @@
  * reads, and the long-form copy belongs to the one page that shows it.
  */
 
+import type { PackSize } from "./gobi";
+
 /** Everything this chapter loads, all under public/assets/products/three-in-one. */
 export const c65Assets = {
   /**
@@ -46,21 +48,59 @@ export const c65Yield = {
   note: "One 25 g sachet coats 375 g of cleaned chicken — a plate for four.",
 } as const;
 
-/** The three things the chapter opens on, taken from the brief. */
-export const c65Claims = [
-  {
-    label: "Restaurant-style",
-    body: "The colour and the crunch of a fry counter, from one sachet.",
-  },
-  {
-    label: "No extra spices",
-    body: "Chilli, salt and the aromatics are already in the blend.",
-  },
-  {
-    label: "Nothing artificial",
-    body: "No artificial colours, no preservatives, no artificial flavour.",
-  },
+/** The short claims that run across the top of the page, under the hero. */
+export const c65Promises = [
+  "3 in 1 spice blend",
+  "Versatile usage",
+  "Delicious taste",
+  "Hygienically packed",
+  "No artificial colours",
+  "No preservatives",
 ] as const;
+
+/** The mark drawn beside a feature. Each is a small inline SVG, never a photo
+    of type — the pack's own panel is a picture, and a picture of a word cannot
+    be read at any size, in any language, or out loud. */
+export type C65Mark = "blend" | "versatile" | "taste" | "sealed";
+
+export interface C65Feature {
+  id: string;
+  mark: C65Mark;
+  label: string;
+  body: string;
+}
+
+/**
+ * The four things printed across the front of the pack, in the order they are
+ * printed. This is the pack introducing itself, so the wording stays the
+ * pack's; the half-line under each is what it means in a kitchen.
+ */
+export const c65Features: C65Feature[] = [
+  {
+    id: "blend",
+    mark: "blend",
+    label: "3-in-1 spice blend",
+    body: "Chicken 65, fish fry and gobi manchurian out of the one sachet.",
+  },
+  {
+    id: "versatile",
+    mark: "versatile",
+    label: "Versatile usage",
+    body: "Deep fry it, pan fry it or run it over a grill for tikka.",
+  },
+  {
+    id: "taste",
+    mark: "taste",
+    label: "Delicious taste",
+    body: "The colour and the heat of a fry counter, already measured out.",
+  },
+  {
+    id: "packed",
+    mark: "sealed",
+    label: "Hygienically packed",
+    body: "Sealed at the mill and flat on the shelf, dry until you open it.",
+  },
+];
 
 export interface C65Step {
   id: string;
@@ -96,11 +136,46 @@ export const c65Steps: C65Step[] = [
   },
 ];
 
-/** The one variation printed beside the steps, for tikka. */
-export const c65Tikka = {
-  title: "Or take it off the grill",
-  body: "The same marinade, fried in a pan or run over a charcoal oven or gas grill, is tikka.",
-} as const;
+export interface C65Advantage {
+  id: string;
+  /** 01, 02 … drawn large on the face of the card */
+  index: string;
+  title: string;
+  body: string;
+}
+
+/**
+ * What keeping one of these in the drawer actually saves you. Every line is
+ * the pack's own claim read from the cook's side of it rather than the
+ * label's — the blend list becomes eight jars you do not buy, the printed
+ * ratio becomes half an hour you do not stand over.
+ */
+export const c65Advantages: C65Advantage[] = [
+  {
+    id: "one",
+    index: "01",
+    title: "One pack instead of eight jars",
+    body: "Chilli, salt, turmeric, ginger and the rest are weighed in already. Nothing to measure and nothing else to open.",
+  },
+  {
+    id: "three",
+    index: "02",
+    title: "Three dishes off one shelf",
+    body: "Chicken 65, fish fry and gobi manchurian — and kabab and tikka off the same marinade.",
+  },
+  {
+    id: "same",
+    index: "03",
+    title: "The same plate every time",
+    body: "The blend is mixed at the mill, so the tenth fry of the month tastes like the first.",
+  },
+  {
+    id: "clean",
+    index: "04",
+    title: "Nothing artificial in it",
+    body: "No artificial colours, no preservatives and no artificial flavour — the colour is the chilli.",
+  },
+];
 
 export interface C65Point {
   /** What the two plates are being read for */
@@ -137,6 +212,60 @@ export interface C65Dish {
   name: string;
   note: string;
 }
+
+/**
+ * The four ways the pack is sold, smallest first. The yields are worked out
+ * from the ratio printed on the pack — 500 g of masala to 7.5 kg of cleaned
+ * meat, so 1 g to 15 g — and not quoted from anywhere else. `scale` is only
+ * how tall the card stands on the shelf, so the range reads as a range before
+ * a word of it is read.
+ *
+ * The shape is the one the shelf already speaks, imported rather than copied:
+ * two products describing their sizes two different ways would be two
+ * components to keep in step instead of one.
+ */
+export const c65Packs: PackSize[] = [
+  {
+    id: "25g-10",
+    size: "25 g",
+    unit: "Pack of 10",
+    who: "A sachet a fry, ten fries in",
+    yields: "About 375 g of chicken per sachet",
+    scale: 0.7,
+    order:
+      "Hi RS Chef'z, I would like to order 3 in 1 Masala — 25 g, pack of 10.",
+  },
+  {
+    id: "30g-6",
+    size: "30 g",
+    unit: "Pack of 6",
+    who: "The slightly bigger sachet",
+    yields: "About 450 g of chicken per sachet",
+    scale: 0.8,
+    order:
+      "Hi RS Chef'z, I would like to order 3 in 1 Masala — 30 g, pack of 6.",
+  },
+  {
+    id: "500g-1",
+    size: "500 g",
+    unit: "Pack of 1",
+    who: "The everyday kitchen pouch",
+    yields: "About 7.5 kg of chicken",
+    scale: 1,
+    order:
+      "Hi RS Chef'z, I would like to order 3 in 1 Masala — 500 g, pack of 1.",
+  },
+  {
+    id: "500g-2",
+    size: "500 g",
+    unit: "Pack of 2",
+    who: "Big families and small caterers",
+    yields: "About 15 kg of chicken",
+    scale: 1.16,
+    order:
+      "Hi RS Chef'z, I would like to order 3 in 1 Masala — 500 g, pack of 2.",
+  },
+];
 
 /** The four dishes in the range shot — the same pack, four dinners. */
 export const c65Range: C65Dish[] = [

@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { c65Assets, c65Steps, c65Tikka, c65Yield } from "@/config/chicken65";
+import { c65Assets, c65Steps, c65Yield } from "@/config/chicken65";
 import type { Product } from "@/config/products";
 import styles from "./SixtyFiveFilm.module.css";
 
@@ -151,22 +150,6 @@ export default function SixtyFiveFilm({ product }: { product: Product }) {
           },
         },
       );
-
-      gsap.fromTo(
-        `.${styles.turnRow}`,
-        { y: 40, opacity: 0.001 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.9,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: `.${styles.turnRow}`,
-            start: "top 86%",
-            toggleActions: "play none none reverse",
-          },
-        },
-      );
     });
 
     /* The film leans as the page passes it, and the light runs over the glass.
@@ -267,25 +250,6 @@ export default function SixtyFiveFilm({ product }: { product: Product }) {
             ))}
           </ol>
         </div>
-
-        {/* The one variation printed beside the steps on the pack. It is the
-            same marinade and a different heat, so it is a footnote to the
-            method rather than a second recipe. */}
-        <aside className={styles.turnRow}>
-          <div className={styles.turnArt}>
-            <Image
-              src={c65Assets.tikka}
-              alt="Chicken tikka on skewers, cooked from the same marinade over a grill"
-              width={555}
-              height={950}
-              sizes="(max-width: 760px) 60vw, 300px"
-            />
-          </div>
-          <div className={styles.turnCopy}>
-            <h3 className={styles.turnTitle}>{c65Tikka.title}</h3>
-            <p className={styles.turnText}>{c65Tikka.body}</p>
-          </div>
-        </aside>
       </div>
     </section>
   );

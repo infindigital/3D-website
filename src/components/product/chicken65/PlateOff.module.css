@@ -3,7 +3,7 @@
    would put a cast on one plate and not the other. */
 .off {
   position: relative;
-  padding: clamp(56px, 8vh, 100px) 24px clamp(48px, 7vh, 88px);
+  padding: clamp(40px, 5.5vh, 72px) 24px clamp(36px, 5vh, 64px);
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--accent) 6%, var(--color-cream-deep)) 0%,

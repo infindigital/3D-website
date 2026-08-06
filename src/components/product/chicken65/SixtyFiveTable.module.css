@@ -14,7 +14,7 @@
    the close. */
 .table {
   position: relative;
-  padding: clamp(56px, 8vh, 100px) 24px clamp(56px, 8vh, 100px);
+  padding: clamp(40px, 5.5vh, 72px) 24px clamp(38px, 5vh, 68px);
   background: linear-gradient(
     180deg,
     var(--color-white) 0%,
@@ -29,7 +29,7 @@
 
 .head {
   max-width: 62ch;
-  margin-bottom: clamp(30px, 5vh, 52px);
+  margin-bottom: clamp(22px, 3.2vh, 38px);
 }
 
 .eyebrow {

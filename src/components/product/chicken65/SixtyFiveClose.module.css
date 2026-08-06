@@ -2,7 +2,7 @@
    cross-link below starts from, so the two bands meet without a seam. */
 .close {
   position: relative;
-  padding: clamp(56px, 8vh, 100px) 24px clamp(60px, 9vh, 110px);
+  padding: clamp(40px, 5.5vh, 72px) 24px clamp(44px, 6vh, 78px);
   overflow: hidden;
   background: linear-gradient(
     180deg,

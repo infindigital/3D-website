@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { gobiPackSpec, gobiPacks } from "@/config/gobi";
+import { gobiPackSpec, gobiPacks, type PackSize } from "@/config/gobi";
 import type { Product } from "@/config/products";
 import { getWhatsAppUrl, siteConfig } from "@/config/site";
 import styles from "./PackShelf.module.css";
@@ -14,6 +14,37 @@ gsap.registerPlugin(ScrollTrigger);
 /** How far a card leans, in degrees, at the far corner of itself. */
 const TILT = 7;
 
+interface PackShelfProps {
+  product: Product;
+  /** The sizes to stand on the shelf. Defaults to Gobi's, whose page this began on. */
+  packs?: PackSize[];
+  /**
+   * The measured pouch drawn under the shelf. Pass null on a product whose
+   * pouch has not been measured — a dimension sheet is the one thing on this
+   * page that cannot be inferred from another pack's.
+   */
+  spec?: typeof gobiPackSpec | null;
+  /** The three lines above the shelf, when the range is not Gobi's four. */
+  copy?: { eyebrow: string; heading: ReactNode; lead: ReactNode };
+}
+
+const GOBI_COPY = {
+  eyebrow: "Pick a size",
+  heading: (
+    <>
+      A sachet for tonight.
+      <br />
+      A sack for the kitchen.
+    </>
+  ),
+  lead: (
+    <>
+      The same masala in four sizes — one fry at home, or a week&rsquo;s
+      service.
+    </>
+  ),
+};
+
 /**
  * The four sizes, standing on a shelf rather than laid out in a grid.
  *
@@ -22,7 +53,12 @@ const TILT = 7;
  * before a word of it is read. The card leans towards the pointer on its own
  * axis, which is what makes four flat rectangles feel like four objects.
  */
-export default function PackShelf({ product }: { product: Product }) {
+export default function PackShelf({
+  product,
+  packs = gobiPacks,
+  spec = gobiPackSpec,
+  copy = GOBI_COPY,
+}: PackShelfProps) {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -113,8 +149,13 @@ export default function PackShelf({ product }: { product: Product }) {
       );
 
       /* The measurements are drawn on, the way they would be on a spec sheet:
-         the rules run out from their corners, then the figures land. */
-      const spec = gsap.timeline({
+         the rules run out from their corners, then the figures land. Only when
+         there is a sheet to draw: a product whose pouch has not been measured
+         renders no block, and a trigger pointed at nothing is a warning in the
+         console and a timeline that never fires. */
+      if (!sectionRef.current?.querySelector(`.${styles.spec}`)) return;
+
+      const specIn = gsap.timeline({
         scrollTrigger: {
           trigger: `.${styles.spec}`,
           start: "top 82%",
@@ -122,19 +163,19 @@ export default function PackShelf({ product }: { product: Product }) {
         },
       });
 
-      spec.fromTo(
+      specIn.fromTo(
         `.${styles.rule}`,
         { scale: 0 },
         { scale: 1, duration: 0.75, stagger: 0.12, ease: "power2.inOut" },
         0,
       );
-      spec.fromTo(
+      specIn.fromTo(
         `.${styles.figure}`,
         { opacity: 0.001, y: 6 },
         { opacity: 1, y: 0, duration: 0.4, stagger: 0.12, ease: "power2.out" },
         0.35,
       );
-      spec.fromTo(
+      specIn.fromTo(
         `.${styles.claim}`,
         { y: 16, opacity: 0.001 },
         { y: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: "power3.out" },
@@ -154,20 +195,13 @@ export default function PackShelf({ product }: { product: Product }) {
     >
       <div className={styles.inner}>
         <header className={styles.head}>
-          <p className={styles.eyebrow}>Pick a size</p>
-          <h2 className={styles.heading}>
-            A sachet for tonight.
-            <br />
-            A sack for the kitchen.
-          </h2>
-          <p className={styles.lead}>
-            The same masala in four sizes — one fry at home, or a week&rsquo;s
-            service.
-          </p>
+          <p className={styles.eyebrow}>{copy.eyebrow}</p>
+          <h2 className={styles.heading}>{copy.heading}</h2>
+          <p className={styles.lead}>{copy.lead}</p>
         </header>
 
         <ul className={styles.row}>
-          {gobiPacks.map((pack) => {
+          {packs.map((pack) => {
             const orderUrl = getWhatsAppUrl(pack.order);
 
             return (
@@ -224,52 +258,54 @@ export default function PackShelf({ product }: { product: Product }) {
           })}
         </ul>
 
-        <div className={styles.spec}>
-          {/* The pouch measured, as the owner's dimension sheet has it. The
-              rules are CSS boxes rather than an SVG so they can be scaled from
-              their own corner without any viewBox arithmetic. */}
-          <div className={styles.specArt}>
-            <span className={styles.dimTop} aria-hidden="true">
-              <span className={styles.rule} />
-              <span className={styles.figure}>{gobiPackSpec.width}</span>
-            </span>
+        {spec && (
+          <div className={styles.spec}>
+            {/* The pouch measured, as the owner's dimension sheet has it. The
+                rules are CSS boxes rather than an SVG so they can be scaled from
+                their own corner without any viewBox arithmetic. */}
+            <div className={styles.specArt}>
+              <span className={styles.dimTop} aria-hidden="true">
+                <span className={styles.rule} />
+                <span className={styles.figure}>{spec.width}</span>
+              </span>
 
-            <Image
-              className={styles.specImg}
-              src={product.images.front}
-              alt=""
-              width={700}
-              height={850}
-              sizes="(max-width: 640px) 40vw, 190px"
-            />
+              <Image
+                className={styles.specImg}
+                src={product.images.front}
+                alt=""
+                width={700}
+                height={850}
+                sizes="(max-width: 640px) 40vw, 190px"
+              />
 
-            <span className={styles.dimSide} aria-hidden="true">
-              <span className={styles.rule} />
-              <span className={styles.figure}>{gobiPackSpec.height}</span>
-            </span>
+              <span className={styles.dimSide} aria-hidden="true">
+                <span className={styles.rule} />
+                <span className={styles.figure}>{spec.height}</span>
+              </span>
 
-            <span className={styles.dimDepth} aria-hidden="true">
-              <span className={styles.rule} />
-              <span className={styles.figure}>{gobiPackSpec.depth}</span>
-            </span>
+              <span className={styles.dimDepth} aria-hidden="true">
+                <span className={styles.rule} />
+                <span className={styles.figure}>{spec.depth}</span>
+              </span>
+            </div>
+
+            <div className={styles.specBody}>
+              <h3 className={styles.specHeading}>The pouch, actual size</h3>
+              <p className={styles.specLine}>
+                {spec.width} across, {spec.height} tall,{" "}
+                {spec.depth} deep. Flat for a shelf, sealed until you open
+                it.
+              </p>
+              <ul className={styles.claims}>
+                {spec.claims.map((claim) => (
+                  <li className={styles.claim} key={claim}>
+                    {claim}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-
-          <div className={styles.specBody}>
-            <h3 className={styles.specHeading}>The pouch, actual size</h3>
-            <p className={styles.specLine}>
-              {gobiPackSpec.width} across, {gobiPackSpec.height} tall,{" "}
-              {gobiPackSpec.depth} deep. Flat for a shelf, sealed until you open
-              it.
-            </p>
-            <ul className={styles.claims}>
-              {gobiPackSpec.claims.map((claim) => (
-                <li className={styles.claim} key={claim}>
-                  {claim}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        )}
       </div>
     </section>
   );

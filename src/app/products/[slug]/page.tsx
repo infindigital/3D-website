@@ -17,9 +17,30 @@ import GobiClose from "@/components/product/gobi/GobiClose";
 import SixtyFiveOpen from "@/components/product/chicken65/SixtyFiveOpen";
 import SixtyFiveFilm from "@/components/product/chicken65/SixtyFiveFilm";
 import PlateOff from "@/components/product/chicken65/PlateOff";
+import SixtyFiveEdge from "@/components/product/chicken65/SixtyFiveEdge";
 import SixtyFiveTable from "@/components/product/chicken65/SixtyFiveTable";
 import SixtyFiveClose from "@/components/product/chicken65/SixtyFiveClose";
+import { c65Packs, c65Promises } from "@/config/chicken65";
 import { getProduct, products } from "@/config/products";
+
+/** The three lines above the 3 in 1 pack's shelf. The shelf itself is the one
+    the Gobi page stands its sizes on, mounted with this range instead. */
+const C65_SHELF_COPY = {
+  eyebrow: "Pack sizes",
+  heading: (
+    <>
+      A sachet a fry.
+      <br />
+      A pouch for the month.
+    </>
+  ),
+  lead: (
+    <>
+      The same 3 in 1 Masala in four sizes — ten sachets for the drawer, or half
+      a kilo for a kitchen that fries every week.
+    </>
+  ),
+};
 
 /**
  * The slug whose page has its own set of sections below the hero, built from
@@ -81,7 +102,7 @@ export default async function ProductPage({ params }: Props) {
         hasFront={has(product.images.front)}
         hasBack={has(product.images.back)}
       />
-      {isGobi ? (
+      {isGobi && (
         <>
           {/* The six claims run as a band straight off the hero, then the
               sizes. Someone who has just been shown the pack is deciding how
@@ -96,36 +117,49 @@ export default async function ProductPage({ params }: Props) {
           <AgainstOrdinary product={product} />
           <GobiClose product={product} />
         </>
-      ) : (
+      )}
+
+      {/* The 3 in 1 pack runs the same shape as Gobi's — band, sizes, then its
+          own chapter — off its own photography, film and printed method. The
+          band and the shelf are Gobi's components mounted with this pack's
+          words and sizes rather than second copies of them. */}
+      {isThreeInOne && (
+        <>
+          <PromiseBanner product={product} items={c65Promises} />
+          <PackShelf
+            product={product}
+            packs={c65Packs}
+            /* The pouch has not been measured for this pack, and a dimension
+               sheet is the one thing here that cannot be inferred from
+               another pack's. */
+            spec={null}
+            copy={C65_SHELF_COPY}
+          />
+          <SixtyFiveOpen product={product} />
+          <SixtyFiveFilm product={product} />
+          <PlateOff product={product} />
+          <SixtyFiveEdge product={product} />
+          <SixtyFiveTable product={product} />
+          <SixtyFiveClose
+            product={product}
+            hasFront={has(product.images.front)}
+          />
+        </>
+      )}
+
+      {/* Anything added to the catalogue later, with no photography of its own
+          yet, still gets the shared story and the hand-off to the other pack.
+          The two pages that have their own chapter end on their own order
+          panel instead — a page that has just asked for the sale should not
+          follow that with somewhere else to go. */}
+      {!isGobi && !isThreeInOne && (
         <>
           <DishParade product={product} />
           <BlendStory product={product} hasBack={has(product.images.back)} />
-          {/* The Chicken 65 chapter. It is the 3 in 1 pack's own photography,
-              film and printed method, so it is gated on that slug rather than
-              on "not Gobi" — a third product added later gets the shared story
-              and nothing that belongs to this one. It runs after the pack's own
-              story and before the hand-off, so the page still ends on somewhere
-              to go rather than burying that link halfway down. */}
-          {isThreeInOne && (
-            <>
-              <SixtyFiveOpen product={product} />
-              <SixtyFiveFilm product={product} />
-              <PlateOff product={product} />
-              <SixtyFiveTable product={product} />
-              <SixtyFiveClose
-                product={product}
-                hasFront={has(product.images.front)}
-              />
-            </>
+          {other && (
+            <OtherPack product={other} hasFront={has(other.images.front)} />
           )}
         </>
-      )}
-      {/* The Gobi page ends on its own order panel. The cross-link to the other
-          pack sat after it and undid it — a page that has just asked for the
-          sale should not follow that with somewhere else to go. Every other
-          product still hands off. */}
-      {!isGobi && other && (
-        <OtherPack product={other} hasFront={has(other.images.front)} />
       )}
     </main>
   );
