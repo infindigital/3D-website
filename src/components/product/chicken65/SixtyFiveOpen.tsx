@@ -186,8 +186,9 @@ export default function SixtyFiveOpen({ product }: { product: Product }) {
 
           {/* The four things printed across the front of the pack, standing as
               cards in front of it rather than lying under the heading as a
-              list. Each one is stepped in from the last and floats at its own
-              rate, so the column reads as four objects at four depths. */}
+              list. They share one left edge and each floats at its own rate,
+              so the column reads as four objects at four depths without
+              looking like a column that has slipped. */}
           <ul className={styles.points}>
             {c65Features.map((feature) => (
               <li className={styles.point} key={feature.id}>

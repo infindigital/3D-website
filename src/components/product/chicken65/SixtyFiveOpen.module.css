@@ -75,6 +75,11 @@
  * pack's own shape — a long rounded pill with the mark held in a disc at the
  * end — because a reader who has just seen the pack in the hero should
  * recognise them.
+ *
+ * All four hang off one left edge. They were stepped in from each other, and
+ * four pills at four indents read as a column that has slipped rather than as
+ * a stack standing at an angle — the depth has to come from the movement,
+ * which it does: each floats at its own rate and swings in on its own edge.
  */
 .points {
   list-style: none;
@@ -87,23 +92,6 @@
      than as a flat skew. */
   perspective: 1000px;
   perspective-origin: 20% 50%;
-}
-
-/*
- * Every card is stepped a little further in than the one above it, which is
- * what makes the column read as a stack standing at an angle to the reader
- * instead of four rows of a table.
- */
-.point:nth-child(2) {
-  margin-left: clamp(0px, 2.2vw, 26px);
-}
-
-.point:nth-child(3) {
-  margin-left: clamp(0px, 3.6vw, 44px);
-}
-
-.point:nth-child(4) {
-  margin-left: clamp(0px, 2.2vw, 26px);
 }
 
 /*

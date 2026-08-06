@@ -35,8 +35,8 @@ export const c65Assets = {
     fish: "/assets/products/three-in-one/dish-fish-fry.webp",
     gobi: "/assets/products/three-in-one/dish-gobi-65.webp",
   },
-  /** The same masala off the grill rather than out of the pan */
-  tikka: "/assets/products/three-in-one/c65-tikka.webp",
+  /** The three plates the one pack makes, shot together */
+  spread: "/assets/products/three-in-one/c65-spread.webp",
   film: "/assets/products/three-in-one/c65-film.mp4",
   filmPoster: "/assets/products/three-in-one/c65-film-poster.webp",
 } as const;
@@ -73,32 +73,34 @@ export interface C65Feature {
 /**
  * The four things printed across the front of the pack, in the order they are
  * printed. This is the pack introducing itself, so the wording stays the
- * pack's; the half-line under each is what it means in a kitchen.
+ * pack's; the half-line under each is what it means in a kitchen, kept to a
+ * breath — four cards that each need a sentence read as a paragraph cut into
+ * four, not as four points.
  */
 export const c65Features: C65Feature[] = [
   {
     id: "blend",
     mark: "blend",
     label: "3-in-1 spice blend",
-    body: "Chicken 65, fish fry and gobi manchurian out of the one sachet.",
+    body: "Chicken 65, fish fry, gobi manchurian.",
   },
   {
     id: "versatile",
     mark: "versatile",
     label: "Versatile usage",
-    body: "Deep fry it, pan fry it or run it over a grill for tikka.",
+    body: "Deep fry, pan fry or grill.",
   },
   {
     id: "taste",
     mark: "taste",
     label: "Delicious taste",
-    body: "The colour and the heat of a fry counter, already measured out.",
+    body: "Fry-counter colour and heat, measured in.",
   },
   {
     id: "packed",
     mark: "sealed",
     label: "Hygienically packed",
-    body: "Sealed at the mill and flat on the shelf, dry until you open it.",
+    body: "Sealed at the mill, dry until opened.",
   },
 ];
 
@@ -138,43 +140,23 @@ export const c65Steps: C65Step[] = [
 
 export interface C65Advantage {
   id: string;
-  /** 01, 02 … drawn large on the face of the card */
-  index: string;
-  title: string;
-  body: string;
+  /** One line, ticked. Long enough to be a claim, short enough to be a bullet. */
+  text: string;
 }
 
 /**
- * What keeping one of these in the drawer actually saves you. Every line is
- * the pack's own claim read from the cook's side of it rather than the
- * label's — the blend list becomes eight jars you do not buy, the printed
- * ratio becomes half an hour you do not stand over.
+ * What keeping one of these in the drawer actually saves you — the owner's own
+ * listing bullets, each cut to the one thing it says. They are bullets on the
+ * pack's listing and they stay bullets here: a sentence of explanation under
+ * each turns six quick reasons into six paragraphs nobody finishes.
  */
 export const c65Advantages: C65Advantage[] = [
-  {
-    id: "one",
-    index: "01",
-    title: "One pack instead of eight jars",
-    body: "Chilli, salt, turmeric, ginger and the rest are weighed in already. Nothing to measure and nothing else to open.",
-  },
-  {
-    id: "three",
-    index: "02",
-    title: "Three dishes off one shelf",
-    body: "Chicken 65, fish fry and gobi manchurian — and kabab and tikka off the same marinade.",
-  },
-  {
-    id: "same",
-    index: "03",
-    title: "The same plate every time",
-    body: "The blend is mixed at the mill, so the tenth fry of the month tastes like the first.",
-  },
-  {
-    id: "clean",
-    index: "04",
-    title: "Nothing artificial in it",
-    body: "No artificial colours, no preservatives and no artificial flavour — the colour is the chilli.",
-  },
+  { id: "jars", text: "One pack instead of eight jars" },
+  { id: "range", text: "Chicken 65, fish fry, kabab, gobi" },
+  { id: "quick", text: "Mix, coat, fry — minutes, not hours" },
+  { id: "same", text: "The same plate every single time" },
+  { id: "clean", text: "No artificial colours or preservatives" },
+  { id: "sealed", text: "Sealed pouch, fresh to the last spoon" },
 ];
 
 export interface C65Point {

@@ -14,13 +14,13 @@ gsap.registerPlugin(ScrollTrigger);
 /**
  * What the pack is actually worth in a kitchen.
  *
- * The comparison above it argues with a photograph; this argues with four
- * plain sentences, so the work of holding a reader is done by the depth
- * instead. The four cards stand in their own room at four depths, each one
- * turned a little further off the page than the last, and the photograph
- * beside them tips under the pointer — the same summed-variable transform the
- * rest of the chapter uses, so the entrance, the scroll and the pointer never
- * overwrite one another.
+ * Six ticked lines against one photograph, and nothing else. The reasons used
+ * to be cards with a sentence apiece, which is the same six reasons written as
+ * six paragraphs — a reader skimming for what a pack does reads bullets or
+ * reads nothing. The depth is all in the movement instead: the photograph tips
+ * under the pointer and rises against the page, and the lines swing in one at
+ * a time on their own edge, through the summed-variable transform the rest of
+ * the chapter uses so entrance, scroll and pointer never overwrite each other.
  */
 export default function SixtyFiveEdge({ product }: { product: Product }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -55,7 +55,7 @@ export default function SixtyFiveEdge({ product }: { product: Product }) {
          settling — through the same variables the pointer drift feeds. */
       enter.fromTo(
         `.${styles.frame}`,
-        { "--enter-s": 0.9, "--enter-rz": "-7deg", opacity: 0.001 },
+        { "--enter-s": 0.9, "--enter-rz": "-5deg", opacity: 0.001 },
         {
           "--enter-s": 1,
           "--enter-rz": "0deg",
@@ -63,19 +63,19 @@ export default function SixtyFiveEdge({ product }: { product: Product }) {
           duration: 1.2,
           ease: "power3.out",
         },
-        0.12,
+        0.1,
       );
-      /* Each card swings in on its own edge, in order, the way a hand would
-         lay four cards down on a table. */
+      /* One line at a time, each swinging in off its own left edge, the way a
+         hand ticks down a list. */
       enter.fromTo(
-        `.${styles.card}`,
-        { "--enter-y": "34px", "--enter-ry": "-22deg", opacity: 0.001 },
+        `.${styles.item}`,
+        { "--enter-x": "-26px", "--enter-ry": "-18deg", opacity: 0.001 },
         {
-          "--enter-y": "0px",
+          "--enter-x": "0px",
           "--enter-ry": "0deg",
           opacity: 1,
-          duration: 0.9,
-          stagger: 0.11,
+          duration: 0.7,
+          stagger: 0.08,
           ease: "power3.out",
         },
         0.3,
@@ -88,22 +88,20 @@ export default function SixtyFiveEdge({ product }: { product: Product }) {
         scrub: 1,
       } as const;
 
-      /* The photograph rises against the page as the section passes, which is
-         what stops the column beside it reading as a flat list. */
+      /* The photograph and the list cross the page at different rates, which is
+         the whole of what keeps two columns from reading as one slab. The list
+         moves as one piece: its lines are ruled off each other, and six rules
+         drifting apart would read as a table coming apart. */
       gsap.fromTo(
         `.${styles.frame}`,
-        { "--drift": "34px" },
-        { "--drift": "-34px", ease: "none", scrollTrigger: pass },
+        { "--drift": "30px" },
+        { "--drift": "-30px", ease: "none", scrollTrigger: pass },
       );
-
-      gsap.utils.toArray<HTMLElement>(`.${styles.card}`).forEach((el, i) => {
-        const rate = [-24, 14, -16, 20][i % 4];
-        gsap.fromTo(
-          el,
-          { "--drift": `${-rate}px` },
-          { "--drift": `${rate}px`, ease: "none", scrollTrigger: pass },
-        );
-      });
+      gsap.fromTo(
+        `.${styles.list}`,
+        { "--drift": "-14px" },
+        { "--drift": "14px", ease: "none", scrollTrigger: pass },
+      );
     });
 
     return () => mm.revert();
@@ -117,50 +115,44 @@ export default function SixtyFiveEdge({ product }: { product: Product }) {
       aria-label="Why one pack"
     >
       <div className={styles.inner}>
-        <div className={styles.copy}>
-          <header className={styles.head}>
-            <p className={styles.eyebrow}>Why one pack</p>
-            <h2 className={styles.heading}>
-              What it saves you,
-              <br />
-              <span className={styles.marked}>every single fry</span>.
-            </h2>
-          </header>
-
-          <ol className={styles.cards}>
-            {c65Advantages.map((advantage) => (
-              <li className={styles.card} key={advantage.id}>
-                <article className={styles.cardFace}>
-                  <span className={styles.index} aria-hidden="true">
-                    {advantage.index}
-                  </span>
-                  <div className={styles.cardText}>
-                    <h3 className={styles.cardTitle}>{advantage.title}</h3>
-                    <p className={styles.cardBody}>{advantage.body}</p>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {/* The same masala off a grill rather than out of a pan — the one
-            photograph on the page that says "and this too" without a word. */}
+        {/* The three plates the one pack makes, in one frame — the argument for
+            it, made before a word of the list is read. */}
         <div className={styles.stage} ref={artRef}>
           <span className={styles.shade} aria-hidden="true" />
           <div className={styles.frame}>
             <Image
               className={styles.frameImg}
-              src={c65Assets.tikka}
-              alt="Chicken tikka on skewers, cooked from the same marinade over a grill"
-              width={555}
-              height={950}
-              sizes="(max-width: 900px) 74vw, 34vw"
+              src={c65Assets.spread}
+              alt="Chicken 65, seekh kababs and fish fry plated together, all made with the one 3 in 1 Masala"
+              width={1400}
+              height={933}
+              sizes="(max-width: 900px) 90vw, 48vw"
             />
-            <span className={styles.frameTag}>
-              Off the grill, same sachet
-            </span>
+            <span className={styles.frameTag}>One pack, three plates</span>
           </div>
+        </div>
+
+        <div className={styles.copy}>
+          <header>
+            <p className={styles.eyebrow}>Why one pack</p>
+            <h2 className={styles.heading}>
+              What it saves you,{" "}
+              <span className={styles.marked}>every single fry</span>.
+            </h2>
+          </header>
+
+          <ul className={styles.list}>
+            {c65Advantages.map((advantage) => (
+              <li className={styles.item} key={advantage.id}>
+                <span className={styles.tick} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="m6 12.4 4 4 8-8.8" />
+                  </svg>
+                </span>
+                <span className={styles.itemText}>{advantage.text}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
