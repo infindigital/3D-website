@@ -24,23 +24,23 @@
   padding: 0 24px;
 }
 
-/* ---- the head, one band deep ----------------------------------------- */
+/* ---- the head, one heading and one line ------------------------------ */
 
-/* The claim and the facts that back it, side by side. Stacked they were four
-   blocks of head before the reader reached a single instruction. */
+/*
+ * Three things, and room around them. It used to hold the heading, three facts
+ * beside it and an eight-item shopping list under it — a headline with a
+ * column of type at its shoulder and a list at its feet is a headline nobody
+ * can hear. The facts were all said again by the bar and the method anyway.
+ */
 .head {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  /* Across only. The second row is the ingredient run, which sets its own
-     distance from the facts above it — a row gap here would be added to it. */
-  gap: 0 clamp(26px, 3.6vw, 60px);
-  align-items: end;
-  margin-bottom: clamp(32px, 4.4vh, 50px);
-  padding-bottom: clamp(24px, 3.2vh, 34px);
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr);
+  gap: 0 clamp(30px, 5vw, 80px);
+  margin-bottom: clamp(38px, 5.4vh, 62px);
 }
 
 .eyebrow {
+  grid-area: 1 / 1;
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 0.82rem;
@@ -50,50 +50,42 @@
   margin-bottom: 12px;
 }
 
-/* Smaller than the page's other headings on purpose. This section is the how,
-   not an argument, and the bar under it is doing the talking. */
+/* Bigger than it was, and with nothing beside it now to keep it small. This is
+   the one line of the section anyone reads standing up. */
 .heading {
-  max-width: 22ch;
-  font-size: clamp(1.8rem, 3.6vw, 2.6rem);
-  line-height: 1.06;
+  grid-area: 2 / 1;
+  /* Wide enough for the longer of the two lines to stay one line — the break
+     between them is typed, and a heading that wraps a third time loses it. */
+  max-width: 20ch;
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  line-height: 1.04;
   color: var(--text-primary);
 }
 
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: clamp(20px, 2.8vw, 38px);
-}
-
-.metaItem dt {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 5px;
-}
-
-.metaItem dd {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: clamp(0.95rem, 1.7vw, 1.08rem);
-  color: var(--text-primary);
+/* Set on the heading's own baseline rather than under it, so the two read as
+   one band and the white space stays where it does some good — a clear run
+   above the heading and a clear run below the pair. */
+.lead {
+  grid-area: 2 / 2;
+  align-self: end;
+  max-width: 32ch;
+  font-size: clamp(0.95rem, 1.55vw, 1.06rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
 }
 
 /*
- * The shopping list. It is the least important thing in the head — a reminder
- * of what is already in the kitchen — so it is set as one small run under both
- * columns rather than eight boxes beside the facts, and given the full width
- * of the head so it has a chance of staying on one line.
+ * The shopping list, at the foot of the method. It is a reminder of what is
+ * already in the kitchen, so it is set as one small run under a hairline
+ * rather than as eight boxes standing between the heading and the recipe.
  */
 /* Everything in here is one paragraph's worth of inline flow — the label, the
    items and the dots between them — so the label sits at the front of the
    first line instead of claiming a line of its own. */
 .also {
-  grid-column: 1 / -1;
-  margin-top: clamp(14px, 2vh, 20px);
+  margin-top: clamp(20px, 2.8vh, 30px);
+  padding-top: clamp(12px, 1.6vh, 16px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
   line-height: 1.75;
   /* Eight items rarely divide evenly into the width, and the leftover is a
      single item stranded on a line of its own. Balanced, the run breaks into
@@ -251,27 +243,6 @@
   margin: 0;
 }
 
-.clockHead {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.clockTotal {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2.1rem);
-  line-height: 1;
-  color: var(--accent);
-}
-
-.clockNote {
-  font-size: clamp(0.85rem, 1.4vw, 0.95rem);
-  line-height: 1.45;
-  color: var(--text-secondary);
-}
-
 .bar {
   position: relative;
 }
@@ -394,14 +365,19 @@
 
 /* ---- the four steps, as a numbered list ------------------------------- */
 
+/* One vanishing point for all four, set on the list rather than on each step,
+   so the four of them tip up as things standing in the same room. Deep enough
+   that thirty degrees is a lean rather than a lens. */
 .steps {
   list-style: none;
-  margin: clamp(26px, 3.4vh, 40px) 0 0;
+  margin: clamp(30px, 4vh, 46px) 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: clamp(28px, 3.6vw, 56px);
-  row-gap: clamp(20px, 2.6vh, 30px);
+  column-gap: clamp(30px, 4vw, 60px);
+  row-gap: clamp(24px, 3.2vh, 36px);
+  perspective: 900px;
+  perspective-origin: 50% 40%;
 }
 
 /*
@@ -410,12 +386,16 @@
  * were doing no work a rule and a number do not do, and each of them cost
  * twenty-odd pixels of padding on all four sides.
  */
+/* Hinged on its own rule, which is what the turn is read off — the line stays
+   put while the type above it swings up to meet the page. */
 .step {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   column-gap: clamp(12px, 1.4vw, 18px);
   padding-top: clamp(11px, 1.5vh, 15px);
   border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  transform-origin: 50% 0%;
+  will-change: transform;
 }
 
 /* Set as a numeral rather than drawn inside a disc. At display weight it is
@@ -484,18 +464,12 @@
   border-top: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
+/* One small line of its own, the size of an eyebrow rather than a heading. The
+   drawings under it are the statement; this only says which method they are. */
 .movesHeading {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: clamp(20px, 2.6vh, 30px);
+  margin-bottom: clamp(22px, 3vh, 32px);
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: clamp(1.08rem, 1.9vw, 1.32rem);
-  color: var(--text-primary);
-}
-
-.movesLabel {
   font-size: 0.78rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -533,13 +507,21 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  /* The four drawings share one vanishing point, so the slow lean they keep as
+     the row goes past reads as one surface tilting rather than four skews. */
+  perspective: 1000px;
+  perspective-origin: 50% 40%;
 }
 
+/* The drawing turns inside the move rather than the move turning with its
+   caption — so the depth has to survive the entrance transform sitting on
+   this element, which flattens its children by default. */
 .move {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
+  transform-style: preserve-3d;
 }
 
 /* The drawing keeps its own square, so four of them line up along one baseline
@@ -554,6 +536,7 @@
   margin-bottom: 8px;
   display: grid;
   place-items: center;
+  will-change: transform;
 }
 
 .moveArt img {
@@ -579,18 +562,16 @@
 /* ---- narrower screens ------------------------------------------------ */
 
 @media (max-width: 900px) {
-  /* Stacked, the claim and the facts are two blocks rather than two columns,
-     so the gap between them has to do the work the rule between columns did. */
+  /* One column, so the line under the heading becomes a line after it — and it
+     is given the width it just lost in depth. */
   .head {
     grid-template-columns: minmax(0, 1fr);
-    gap: clamp(22px, 3.6vw, 30px);
-    align-items: start;
+    gap: clamp(16px, 3vw, 22px) 0;
   }
 
-  /* Stacked, the head is one column of rows and the grid's own gap already
-     separates the run from the facts — its margin would count twice. */
-  .also {
-    margin-top: 0;
+  .lead {
+    grid-area: 3 / 1;
+    max-width: 46ch;
   }
 
   .filmCol {

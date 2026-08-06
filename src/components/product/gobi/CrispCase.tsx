@@ -60,10 +60,19 @@ export default function CrispCase({ product }: { product: Product }) {
          entrance by overwriting it. */
       enter.fromTo(
         `.${styles.tile}`,
-        { "--enter-y": "44px", "--enter-s": 0.97, opacity: 0.001 },
+        {
+          "--enter-y": "44px",
+          "--enter-s": 0.97,
+          "--enter-rx": "14deg",
+          opacity: 0.001,
+        },
         {
           "--enter-y": "0px",
           "--enter-s": 1,
+          /* Tipped up off the grid's own horizon rather than sliding up it —
+             the same turn the recipe steps make, so the two sections that were
+             both flat walls of type now both have a floor. */
+          "--enter-rx": "0deg",
           opacity: 1,
           duration: 0.9,
           stagger: 0.08,
@@ -204,10 +213,13 @@ export default function CrispCase({ product }: { product: Product }) {
               height={1067}
               sizes="(max-width: 720px) 92vw, (max-width: 1100px) 94vw, 620px"
             />
+            {/* The caption carries what to serve it as, which used to be a
+                card of its own in the grid. It is being demonstrated in the
+                photograph directly above the words, so it belongs here. */}
             <figcaption className={styles.picCaption}>
               <span className={styles.picCaptionTitle}>One pack, a table</span>
               <span className={styles.picCaptionBody}>
-                Manchurian, fry and tikka — gobi, paneer, mushroom or potato.
+                Manchurian, fry and tikka. Snack, starter, lunchbox or a side.
               </span>
             </figcaption>
           </figure>

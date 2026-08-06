@@ -62,10 +62,12 @@ export interface GobiFeature {
 }
 
 /**
- * The five product features from the owner's bullet-point brief.
+ * The product features from the owner's bullet-point brief.
  *
- * A line each. They are read at a glance off five small cards, and a card
- * that takes three lines to make one point is a card nobody finishes.
+ * Four, not the five the brief lists: what to serve it as is a caption on the
+ * photograph of it being served, and saying it twice cost a whole card. Half a
+ * line each — a card that takes three lines to make one point is a card nobody
+ * finishes, and four of them read at a glance where five did not.
  */
 export const gobiFeatures: GobiFeature[] = [
   {
@@ -74,19 +76,15 @@ export const gobiFeatures: GobiFeature[] = [
   },
   {
     title: "A coating that stays crisp",
-    body: "Golden from a deep fryer, an air fryer or a pan.",
+    body: "Deep fryer, air fryer or a pan.",
   },
   {
     title: "No second shelf of spices",
-    body: "No salt, no flour, no long list. Add water, coat, cook.",
+    body: "No salt, no flour, no long list.",
   },
   {
     title: "Clean all the way through",
-    body: "No artificial colours, no preservatives. Spices and nothing else.",
-  },
-  {
-    title: "Snack, starter or side",
-    body: "Evening snack, party starter, lunchbox, or a side.",
+    body: "No artificial colours or preservatives.",
   },
 ];
 
@@ -111,9 +109,7 @@ export interface RecipeSpan {
 }
 
 export interface GobiRecipe {
-  yield: string;
-  time: string;
-  /** The same two numbers `time` prints, kept apart so they can be drawn to scale */
+  /** The two stretches of the three quarters of an hour, drawn to scale */
   timeline: RecipeSpan[];
   ingredients: string[];
   steps: RecipeStep[];
@@ -129,8 +125,6 @@ export interface GobiRecipe {
  * are gone. Someone cooking from a screen is reading with their hands full.
  */
 export const gobiRecipe: GobiRecipe = {
-  yield: "500 g cauliflower",
-  time: "30 min marinade, 15 min cook",
   timeline: [
     { minutes: 30, label: "Marinating", kind: "wait" },
     { minutes: 15, label: "At the pan", kind: "work" },
@@ -145,14 +139,20 @@ export const gobiRecipe: GobiRecipe = {
     "2 spring onions",
     "Chopped onion and green chilli",
   ],
+  /*
+   * One sentence each. The card's paragraphs said the same things at three
+   * times the length, and four paragraphs beside a film and a chart is what
+   * made the section unreadable — the sauces are named in the list above, so
+   * the step does not have to name them again.
+   */
   steps: [
     {
       title: "Cut, marinate, fry",
-      body: "Cut into bite-sized pieces, wash and drain. Marinate in a paste of 50 g masala and a little water. Fry in hot oil till golden.",
+      body: "Bite-sized, washed, drained. Marinate in 50 g masala and a little water, then fry till golden.",
     },
     {
       title: "Build the sauce",
-      body: "Heat oil and sauté the onion, green chilli and ginger-garlic paste, then the soy, tomato, hot-and-sweet and corn sauces.",
+      body: "Sauté the onion, green chilli and ginger-garlic paste, then the four sauces.",
     },
     {
       title: "Fold the gobi through",
@@ -160,35 +160,21 @@ export const gobiRecipe: GobiRecipe = {
     },
     {
       title: "Garnish and serve",
-      body: "Off the flame, garnish with spring onion. Serve hot.",
+      body: "Off the flame, spring onion over. Serve hot.",
     },
   ],
   /**
    * The four pictures that run along the foot of the card. They are the same
-   * method told without a pan in front of you — which is why they carry the
-   * curd, the 30 minutes and the three ways to cook that the paragraphs skip.
+   * method told without a pan in front of you, so they only carry what the
+   * steps above them do not — the curd, and the grill. A few words each: the
+   * drawing is the instruction, and a caption that repeats it is a caption
+   * that turns four pictures back into four paragraphs.
    */
   moves: [
-    {
-      id: "mix",
-      label: "Mix",
-      body: "Masala with curd or water and ginger garlic paste.",
-    },
-    {
-      id: "coat",
-      label: "Coat",
-      body: "Gobi, mushroom or paneer. Marinate 30 minutes.",
-    },
-    {
-      id: "fry",
-      label: "Fry",
-      body: "Deep fry on a moderate flame. Serve hot.",
-    },
-    {
-      id: "grill",
-      label: "Or grill",
-      body: "A pan, a charcoal oven or a gas grill, on low.",
-    },
+    { id: "mix", label: "Mix", body: "Masala with curd or water." },
+    { id: "coat", label: "Coat", body: "Gobi, mushroom or paneer." },
+    { id: "fry", label: "Fry", body: "Deep fry, moderate flame." },
+    { id: "grill", label: "Or grill", body: "Pan, charcoal or gas, on low." },
   ],
   /** The line the card prints in brackets, and the one people most often miss. */
   note: "Do not add chilli or salt — the masala already carries both.",

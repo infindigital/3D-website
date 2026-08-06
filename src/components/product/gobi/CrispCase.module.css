@@ -1,7 +1,9 @@
+/* Cream at the top now that the pack sizes stand above it on white, or the two
+   sections run together into one long panel with a rule across the middle. */
 .case {
   position: relative;
   padding: clamp(40px, 5.4vh, 66px) 0 clamp(44px, 6vh, 74px);
-  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 60%, var(--color-white) 100%);
+  background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-white) 42%, var(--color-white) 100%);
   overflow: hidden;
 }
 
@@ -134,11 +136,21 @@
   padding: 0 24px;
 }
 
+/*
+ * The heading on the left with the line that answers it on the right, and a
+ * clear run of page under both. Stacked, the lead sat straight under the last
+ * word of the heading and the grid started straight under that — three things
+ * touching, which is what made a section with only six things in it feel full.
+ */
 .head {
-  margin-bottom: clamp(20px, 3vh, 34px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
+  gap: 0 clamp(30px, 5vw, 80px);
+  margin-bottom: clamp(34px, 5vh, 54px);
 }
 
 .eyebrow {
+  grid-area: 1 / 1;
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 0.82rem;
@@ -149,6 +161,7 @@
 }
 
 .heading {
+  grid-area: 2 / 1;
   max-width: 18ch;
   font-size: clamp(1.9rem, 4.2vw, 3rem);
   line-height: 1.06;
@@ -183,25 +196,37 @@
 }
 
 .lead {
-  margin-top: 20px;
-  max-width: 52ch;
-  font-size: clamp(1rem, 1.8vw, 1.12rem);
+  grid-area: 2 / 2;
+  align-self: end;
+  max-width: 34ch;
+  font-size: clamp(0.98rem, 1.6vw, 1.08rem);
   line-height: 1.7;
   color: var(--text-secondary);
 }
 
+/*
+ * Six things, in three even rows: the photograph with two pairs of facts
+ * beside it, then the ratio and the coating splitting the last row in half.
+ * It was seven, and the seventh — what to serve it as — left the bottom row as
+ * three unequal pieces with a nearly empty one in the middle. It is a line on
+ * the photograph now, which is where it was being demonstrated anyway.
+ */
 .bento {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-areas:
     "pic pic f1 f2"
     "pic pic f3 f4"
-    "ratio f5 crust crust";
+    "ratio ratio crust crust";
   /* Wider than it was. The tiles have no padding of their own any more, so all
      of the separating is done here — and space between two runs of type has to
      be bigger than the space inside them to read as a division at all. */
-  column-gap: clamp(20px, 2.4vw, 40px);
-  row-gap: clamp(20px, 2.6vh, 34px);
+  column-gap: clamp(22px, 2.6vw, 44px);
+  row-gap: clamp(24px, 3.2vh, 40px);
+  /* One room for the whole grid, so the picture's lean and the cards' tip-up
+     are read against the same horizon. */
+  perspective: 1400px;
+  perspective-origin: 50% 42%;
 }
 
 /*
@@ -223,6 +248,10 @@
  * those stacked into a grid is a wall of boxes rather than a thing to read.
  * What holds the grid together now is the rule across the top of each column
  * and the one photograph they are all arranged around.
+ *
+ * The chain ends with the two turns, and both are opt-in: a tile that names no
+ * tilt multiplies the pointer by zero degrees and stays flat, so the drift and
+ * the lean are one transform rather than two rules fighting for the property.
  */
 .tile {
   position: relative;
@@ -234,7 +263,12 @@
       ),
       0
     )
-    scale(var(--enter-s, 1));
+    scale(var(--enter-s, 1))
+    rotateX(
+      calc(var(--parallax-y, 0) * var(--tilt-x, 0deg) + var(--enter-rx, 0deg))
+    )
+    rotateY(calc(var(--parallax-x, 0) * var(--tilt-y, 0deg)));
+  transform-origin: 50% 0%;
   transition: --lift-y 0.5s var(--ease-soft), box-shadow 0.5s var(--ease-soft);
 }
 
@@ -252,6 +286,14 @@
      of the pointer drift and they take the heavier one. */
   --depth-x: 6px;
   --depth-y: 5px;
+  /* And it is the one thing in the grid solid enough to turn. A few degrees
+     either way as the pointer crosses it — enough that the photograph reads as
+     a plate on a table rather than a rectangle printed on the page. */
+  --tilt-x: -4.5deg;
+  --tilt-y: 6deg;
+  /* Turned about its own middle, not hinged off its top edge like the type
+     beside it: a picture pivoting on its top rule swings, it does not lean. */
+  transform-origin: 50% 50%;
 }
 
 /* The picture is the one thing in the grid with a surface, so it is the one
@@ -375,6 +417,43 @@
   color: var(--text-secondary);
 }
 
+/* Across a whole row it has the width to be the statement it is, so the number
+   is set large and the sentence stands off to its side rather than under it —
+   stacked in a half-width column it was mostly empty page. `align-content` is
+   what keeps it that way: the row is as tall as the cross-section beside it,
+   and without this the two lines drift apart to fill the height. */
+@media (min-width: 641px) {
+  .ratio {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "label label"
+      "line  note";
+    align-content: start;
+    column-gap: clamp(22px, 2.6vw, 40px);
+    row-gap: 8px;
+    align-items: baseline;
+  }
+
+  .ratioLabel {
+    grid-area: label;
+  }
+
+  .ratioLine {
+    grid-area: line;
+    flex-wrap: nowrap;
+  }
+
+  .ratioNote {
+    grid-area: note;
+    max-width: 30ch;
+  }
+
+  .ratioValue {
+    font-size: clamp(2.1rem, 3.4vw, 2.9rem);
+  }
+}
+
 /* ---- the coat, in section -------------------------------------------- */
 
 .crust {
@@ -461,27 +540,33 @@
 /* ---- narrower screens ------------------------------------------------ */
 
 @media (max-width: 1100px) {
+  /* One column, so the line that answered the heading follows it instead */
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(16px, 3vw, 22px) 0;
+  }
+
+  .lead {
+    grid-area: 3 / 1;
+    max-width: 48ch;
+  }
+
+  /* The ratio and the cross-section each take a row of their own rather than a
+     column each. Side by side, the short one left a column of empty page as
+     deep as the tall one — the two are unrelated facts, and stacking them
+     costs nothing but reads without a hole in it. */
   .bento {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
       "pic pic"
       "f1 f2"
       "f3 f4"
-      "f5 f5"
-      "ratio crust";
+      "ratio ratio"
+      "crust crust";
   }
 
   .pic {
     min-height: clamp(280px, 52vw, 420px);
-  }
-
-  /* Two narrow columns cannot hold a drawing beside three paragraphs, so it
-     goes above them — on their own left edge, not centred over them. Nothing
-     else in the column is centred, and a lone centred thing reads as a stray. */
-  .crustBody {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: start;
-    text-align: left;
   }
 
   .crustArt {
@@ -502,14 +587,11 @@
       "f2"
       "f3"
       "f4"
-      "f5"
       "ratio"
       "crust";
-  }
-
-  .crustBody {
-    grid-template-columns: auto minmax(0, 1fr);
-    justify-items: start;
+    /* Flat on a phone. There is no pointer to lean the picture towards, and a
+       perspective this shallow across one narrow column only distorts. */
+    perspective: none;
   }
 
   .crustArt {
@@ -538,6 +620,9 @@
     --lift-y: 0px;
     --enter-y: 0px;
     --enter-s: 1;
+    --enter-rx: 0deg;
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
     transition: none;
   }
 }

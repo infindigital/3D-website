@@ -73,12 +73,15 @@ export default async function ProductPage({ params }: Props) {
       />
       {isGobi ? (
         <>
+          {/* The sizes come straight off the hero. Someone who has just been
+              shown the pack is deciding how much of it to buy, not reading a
+              case for it — the case is what keeps them here afterwards. */}
+          <PackShelf product={product} />
           <CrispCase product={product} />
           <BlendMakeup product={product} />
           <RecipeFilm product={product} />
           <PlatterStage product={product} />
           <AgainstOrdinary product={product} />
-          <PackShelf product={product} />
           <GobiClose product={product} />
         </>
       ) : (

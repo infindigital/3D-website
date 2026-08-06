@@ -97,18 +97,10 @@ export default function RecipeFilm({ product }: { product: Product }) {
         0.06,
       );
       enter.fromTo(
-        `.${styles.meta}`,
+        `.${styles.lead}`,
         { y: 22, opacity: 0.001 },
         { y: 0, opacity: 1, duration: 0.75 },
         0.3,
-      );
-      /* One run of small type now, so it arrives as one line rather than as
-         eight things popping in one after another. */
-      enter.fromTo(
-        `.${styles.also}`,
-        { y: 14, opacity: 0.001 },
-        { y: 0, opacity: 1, duration: 0.6 },
-        0.36,
       );
       enter.fromTo(
         `.${styles.filmSlab}`,
@@ -160,23 +152,42 @@ export default function RecipeFilm({ product }: { product: Product }) {
       );
 
       /*
-       * The steps come up one after the other under their rules. They used to
-       * swing in off a hinge, which needed a card with edges to be read off —
-       * without the card there is nothing for the turn to show, and a rule
-       * drawing itself under a rising line says the same thing more quietly.
+       * The steps tip up off the page one after the other, hinged on their own
+       * rule. The list carries the perspective, so the four of them share one
+       * vanishing point and the turn reads as four things standing up in the
+       * same room rather than four unrelated skews.
        */
       gsap.fromTo(
         `.${styles.step}`,
-        { y: 26, opacity: 0.001 },
+        { y: 30, rotateX: -32, opacity: 0.001 },
         {
           y: 0,
+          rotateX: 0,
           opacity: 1,
-          duration: 0.8,
+          duration: 0.9,
           stagger: 0.09,
           ease: "power3.out",
           scrollTrigger: {
             trigger: `.${styles.steps}`,
             start: "top 84%",
+            toggleActions: "play none none reverse",
+          },
+        },
+      );
+
+      /* The shopping list now sits at the foot of the method rather than in
+         the head, so it arrives on its own account. One run of small type,
+         one fade — not eight things popping in one after another. */
+      gsap.fromTo(
+        `.${styles.also}`,
+        { y: 14, opacity: 0.001 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          scrollTrigger: {
+            trigger: `.${styles.also}`,
+            start: "top 92%",
             toggleActions: "play none none reverse",
           },
         },
@@ -201,20 +212,46 @@ export default function RecipeFilm({ product }: { product: Product }) {
       );
 
       /* The drawings sit far below the head, so they get their own trigger
-         rather than riding the section's entrance timeline. */
+         rather than riding the section's entrance timeline. They come up
+         turned away and square themselves off as they land. */
       gsap.fromTo(
         `.${styles.move}`,
-        { y: 40, opacity: 0.001 },
+        { y: 44, rotateY: -34, opacity: 0.001 },
         {
           y: 0,
+          rotateY: 0,
           opacity: 1,
-          duration: 0.7,
+          duration: 0.85,
           stagger: 0.1,
           ease: "power3.out",
           scrollTrigger: {
             trigger: `.${styles.moves}`,
             start: "top 84%",
             toggleActions: "play none none reverse",
+          },
+        },
+      );
+
+      /*
+       * And then they keep turning, slowly, for as long as the row is on
+       * screen — the four of them leaning through the same few degrees at
+       * offsets, so the strip reads as objects lying on a surface rather than
+       * as four stickers. Scrubbed off the page's own scroll, which is the one
+       * clock every other movement in the section is already keeping.
+       */
+      gsap.fromTo(
+        `.${styles.moveArt}`,
+        { rotateY: -18, rotateX: 8 },
+        {
+          rotateY: 18,
+          rotateX: -8,
+          ease: "none",
+          stagger: 0.06,
+          scrollTrigger: {
+            trigger: `.${styles.moves}`,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1,
           },
         },
       );
@@ -262,53 +299,26 @@ export default function RecipeFilm({ product }: { product: Product }) {
       aria-label="How to cook it"
     >
       <div className={styles.inner}>
-        {/* The claim on the left, the facts that back it on the right, so the
-            head is one band deep instead of four stacked ones. */}
+        {/*
+          The heading and one line under it, and nothing else. It used to carry
+          three facts alongside and a shopping list beneath — all of which the
+          bar, the ratio and the method say again further down, and none of
+          which a headline can be read over the top of.
+        */}
         <header className={styles.head}>
-          <div>
-            <p className={styles.eyebrow}>Cook it</p>
-            <h2 className={styles.heading}>
-              Thirty minutes,
-              <br />
-              mostly waiting.
-            </h2>
-          </div>
-
-          <dl className={styles.meta}>
-            <div className={styles.metaItem}>
-              <dt>Makes</dt>
-              <dd>{gobiRecipe.yield}</dd>
-            </div>
-            <div className={styles.metaItem}>
-              <dt>Takes</dt>
-              <dd>{gobiRecipe.time}</dd>
-            </div>
-            <div className={styles.metaItem}>
-              <dt>Masala</dt>
-              <dd>{product.ratio.masala} per batch</dd>
-            </div>
-          </dl>
-
-          {/* The shopping list, run along one line under both columns rather
-              than boxed up beside the facts. Eight pills wrapped into three
-              rows read as a block of their own; the same words set small and
-              separated by a dot read as the single aside they are. */}
-          <div className={styles.also}>
-            <p className={styles.alsoLabel}>You also need</p>
-            {/* Laid out inline, which is enough for some screen readers to
-                stop announcing it as a list — hence the explicit role. */}
-            <ul
-              className={styles.chips}
-              role="list"
-              aria-label="What else you need"
-            >
-              {gobiRecipe.ingredients.map((ingredient) => (
-                <li className={styles.chip} key={ingredient}>
-                  {ingredient}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <p className={styles.eyebrow}>Cook it</p>
+          {/* Forty-five, not thirty: thirty is the marinade alone, and a
+              headline that contradicts the line set beside it is the first
+              thing a reader notices. */}
+          <h2 className={styles.heading}>
+            Forty-five minutes,
+            <br />
+            mostly waiting.
+          </h2>
+          <p className={styles.lead}>
+            {totalMinutes} minutes from pack to plate, and {waitingMinutes} of
+            them are the marinade’s, not yours.
+          </p>
         </header>
 
         <div className={styles.stage}>
@@ -347,14 +357,9 @@ export default function RecipeFilm({ product }: { product: Product }) {
               anyone having to say so.
             */}
             <figure className={styles.clock}>
-              <figcaption className={styles.clockHead}>
-                <span className={styles.clockTotal}>{totalMinutes} min</span>
-                <span className={styles.clockNote}>
-                  start to plate — {waitingMinutes}
-                  {" of them the marinade’s, not yours"}
-                </span>
-              </figcaption>
-
+              {/* No caption over it any more. The heading makes the claim and
+                  the two blocks are labelled with their own minutes, so a line
+                  of type between them was the same sentence for a third time. */}
               <div className={styles.bar}>
                 <div className={styles.barTrack}>
                   {gobiRecipe.timeline.map((span) => (
@@ -396,14 +401,34 @@ export default function RecipeFilm({ product }: { product: Product }) {
               </span>
               {gobiRecipe.note}
             </p>
+
+            {/* The shopping list, at the foot of the method rather than under
+                the headline. It is the least important thing in the section —
+                a reminder of what is already in the kitchen — and it was the
+                thing standing between the heading and the first instruction. */}
+            <div className={styles.also}>
+              <p className={styles.alsoLabel}>You also need</p>
+              {/* Laid out inline, which is enough for some screen readers to
+                  stop announcing it as a list — hence the explicit role. */}
+              <ul
+                className={styles.chips}
+                role="list"
+                aria-label="What else you need"
+              >
+                {gobiRecipe.ingredients.map((ingredient) => (
+                  <li className={styles.chip} key={ingredient}>
+                    {ingredient}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
         <div className={styles.moves}>
-          <h3 className={styles.movesHeading}>
-            <span className={styles.movesLabel}>Or, without the pan</span>
-            The method in four moves
-          </h3>
+          {/* One small line. "The method in four moves" sat under it saying
+              what four numbered drawings on a thread already say. */}
+          <h3 className={styles.movesHeading}>Or, without the pan</h3>
 
           <div className={styles.movesBody}>
             {/* The card's dashed thread, redrawn so a scroll can draw it. It
