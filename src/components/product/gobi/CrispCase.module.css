@@ -197,7 +197,11 @@
     "pic pic f1 f2"
     "pic pic f3 f4"
     "ratio f5 crust crust";
-  gap: clamp(12px, 1.4vw, 20px);
+  /* Wider than it was. The tiles have no padding of their own any more, so all
+     of the separating is done here — and space between two runs of type has to
+     be bigger than the space inside them to read as a division at all. */
+  column-gap: clamp(20px, 2.4vw, 40px);
+  row-gap: clamp(20px, 2.6vh, 34px);
 }
 
 /*
@@ -213,17 +217,15 @@
   initial-value: 0px;
 }
 
-/* Every tile shares one surface, one radius and one lift, which is what
-   holds a grid of different shapes together as a single object. */
+/*
+ * Every tile shares the one transform, and nothing else. It used to share a
+ * surface as well — a frosted, bordered, shadowed panel each — and seven of
+ * those stacked into a grid is a wall of boxes rather than a thing to read.
+ * What holds the grid together now is the rule across the top of each column
+ * and the one photograph they are all arranged around.
+ */
 .tile {
   position: relative;
-  border-radius: 22px;
-  background: var(--surface-glass);
-  border: 1px solid var(--surface-glass-border);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: var(--shadow-soft);
-  padding: clamp(17px, 2vw, 25px);
   transform: translate3d(
       calc(var(--parallax-x, 0) * var(--depth-x, 0px)),
       calc(
@@ -236,23 +238,27 @@
   transition: --lift-y 0.5s var(--ease-soft), box-shadow 0.5s var(--ease-soft);
 }
 
-.tile:hover {
-  --lift-y: -4px;
-  box-shadow: var(--shadow-lift);
-}
-
 .pic {
   grid-area: pic;
-  padding: 0;
   overflow: hidden;
+  border-radius: 22px;
+  box-shadow: var(--shadow-soft);
   /* This tile sets the height of the whole first row, so the four cards beside
-     it are only ever as empty underneath as this is tall. It came down when
-     the cards did: a line of copy each does not hold up a 420px row. */
-  min-height: clamp(250px, 27vw, 350px);
+     it are only ever as empty underneath as this is tall. It came down again
+     when the cards lost their padding: two lines of type under a rule hold up
+     even less of a row than two lines of type in a box did. */
+  min-height: clamp(220px, 23vw, 300px);
   /* The picture is behind the tiles beside it, so it takes the lighter half
      of the pointer drift and they take the heavier one. */
   --depth-x: 6px;
   --depth-y: 5px;
+}
+
+/* The picture is the one thing in the grid with a surface, so it is the one
+   thing that can be lifted off the page. */
+.pic:hover {
+  --lift-y: -4px;
+  box-shadow: var(--shadow-lift);
 }
 
 .picImg {
@@ -264,39 +270,47 @@
   will-change: transform;
 }
 
+/* Laid on the foot of the picture rather than floated over it in a frosted
+   card of its own — the caption is part of the photograph, and a panel inside
+   a panel was one box too many even here. */
 .picCaption {
   position: absolute;
-  left: clamp(14px, 1.6vw, 20px);
-  right: clamp(14px, 1.6vw, 20px);
-  bottom: clamp(14px, 1.6vw, 20px);
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 18px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  gap: 3px;
+  padding: clamp(40px, 7vw, 64px) clamp(18px, 2vw, 24px) clamp(15px, 1.8vw, 20px);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(30, 13, 4, 0.58) 55%,
+    rgba(30, 13, 4, 0.82) 100%
+  );
 }
 
 .picCaptionTitle {
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: clamp(0.98rem, 1.7vw, 1.1rem);
-  color: var(--text-primary);
+  color: var(--color-white);
 }
 
 .picCaptionBody {
   font-size: clamp(0.84rem, 1.4vw, 0.92rem);
   line-height: 1.55;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.86);
 }
 
+/* A rule over the top and nothing else. Five of these across two rows read as
+   a column of facts; five panels read as five things demanding attention. */
 .card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
+  padding-top: clamp(11px, 1.4vh, 15px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   /* Opposite the picture, and further, so the two planes separate */
   --depth-x: -10px;
   --depth-y: -8px;
@@ -320,13 +334,9 @@
   grid-area: ratio;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  justify-content: center;
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--accent) 12%, var(--color-white)) 0%,
-    var(--color-white) 100%
-  );
+  gap: 6px;
+  padding-top: clamp(11px, 1.4vh, 15px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .ratioLabel,
@@ -371,8 +381,9 @@
   grid-area: crust;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  justify-content: center;
+  gap: 12px;
+  padding-top: clamp(11px, 1.4vh, 15px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .crustBody {
@@ -464,10 +475,12 @@
     min-height: clamp(280px, 52vw, 420px);
   }
 
-  /* Two narrow columns cannot hold a drawing beside three paragraphs */
+  /* Two narrow columns cannot hold a drawing beside three paragraphs, so it
+     goes above them — on their own left edge, not centred over them. Nothing
+     else in the column is centred, and a lone centred thing reads as a stray. */
   .crustBody {
     grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
+    justify-items: start;
     text-align: left;
   }
 
@@ -507,8 +520,8 @@
     min-height: 260px;
   }
 
-  /* A tile that lifts under a finger only ever looks like a mis-tap */
-  .tile:hover {
+  /* A picture that lifts under a finger only ever looks like a mis-tap */
+  .pic:hover {
     --lift-y: 0px;
     box-shadow: var(--shadow-soft);
   }
@@ -521,7 +534,7 @@
   }
 
   .tile,
-  .tile:hover {
+  .pic:hover {
     --lift-y: 0px;
     --enter-y: 0px;
     --enter-s: 1;

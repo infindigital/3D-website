@@ -143,11 +143,17 @@
 
 /* ---- the film beside the method -------------------------------------- */
 
+/*
+ * The film takes its height from the method beside it rather than from its own
+ * proportions. Fixed at 9:16 it ran a couple of hundred pixels past the last
+ * line of the recipe, and that overhang was pure empty page — the section
+ * looked long because one column had nothing in the bottom third of it.
+ */
 .stage {
   display: grid;
   grid-template-columns: clamp(230px, 25vw, 320px) minmax(0, 1fr);
   gap: clamp(30px, 4vw, 64px);
-  align-items: start;
+  align-items: stretch;
 }
 
 /* The depth the slab is turned in. Set on the column rather than the slab so
@@ -160,7 +166,10 @@
 .filmSlab {
   position: relative;
   width: 100%;
-  aspect-ratio: 9 / 16;
+  /* Filled to the column, with a floor under it for the odd narrow desktop
+     where the method runs short. The video is cropped to fit either way. */
+  height: 100%;
+  min-height: clamp(340px, 34vw, 470px);
   transform-style: preserve-3d;
   will-change: transform;
 }
@@ -383,22 +392,7 @@
   box-shadow: 0 4px 10px rgba(120, 60, 20, 0.24);
 }
 
-/* ---- the four steps, as doors ---------------------------------------- */
-
-/* Both are read inside the card's one transform: the hinge angle the entrance
-   animates, and the lift the pointer transitions. Two transform rules — or an
-   inline one from GSAP — would cancel each other instead of adding up. */
-@property --open {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
-@property --lift {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 0px;
-}
+/* ---- the four steps, as a numbered list ------------------------------- */
 
 .steps {
   list-style: none;
@@ -406,65 +400,41 @@
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(16px, 2vw, 26px);
-  perspective: 1100px;
+  column-gap: clamp(28px, 3.6vw, 56px);
+  row-gap: clamp(20px, 2.6vh, 30px);
 }
 
+/*
+ * No card. Four bordered, shadowed boxes standing inside a section that is
+ * already a film beside a chart is what made the page feel full — the walls
+ * were doing no work a rule and a number do not do, and each of them cost
+ * twenty-odd pixels of padding on all four sides.
+ */
 .step {
-  display: flex;
-  gap: clamp(14px, 1.6vw, 20px);
-  padding: clamp(18px, 2.2vw, 26px);
-  border-radius: 18px;
-  background: var(--color-white);
-  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
-  box-shadow: 0 12px 30px rgba(120, 60, 20, 0.06);
-  /* Hinged on the outer edge of its own column, so the pair swings apart */
-  transform-origin: left center;
-  transform: translate3d(0, 0, var(--lift, 0px)) rotateY(var(--open, 0deg));
-  transition: --lift 0.45s var(--ease-soft),
-    box-shadow 0.45s var(--ease-soft), border-color 0.45s var(--ease-soft);
-  will-change: transform;
-}
-
-.step:nth-child(even) {
-  transform-origin: right center;
-  transform: translate3d(0, 0, var(--lift, 0px))
-    rotateY(calc(var(--open, 0deg) * -1));
-}
-
-.step:hover,
-.step:focus-within {
-  --lift: 26px;
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-  box-shadow: 0 26px 54px rgba(120, 60, 20, 0.16);
-}
-
-.stepIndex {
-  flex: none;
-  width: 40px;
-  height: 40px;
   display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 10%, var(--color-white));
-  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.88rem;
-  color: var(--accent);
-  transition: background 0.45s var(--ease-soft), color 0.45s var(--ease-soft);
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(12px, 1.4vw, 18px);
+  padding-top: clamp(11px, 1.5vh, 15px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-.step:hover .stepIndex,
-.step:focus-within .stepIndex {
-  background: var(--accent);
-  color: var(--text-on-accent);
+/* Set as a numeral rather than drawn inside a disc. At display weight it is
+   already unmistakably a step count, and the disc was another small wall. The
+   column is fixed rather than shrink-wrapped: 01 and 03 do not set to the same
+   width, and four steps whose text starts a pixel or two apart read as sloppy
+   rather than as four steps. */
+.stepIndex {
+  width: clamp(26px, 2.6vw, 34px);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1.9vw, 1.4rem);
+  line-height: 1.15;
+  color: color-mix(in srgb, var(--accent) 76%, transparent);
 }
 
 .stepBody {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 6px;
 }
 
 .stepTitle {
@@ -480,17 +450,17 @@
   color: var(--text-secondary);
 }
 
-/* The one line on the pack people miss, so it is a warning and not a step */
+/* The one line on the pack people miss. A line under a rule of its own colour,
+   not a filled panel — a box drawn around a single sentence shouts it. */
 .note {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: baseline;
+  gap: 10px;
   margin-top: clamp(18px, 2.4vh, 26px);
-  padding: clamp(15px, 1.9vw, 19px) clamp(16px, 2vw, 22px);
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--color-turmeric) 13%, var(--color-white));
-  border: 1px solid color-mix(in srgb, var(--color-turmeric) 42%, transparent);
-  font-size: clamp(0.88rem, 1.45vw, 0.98rem);
+  padding-top: clamp(13px, 1.7vh, 17px);
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-turmeric) 62%, transparent);
+  font-size: clamp(0.86rem, 1.4vw, 0.95rem);
   font-weight: 600;
   line-height: 1.5;
   color: var(--text-primary);
@@ -498,16 +468,11 @@
 
 .noteMark {
   flex: none;
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--color-turmeric);
   font-family: var(--font-heading);
   font-weight: 700;
   font-size: 1.05rem;
-  color: var(--text-primary);
+  line-height: 1;
+  color: color-mix(in srgb, var(--color-turmeric) 58%, #6d3f00);
 }
 
 /* ---- the four drawings ----------------------------------------------- */
@@ -578,43 +543,23 @@
 }
 
 /* The drawing keeps its own square, so four of them line up along one baseline
-   however tall the captions under them run. */
+   however tall the captions under them run. It sits straight on the page: the
+   plate behind it was a fourth ring of decoration around a drawing that is
+   already a circle, and the numbered badge repeated what the thread through
+   them and the steps above them both say. */
 .moveArt {
   position: relative;
   width: clamp(76px, 9vw, 108px);
   aspect-ratio: 1;
-  margin-bottom: 10px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 50% 42%,
-    color-mix(in srgb, var(--accent) 10%, var(--color-white)) 0%,
-    var(--color-cream) 100%
-  );
+  margin-bottom: 8px;
   display: grid;
   place-items: center;
-  box-shadow: 0 14px 30px rgba(120, 60, 20, 0.1);
 }
 
 .moveArt img {
-  width: 78%;
-  height: 78%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-}
-
-.moveNum {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 26px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--text-on-accent);
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.76rem;
 }
 
 .moveLabel {
@@ -656,15 +601,20 @@
     display: none;
   }
 
-  /* One door at a time, all hinged the same way, since there is no longer a
-     pair of them standing side by side to open apart */
-  .steps {
-    grid-template-columns: minmax(0, 1fr);
+  /* Pinned or stacked, the film no longer has a column of method running
+     alongside it to take its height from, so it goes back to its own shape. */
+  .stage {
+    align-items: start;
   }
 
-  .step:nth-child(even) {
-    transform-origin: left center;
-    transform: translate3d(0, 0, var(--lift, 0px)) rotateY(var(--open, 0deg));
+  .filmSlab {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 9 / 16;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /* Two up rather than four, and the thread goes — an arc drawn for four
@@ -731,17 +681,6 @@
     padding: 0 11px;
   }
 
-  .step {
-    padding: 18px;
-    gap: 14px;
-  }
-
-  .stepIndex {
-    width: 36px;
-    height: 36px;
-    font-size: 0.82rem;
-  }
-
   /* The drawing beside the words instead of above them, so four moves take
      four short rows rather than half a screen each. */
   .moveList {
@@ -777,14 +716,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .step,
-  .step:hover,
-  .step:focus-within {
-    --open: 0deg;
-    --lift: 0px;
-    transition: none;
-  }
-
   .pip {
     display: none;
   }

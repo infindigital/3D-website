@@ -160,19 +160,19 @@ export default function RecipeFilm({ product }: { product: Product }) {
       );
 
       /*
-       * Each step swings in off its hinge. The angle is a variable inside the
-       * card's own transform rather than a rotation set by GSAP, because the
-       * card also lifts toward the reader on hover and an inline transform
-       * would replace that rather than add to it.
+       * The steps come up one after the other under their rules. They used to
+       * swing in off a hinge, which needed a card with edges to be read off —
+       * without the card there is nothing for the turn to show, and a rule
+       * drawing itself under a rising line says the same thing more quietly.
        */
       gsap.fromTo(
         `.${styles.step}`,
-        { "--open": "-58deg", opacity: 0.001 },
+        { y: 26, opacity: 0.001 },
         {
-          "--open": "0deg",
+          y: 0,
           opacity: 1,
-          duration: 0.9,
-          stagger: 0.11,
+          duration: 0.8,
+          stagger: 0.09,
           ease: "power3.out",
           scrollTrigger: {
             trigger: `.${styles.steps}`,
@@ -423,7 +423,7 @@ export default function RecipeFilm({ product }: { product: Product }) {
             </svg>
 
             <ol className={styles.moveList}>
-              {gobiRecipe.moves.map((move, index) => (
+              {gobiRecipe.moves.map((move) => (
                 <li className={styles.move} key={move.id}>
                   <div className={styles.moveArt}>
                     <Image
@@ -435,9 +435,6 @@ export default function RecipeFilm({ product }: { product: Product }) {
                       height={320}
                       sizes="(max-width: 640px) 72px, (max-width: 1100px) 22vw, 128px"
                     />
-                    <span className={styles.moveNum} aria-hidden="true">
-                      {index + 1}
-                    </span>
                   </div>
                   <p className={styles.moveLabel}>{move.label}</p>
                   <p className={styles.moveText}>{move.body}</p>
