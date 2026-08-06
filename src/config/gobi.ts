@@ -180,40 +180,6 @@ export const gobiRecipe: GobiRecipe = {
   note: "Do not add chilli or salt — the masala already carries both.",
 };
 
-export interface CrustLayer {
-  name: string;
-  body: string;
-  /** Radius on the 220-unit cross-section, and the colour of that layer */
-  r: number;
-  tone: string;
-}
-
-/**
- * The coating, read from the outside in. It is the claim the section makes —
- * that the crust is a recipe rather than a knack — so it is drawn rather than
- * asserted, and every layer here is one the pack's own method produces.
- */
-export const gobiCrust: CrustLayer[] = [
-  {
-    name: "Golden crust",
-    body: "Corn starch, set hard by the hot oil.",
-    r: 86,
-    tone: "#e2952f",
-  },
-  {
-    name: "Masala and water",
-    body: "A thin paste, so the seasoning goes right through.",
-    r: 62,
-    tone: "#c8461f",
-  },
-  {
-    name: "The gobi",
-    body: "Bite-sized, washed, drained.",
-    r: 40,
-    tone: "#f2e7cc",
-  },
-];
-
 export interface ComparisonRow {
   feature: string;
   /** What this masala does */

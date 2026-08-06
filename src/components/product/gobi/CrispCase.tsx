@@ -5,20 +5,19 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePointerParallax } from "@/hooks/usePointerParallax";
-import { gobiAssets, gobiCrust, gobiFeatures, gobiPromises } from "@/config/gobi";
+import { gobiAssets, gobiFeatures } from "@/config/gobi";
 import type { Product } from "@/config/products";
 import styles from "./CrispCase.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * The case for the pack, told as a bento rather than a paragraph.
+ * The case for the pack: four facts and the pack's own ratio down the left,
+ * the spread standing on the right as one tall picture.
  *
- * A claim strip runs across the top, then the spread stands as one large
- * picture with the five promises, the blend and the pack's own ratio laid
- * around it. Every tile lifts in on its own beat, and the picture keeps
- * drifting under the pointer at a shallower depth than the tiles in front of
- * it, which is what gives the panel its depth without a single 3D transform.
+ * Every tile lifts in on its own beat, and the picture keeps drifting under
+ * the pointer at a shallower depth than the tiles beside it, which is what
+ * gives the panel its depth.
  */
 export default function CrispCase({ product }: { product: Product }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -97,30 +96,6 @@ export default function CrispCase({ product }: { product: Product }) {
         );
       }
 
-      /* The floret is built up from the middle out, which is the order the
-         cook builds it in — gobi, then paste, then crust. */
-      enter.fromTo(
-        `.${styles.crustRing}`,
-        { scale: 0.3, opacity: 0 },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.8,
-          stagger: { each: 0.14, from: "end" },
-          ease: "back.out(1.5)",
-          /* The origin is left to the stylesheet, which puts it at the
-             circle's own centre via `transform-box: fill-box` — naming user
-             units here would fight that and scale each ring off-centre. */
-        },
-        0.5,
-      );
-      enter.fromTo(
-        `.${styles.crustGrit}`,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.6 },
-        1.1,
-      );
-
       /* The picture rises through its own frame as the panel passes, so the
          bento never sits completely still while it is on screen. */
       gsap.fromTo(
@@ -153,22 +128,6 @@ export default function CrispCase({ product }: { product: Product }) {
         <span />
         <span />
         <span />
-      </div>
-
-      {/* Two identical runs, so the strip can slide a whole run and start
-          over without the seam ever reaching the edge of the screen. */}
-      <div className={styles.ticker} aria-hidden="true">
-        <div className={styles.tickerTrack}>
-          {[0, 1].map((run) => (
-            <ul className={styles.tickerRun} key={run}>
-              {gobiPromises.map((promise) => (
-                <li key={promise} className={styles.promise}>
-                  {promise}
-                </li>
-              ))}
-            </ul>
-          ))}
-        </div>
       </div>
 
       <div className={styles.inner}>
@@ -251,59 +210,6 @@ export default function CrispCase({ product }: { product: Product }) {
             <p className={styles.ratioNote}>{product.usage}</p>
           </div>
 
-          <div className={`${styles.tile} ${styles.crust}`}>
-            <span className={styles.blendLabel}>The coat, in section</span>
-
-            <div className={styles.crustBody}>
-              <svg
-                className={styles.crustArt}
-                viewBox="0 0 220 220"
-                role="img"
-                aria-label="A fried floret cut through: golden crust outside, masala paste under it, cauliflower at the centre"
-              >
-                {gobiCrust.map((layer) => (
-                  <circle
-                    className={styles.crustRing}
-                    key={layer.name}
-                    cx="110"
-                    cy="110"
-                    r={layer.r}
-                    fill={layer.tone}
-                  />
-                ))}
-                {/* A dozen flecks of crust, so the outer ring reads as fried
-                    rather than as a flat disc. */}
-                <g className={styles.crustGrit} aria-hidden="true">
-                  {Array.from({ length: 14 }, (_, i) => {
-                    const a = (i / 14) * Math.PI * 2 + 0.4;
-                    const r = 68 + (i % 3) * 6;
-                    return (
-                      <circle
-                        key={i}
-                        cx={110 + Math.cos(a) * r}
-                        cy={110 + Math.sin(a) * r}
-                        r={i % 2 ? 3.4 : 2.2}
-                      />
-                    );
-                  })}
-                </g>
-              </svg>
-
-              <ol className={styles.crustList}>
-                {gobiCrust.map((layer) => (
-                  <li className={styles.crustItem} key={layer.name}>
-                    <span
-                      className={styles.crustSwatch}
-                      style={{ background: layer.tone }}
-                      aria-hidden="true"
-                    />
-                    <span className={styles.crustName}>{layer.name}</span>
-                    <span className={styles.crustText}>{layer.body}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
         </div>
       </div>
     </section>

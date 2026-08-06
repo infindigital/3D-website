@@ -12,6 +12,7 @@ import RecipeFilm from "@/components/product/gobi/RecipeFilm";
 import PlatterStage from "@/components/product/gobi/PlatterStage";
 import AgainstOrdinary from "@/components/product/gobi/AgainstOrdinary";
 import PackShelf from "@/components/product/gobi/PackShelf";
+import PromiseBanner from "@/components/product/gobi/PromiseBanner";
 import GobiClose from "@/components/product/gobi/GobiClose";
 import { getProduct, products } from "@/config/products";
 
@@ -73,9 +74,11 @@ export default async function ProductPage({ params }: Props) {
       />
       {isGobi ? (
         <>
-          {/* The sizes come straight off the hero. Someone who has just been
-              shown the pack is deciding how much of it to buy, not reading a
-              case for it — the case is what keeps them here afterwards. */}
+          {/* The six claims run as a band straight off the hero, then the
+              sizes. Someone who has just been shown the pack is deciding how
+              much of it to buy, not reading a case for it — the case is what
+              keeps them here afterwards. */}
+          <PromiseBanner product={product} />
           <PackShelf product={product} />
           <CrispCase product={product} />
           <BlendMakeup product={product} />
@@ -90,7 +93,11 @@ export default async function ProductPage({ params }: Props) {
           <BlendStory product={product} hasBack={has(product.images.back)} />
         </>
       )}
-      {other && (
+      {/* The Gobi page ends on its own order panel. The cross-link to the other
+          pack sat after it and undid it — a page that has just asked for the
+          sale should not follow that with somewhere else to go. Every other
+          product still hands off. */}
+      {!isGobi && other && (
         <OtherPack product={other} hasFront={has(other.images.front)} />
       )}
     </main>

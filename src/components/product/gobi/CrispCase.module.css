@@ -61,72 +61,6 @@
   }
 }
 
-/* ---- the claim strip ------------------------------------------------- */
-
-.ticker {
-  position: relative;
-  overflow: hidden;
-  padding: 14px 0;
-  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
-  margin-bottom: clamp(22px, 3.2vh, 38px);
-  /* Fade both ends into the page so the strip reads as continuous rather
-     than as something that starts and stops at the window edge. */
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-
-.tickerTrack {
-  display: flex;
-  width: max-content;
-  will-change: transform;
-  animation: slide 34s linear infinite;
-}
-
-.ticker:hover .tickerTrack {
-  animation-play-state: paused;
-}
-
-.tickerRun {
-  display: flex;
-  align-items: center;
-  gap: clamp(22px, 3.2vw, 44px);
-  padding-right: clamp(28px, 4vw, 56px);
-  list-style: none;
-  margin: 0;
-}
-
-.promise {
-  display: flex;
-  align-items: center;
-  gap: clamp(22px, 3.2vw, 44px);
-  white-space: nowrap;
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: clamp(0.78rem, 1.5vw, 0.95rem);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.promise::after {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex: none;
-}
-
-@keyframes slide {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    /* Exactly one run, so the second copy lands where the first began */
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-
 /* ---- the panel ------------------------------------------------------- */
 
 .inner {
@@ -205,19 +139,18 @@
 }
 
 /*
- * Six things, in three even rows: the photograph with two pairs of facts
- * beside it, then the ratio and the coating splitting the last row in half.
- * It was seven, and the seventh — what to serve it as — left the bottom row as
- * three unequal pieces with a nearly empty one in the middle. It is a line on
- * the photograph now, which is where it was being demonstrated anyway.
+ * Everything that is read on the left, the one thing that is looked at on the
+ * right. Four facts in two pairs, the ratio under them, and the photograph
+ * standing the full height of all three rows — centred against them rather
+ * than stretched to meet them, which is what keeps the right-hand side quiet.
  */
 .bento {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.12fr);
   grid-template-areas:
-    "pic pic f1 f2"
-    "pic pic f3 f4"
-    "ratio ratio crust crust";
+    "f1    f2    pic"
+    "f3    f4    pic"
+    "ratio ratio pic";
   /* Wider than it was. The tiles have no padding of their own any more, so all
      of the separating is done here — and space between two runs of type has to
      be bigger than the space inside them to read as a division at all. */
@@ -277,11 +210,12 @@
   overflow: hidden;
   border-radius: 22px;
   box-shadow: var(--shadow-soft);
-  /* This tile sets the height of the whole first row, so the four cards beside
-     it are only ever as empty underneath as this is tall. It came down again
-     when the cards lost their padding: two lines of type under a rule hold up
-     even less of a row than two lines of type in a box did. */
-  min-height: clamp(220px, 23vw, 300px);
+  /* Set by its own shape and then centred against the column of type, rather
+     than stretched to whatever height that column happens to be. A picture
+     pulled to fit its neighbours is the thing that made the right-hand side
+     feel like a wall; one standing in the middle of its own space does not. */
+  align-self: center;
+  aspect-ratio: 4 / 3;
   /* The picture is behind the tiles beside it, so it takes the lighter half
      of the pointer drift and they take the heavier one. */
   --depth-x: 6px;
@@ -381,8 +315,7 @@
   border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-.ratioLabel,
-.blendLabel {
+.ratioLabel {
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 0.76rem;
@@ -454,89 +387,6 @@
   }
 }
 
-/* ---- the coat, in section -------------------------------------------- */
-
-.crust {
-  grid-area: crust;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: clamp(11px, 1.4vh, 15px);
-  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
-}
-
-.crustBody {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(16px, 2vw, 26px);
-}
-
-.crustArt {
-  width: clamp(110px, 12vw, 156px);
-  height: auto;
-  overflow: visible;
-  filter: drop-shadow(0 10px 18px rgba(120, 60, 20, 0.18));
-}
-
-/* Named so the entrance has something to hold on to. Without a rule here the
-   module exports nothing for it, the circles go out with no class, and the
-   build-up animation quietly targets nothing at all. */
-.crustRing {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.crustGrit circle {
-  fill: rgba(255, 255, 255, 0.42);
-}
-
-.crustList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  counter-reset: layer;
-}
-
-/* The swatch is the join between the words and the drawing — it is the ring's
-   own colour, so no leader lines are needed to point at it. */
-.crustItem {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas:
-    "swatch name"
-    ".      text";
-  column-gap: 10px;
-  row-gap: 2px;
-  align-items: center;
-}
-
-.crustSwatch {
-  grid-area: swatch;
-  width: 12px;
-  height: 12px;
-  border-radius: 4px;
-  border: 1px solid rgba(120, 60, 20, 0.18);
-}
-
-.crustName {
-  grid-area: name;
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  color: var(--text-primary);
-}
-
-.crustText {
-  grid-area: text;
-  font-size: clamp(0.78rem, 1.3vw, 0.87rem);
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
 /* ---- narrower screens ------------------------------------------------ */
 
 @media (max-width: 1100px) {
@@ -551,26 +401,21 @@
     max-width: 48ch;
   }
 
-  /* The ratio and the cross-section each take a row of their own rather than a
-     column each. Side by side, the short one left a column of empty page as
-     deep as the tall one — the two are unrelated facts, and stacking them
-     costs nothing but reads without a hole in it. */
+  /* Not enough width for the picture to stand beside the type, so it goes back
+     over the top of it — the one thing looked at, then the things read. */
   .bento {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
       "pic pic"
       "f1 f2"
       "f3 f4"
-      "ratio ratio"
-      "crust crust";
+      "ratio ratio";
   }
 
   .pic {
+    align-self: stretch;
+    aspect-ratio: auto;
     min-height: clamp(280px, 52vw, 420px);
-  }
-
-  .crustArt {
-    width: 118px;
   }
 }
 
@@ -587,15 +432,10 @@
       "f2"
       "f3"
       "f4"
-      "ratio"
-      "crust";
+      "ratio";
     /* Flat on a phone. There is no pointer to lean the picture towards, and a
        perspective this shallow across one narrow column only distorts. */
     perspective: none;
-  }
-
-  .crustArt {
-    width: 96px;
   }
 
   .pic {
@@ -610,8 +450,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .motes span,
-  .tickerTrack {
+  .motes span {
     animation: none;
   }
 
