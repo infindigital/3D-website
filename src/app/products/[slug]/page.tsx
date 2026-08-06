@@ -14,6 +14,11 @@ import AgainstOrdinary from "@/components/product/gobi/AgainstOrdinary";
 import PackShelf from "@/components/product/gobi/PackShelf";
 import PromiseBanner from "@/components/product/gobi/PromiseBanner";
 import GobiClose from "@/components/product/gobi/GobiClose";
+import SixtyFiveOpen from "@/components/product/chicken65/SixtyFiveOpen";
+import SixtyFiveFilm from "@/components/product/chicken65/SixtyFiveFilm";
+import PlateOff from "@/components/product/chicken65/PlateOff";
+import SixtyFiveTable from "@/components/product/chicken65/SixtyFiveTable";
+import SixtyFiveClose from "@/components/product/chicken65/SixtyFiveClose";
 import { getProduct, products } from "@/config/products";
 
 /**
@@ -22,6 +27,9 @@ import { getProduct, products } from "@/config/products";
  * Every other product falls back to the shared story.
  */
 const GOBI_SLUG = "gobi-manchurian-masala";
+
+/** The pack whose page carries the Chicken 65 chapter below the shared story. */
+const THREE_IN_ONE_SLUG = "three-in-one-masala";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -64,6 +72,7 @@ export default async function ProductPage({ params }: Props) {
 
   const other = products.find((p) => p.slug !== product.slug);
   const isGobi = product.slug === GOBI_SLUG;
+  const isThreeInOne = product.slug === THREE_IN_ONE_SLUG;
 
   return (
     <main>
@@ -91,6 +100,24 @@ export default async function ProductPage({ params }: Props) {
         <>
           <DishParade product={product} />
           <BlendStory product={product} hasBack={has(product.images.back)} />
+          {/* The Chicken 65 chapter. It is the 3 in 1 pack's own photography,
+              film and printed method, so it is gated on that slug rather than
+              on "not Gobi" — a third product added later gets the shared story
+              and nothing that belongs to this one. It runs after the pack's own
+              story and before the hand-off, so the page still ends on somewhere
+              to go rather than burying that link halfway down. */}
+          {isThreeInOne && (
+            <>
+              <SixtyFiveOpen product={product} />
+              <SixtyFiveFilm product={product} />
+              <PlateOff product={product} />
+              <SixtyFiveTable product={product} />
+              <SixtyFiveClose
+                product={product}
+                hasFront={has(product.images.front)}
+              />
+            </>
+          )}
         </>
       )}
       {/* The Gobi page ends on its own order panel. The cross-link to the other

@@ -108,6 +108,15 @@ export default function ProductHero({
           scrollTrigger: {
             trigger: sectionRef.current,
             scrub: 0.5,
+            /*
+             * This is the one pin on the page, and pinning lengthens the
+             * document by the whole of its own travel — so every trigger below
+             * it has to be measured with the spacer already in place. Refresh
+             * priority is what guarantees that order: without it the sections
+             * further down measure the page as if the hero were never pinned,
+             * and each of them fires a screen and a half early.
+             */
+            refreshPriority: 1,
             ...(pinned
               ? { start: "top top", end: "+=160%", pin: true }
               : // The hero already sits at the top of the page, so the flip

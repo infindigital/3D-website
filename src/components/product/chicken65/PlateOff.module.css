@@ -1,0 +1,446 @@
+/* The method finished on deepened cream. The comparison lifts back to white,
+   because the two photographs were shot on white and anything else under them
+   would put a cast on one plate and not the other. */
+.off {
+  position: relative;
+  padding: clamp(56px, 8vh, 100px) 24px clamp(48px, 7vh, 88px);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 6%, var(--color-cream-deep)) 0%,
+    var(--color-cream) 26%,
+    var(--color-white) 62%,
+    var(--color-white) 100%
+  );
+}
+
+.inner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+}
+
+.head {
+  max-width: 62ch;
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.heading {
+  font-size: clamp(2rem, 4.4vw, 3rem);
+  line-height: 1.05;
+  color: var(--text-primary);
+  will-change: clip-path, transform;
+}
+
+.lead {
+  max-width: 46ch;
+  margin-top: 16px;
+  font-size: clamp(0.95rem, 1.5vw, 1.04rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+/* ---- the held pair ------------------------------------------------------ */
+
+/*
+ * The scroll the holding uses up. Given as a height rather than pinned by
+ * script: `position: sticky` is the browser's own, it costs nothing to run,
+ * and it never fights the page's smooth scrolling the way a pinned spacer can.
+ */
+.track {
+  position: relative;
+  height: 300vh;
+  margin-top: clamp(24px, 4vh, 44px);
+}
+
+.pin {
+  position: sticky;
+  top: var(--nav-height);
+  height: calc(100vh - var(--nav-height));
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  /* Both rows take what they need and the pair is centred in the held panel,
+     rather than the plates claiming every spare pixel and leaving the reading
+     stranded at the bottom of the screen. */
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: clamp(18px, 3.5vh, 40px);
+}
+
+.stage {
+  --lit: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(20px, 4vw, 64px);
+  align-items: center;
+  justify-items: center;
+  min-height: 0;
+  perspective: 1600px;
+  perspective-origin: 50% 45%;
+}
+
+.plate {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  /* Capped against the window's height as well as its width: the plate is
+     square, and on a short laptop screen a plate sized only by the column
+     would push its own caption off the bottom of the held panel. */
+  width: min(100%, 420px, 44vh);
+  margin: 0;
+}
+
+.disc {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  /*
+   * The pointer's drift and tip, and the turn the track drives. Each is its
+   * own variable added into one chain, or the last rule written would simply
+   * replace the rest.
+   */
+  transform: translate3d(
+      calc(var(--parallax-x, 0) * 12px),
+      calc(var(--parallax-y, 0) * 9px),
+      0
+    )
+    rotateX(calc(var(--parallax-y, 0) * -6deg))
+    rotateY(calc(var(--parallax-x, 0) * 8deg))
+    rotateZ(var(--turn, 0deg));
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+/*
+ * Both plates are round, dead centre, and fill all but a couple of per cent of
+ * their frame — so the studio white around them comes off as a circular mask
+ * rather than as a cut-out. Nothing that separates subject from background by
+ * brightness can tell a white plate from white paper, and multiplying is no
+ * use either: the disc carries a transform, which makes a stacking context,
+ * which isolates the blend from the page behind it.
+ */
+.plateImg {
+  width: 100%;
+  height: auto;
+  -webkit-mask-image: radial-gradient(
+    circle closest-side at 50% 50%,
+    #000 94%,
+    transparent 96.5%
+  );
+  mask-image: radial-gradient(
+    circle closest-side at 50% 50%,
+    #000 94%,
+    transparent 96.5%
+  );
+}
+
+/* The shade the plate throws, sat under it and offset down. Its own element,
+   so it holds still while the plate turns above it. */
+.shade {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 88%;
+  aspect-ratio: 1 / 0.92;
+  transform: translate3d(
+    calc(-50% + var(--parallax-x, 0) * 5px),
+    calc(-44% + var(--parallax-y, 0) * 4px),
+    0
+  );
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(43 29 22 / 0.16) 0%,
+    rgb(43 29 22 / 0.06) 58%,
+    transparent 100%
+  );
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+/* Our plate's shade deepens as the case is made, and a warm light comes up
+   behind it. The other plate keeps exactly the light it was shot in. */
+.ours .shade {
+  background: radial-gradient(
+    closest-side,
+    color-mix(
+        in srgb,
+        var(--accent) calc(18% + var(--lit, 0) * 16%),
+        transparent
+      )
+      0%,
+    color-mix(in srgb, var(--accent) 8%, transparent) 58%,
+    transparent 100%
+  );
+}
+
+.glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 118%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--color-turmeric) 22%, transparent) 0%,
+    transparent 72%
+  );
+  opacity: calc(var(--lit, 0) * 0.85);
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: clamp(6px, 1.4vh, 16px);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.9rem, 1.5vw, 1.02rem);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.nameMark {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-white);
+  background: var(--accent);
+}
+
+.nameMarkPlain {
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+
+/* ---- the reading -------------------------------------------------------- */
+
+.readout {
+  display: grid;
+  justify-items: center;
+  gap: clamp(12px, 2vh, 20px);
+}
+
+/* The three readings are stacked in one grid cell rather than laid out in a
+   row, so the block never changes height as they change over. */
+.points {
+  position: relative;
+  list-style: none;
+  display: grid;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 940px;
+}
+
+.point {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+  transition:
+    opacity 0.5s var(--ease-soft),
+    transform 0.6s var(--ease-cinematic);
+}
+
+.live {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.feature {
+  font-size: clamp(1.15rem, 2.3vw, 1.6rem);
+  line-height: 1.15;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(20px, 4vw, 64px);
+  margin-top: clamp(10px, 1.8vh, 18px);
+}
+
+.side {
+  font-size: clamp(0.86rem, 1.4vw, 0.98rem);
+  line-height: 1.55;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* The one line under our plate is set in the accent — the only difference in
+   weight between the two sides, and it is the same difference the two
+   photographs are already making. */
+.sideOurs {
+  color: color-mix(in srgb, var(--accent) 72%, var(--text-primary));
+  font-weight: 600;
+}
+
+.beads {
+  display: flex;
+  gap: 8px;
+}
+
+.bead {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-primary) 16%, transparent);
+  transition:
+    background-color 0.4s var(--ease-soft),
+    transform 0.4s var(--ease-cinematic);
+}
+
+.beadOn {
+  background: var(--accent);
+  transform: scale(1.35);
+}
+
+/* ---- phones ------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  /*
+   * Nothing is held. Two plates side by side on a phone are two thumbnails,
+   * and three readings changing over on a screen that is mostly plate is a
+   * thing the reader has to catch. So the section becomes what it always was
+   * underneath: two photographs and three readings, in order.
+   */
+  .track {
+    height: auto;
+    margin-top: clamp(20px, 4vh, 32px);
+  }
+
+  .pin {
+    position: static;
+    height: auto;
+    padding: 0;
+    gap: clamp(26px, 5vh, 40px);
+  }
+
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(26px, 5vh, 40px);
+    perspective: none;
+  }
+
+  .plate {
+    width: min(78vw, 360px);
+  }
+
+  .points {
+    display: grid;
+    gap: clamp(22px, 4vh, 34px);
+  }
+
+  /* Out of the single cell and back into a list, all three present. */
+  .point {
+    grid-area: auto;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    padding-top: 16px;
+    border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .feature,
+  .side {
+    text-align: left;
+  }
+
+  .sides {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  /* Stacked, the two lines lose the one thing that told them apart on a wide
+     screen: which plate they were sitting under. So each says so. */
+  .side::before {
+    content: "Theirs — ";
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--text-primary) 55%, transparent);
+  }
+
+  .sideOurs::before {
+    content: "Ours — ";
+    color: var(--accent);
+  }
+
+  .beads {
+    display: none;
+  }
+}
+
+/*
+ * With motion off the holding still happens — sticky is layout, not animation,
+ * and being able to look at the two plates for longer is the point of the
+ * section. What does not happen is the reading changing over on its own, so
+ * all three are shown at once, as they are on a phone.
+ */
+@media (prefers-reduced-motion: reduce) and (min-width: 761px) {
+  .track {
+    height: auto;
+  }
+
+  .pin {
+    position: static;
+    height: auto;
+  }
+
+  .points {
+    gap: clamp(20px, 3vh, 30px);
+  }
+
+  .point {
+    grid-area: auto;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    padding-top: 16px;
+    border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .beads {
+    display: none;
+  }
+
+  .disc {
+    will-change: auto;
+  }
+}
+
+/* Reduced motion keeps the two-column reading, so the lines stay under their
+   own plate and need no label — but a phone with the preference set gets the
+   stacked list, and there the labels are the only thing separating them. */
+@media (prefers-reduced-motion: reduce) and (max-width: 760px) {
+  .side::before {
+    content: "Theirs — ";
+  }
+
+  .sideOurs::before {
+    content: "Ours — ";
+  }
+}
