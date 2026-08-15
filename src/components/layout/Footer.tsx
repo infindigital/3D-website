@@ -15,7 +15,8 @@ import styles from "./Footer.module.css";
  * The page signs off as RS Chef'z and nothing else: no registered name, no
  * address, no other brand's contact details. It is the only name the site
  * uses anywhere, and the footer is the last place it should start using a
- * different one.
+ * different one. The one other name on the page is the studio credit, which
+ * is a signature rather than a second brand, and is styled to read that way.
  */
 export default function Footer() {
   const hasLogo = existsSync(
@@ -73,6 +74,17 @@ export default function Footer() {
           &copy; {year} {siteConfig.name}. All rights reserved.
         </p>
         <p>FSSAI licensed. Product of India.</p>
+        <p>
+          Developed by{" "}
+          <a
+            className={styles.credit}
+            href="https://infindigital.in/"
+            target="_blank"
+            rel="noopener"
+          >
+            In/Fin
+          </a>
+        </p>
       </div>
     </footer>
   );

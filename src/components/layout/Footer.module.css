@@ -116,6 +116,27 @@
   color: var(--text-secondary);
 }
 
+/* A signature, not a second brand: same size and weight as the line it sits
+   in, and it only picks up colour when it is pointed at. */
+.credit {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(107, 90, 78, 0.35);
+  text-underline-offset: 3px;
+  transition: color 0.3s var(--ease-soft), text-decoration-color 0.3s var(--ease-soft);
+}
+
+.credit:hover {
+  color: var(--color-chilli);
+  text-decoration-color: currentColor;
+}
+
+.credit:focus-visible {
+  outline: 3px solid var(--color-turmeric);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
 @media (max-width: 760px) {
   .main {
     grid-template-columns: 1fr;
