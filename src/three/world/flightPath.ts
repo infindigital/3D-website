@@ -183,24 +183,31 @@ const TALL_TARGET_KEYS: [number, number, number][] = [
 ];
 
 /**
- * Every pack stands at y 0.75, which is what puts it in the upper half of
- * an upright screen with the copy panel below it. It is a lift rather than
- * a tilt on purpose — see the target keys.
+ * Every pack stands above the lens, which is what puts it in the upper half
+ * of an upright screen with the copy panel below it. It is a lift rather
+ * than a tilt on purpose — see the target keys.
+ *
+ * Each pack is sized against the width of the frame it is standing in, not
+ * against the corridor's numbers: a phone is barely two and a half units
+ * wide where the lineup stands and three and a half where a flavour pack
+ * does, so the same scale means two very different pictures. A pack that
+ * has the whole frame to itself takes most of the width; a pair splits it,
+ * with a hand's gap between them and a margin at each edge that the
+ * narrowest phone still keeps.
+ *
+ * The lifts come down as the packs grow, because they grow from the middle:
+ * left alone, a bigger pack puts its head behind the navigation bar.
  *
  * The two flavour packs turn over inside their own beat, and are gone
  * before the camera reaches where they stood.
  */
 const TALL_SLOTS: PackSlot[] = [
-  /* Standing well inside the frame rather than filling it edge to edge: an
-     upright screen is barely two and a half units wide where the pair
-     stands, so a pack set as far out as the corridor's is a pack with its
-     outside edge on the glass. */
-  { id: "lineup-0", product: 0, position: [-0.62, 0.75, 0], rotation: [0, 0.26, 0.03], scale: 0.85, visible: [-1, 0.26] },
-  { id: "lineup-1", product: 1, position: [0.62, 0.75, 0], rotation: [0, -0.26, -0.03], scale: 0.85, visible: [-1, 0.26] },
-  { id: "flavour-0", product: 0, position: [0, 0.75, -18], rotation: [0, -0.16, 0.02], scale: 1.6, visible: [0.42, 0.62], turnOver: [0.5, 0.585] },
-  { id: "flavour-1", product: 1, position: [0, 0.75, -26], rotation: [0, 0.16, -0.02], scale: 1.6, visible: [0.58, 0.78], turnOver: [0.665, 0.75] },
-  { id: "finale-0", product: 0, position: [-0.68, 0.75, -40], rotation: [0, 0.24, 0.02], scale: 0.9, visible: [0.88, 2] },
-  { id: "finale-1", product: 1, position: [0.68, 0.75, -40], rotation: [0, -0.24, -0.02], scale: 0.9, visible: [0.88, 2] },
+  { id: "lineup-0", product: 0, position: [-0.62, 0.6, 0], rotation: [0, 0.26, 0.03], scale: 0.98, visible: [-1, 0.26] },
+  { id: "lineup-1", product: 1, position: [0.62, 0.6, 0], rotation: [0, -0.26, -0.03], scale: 0.98, visible: [-1, 0.26] },
+  { id: "flavour-0", product: 0, position: [0, 0.62, -18], rotation: [0, -0.16, 0.02], scale: 1.85, visible: [0.42, 0.62], turnOver: [0.5, 0.585] },
+  { id: "flavour-1", product: 1, position: [0, 0.62, -26], rotation: [0, 0.16, -0.02], scale: 1.85, visible: [0.58, 0.78], turnOver: [0.665, 0.75] },
+  { id: "finale-0", product: 0, position: [-0.75, 0.68, -40], rotation: [0, 0.24, 0.02], scale: 1.28, visible: [0.88, 2] },
+  { id: "finale-1", product: 1, position: [0.75, 0.68, -40], rotation: [0, -0.24, -0.02], scale: 1.28, visible: [0.88, 2] },
 ];
 
 export const TALL_FLIGHT: Flight = {
