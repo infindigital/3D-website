@@ -41,8 +41,11 @@
   padding: clamp(36px, 6vh, 60px) 0;
   border-top: 1px solid rgba(107, 90, 78, 0.16);
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  /* The packs are the wider half: they carry artwork, the brand block
+     carries type. A 2fr/1fr split the other way left a dead field. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
   gap: clamp(30px, 5vw, 60px);
+  align-items: start;
 }
 
 .brandCol {
@@ -79,28 +82,134 @@
   margin-bottom: 16px;
 }
 
-.linkList {
+/* The pack claims: a row of small marks, not a bulleted list */
+.promise {
   list-style: none;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 4px 0 0;
+}
+
+.promise li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(107, 90, 78, 0.12);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* The tick is drawn rather than written, so the claim reads as a mark */
+.promise li::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-green);
+  flex: none;
+}
+
+.packList {
+  list-style: none;
+  display: grid;
+  /* Side by side, because one card stretched across the column is mostly
+     the gap between its name and its arrow. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   padding: 0;
   margin: 0;
 }
 
-.link {
-  font-size: 0.98rem;
-  color: var(--text-secondary);
-  transition: color 0.3s var(--ease-soft);
+/* Each product link is the pack itself, on a card that lifts on hover */
+.packCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px 12px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(107, 90, 78, 0.12);
+  color: var(--text-primary);
+  transition:
+    transform 0.4s var(--ease-soft),
+    box-shadow 0.4s var(--ease-soft),
+    border-color 0.4s var(--ease-soft),
+    background 0.4s var(--ease-soft);
 }
 
-.link:hover {
-  color: var(--color-chilli);
+.packCard:hover {
+  transform: translateY(-3px);
+  background: var(--color-white);
+  border-color: rgba(230, 51, 36, 0.28);
+  box-shadow: var(--shadow-soft);
 }
 
-.link:focus-visible {
+.packCard:focus-visible {
   outline: 3px solid var(--color-turmeric);
   outline-offset: 3px;
+}
+
+.packShot {
+  flex: none;
+  width: 62px;
+  display: block;
+}
+
+.packShot img {
+  width: 100%;
+  height: auto;
+  display: block;
+  /* The artwork is cut out on white, so it needs a shadow rather than a
+     frame to sit on the cream without looking pasted on. */
+  filter: drop-shadow(0 8px 14px rgba(107, 90, 78, 0.22));
+  transition: transform 0.5s var(--ease-soft);
+}
+
+.packCard:hover .packShot img {
+  transform: translateY(-2px) rotate(-1.5deg);
+}
+
+.packText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.packName {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.packDishes {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+.packArrow {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-left: auto;
+  color: var(--color-chilli);
+  opacity: 0.5;
+  transition:
+    transform 0.4s var(--ease-soft),
+    opacity 0.4s var(--ease-soft);
+}
+
+.packCard:hover .packArrow {
+  opacity: 1;
+  transform: translateX(4px);
 }
 
 .bottom {
@@ -116,35 +225,120 @@
   color: var(--text-secondary);
 }
 
-/* A signature, not a second brand: same size and weight as the line it sits
-   in, and it only picks up colour when it is pointed at. */
+.legal {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Two legal facts, one line, one dot between them */
+.sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.45;
+}
+
+/* A signature, not a second brand. The label stays quiet micro-type and
+   the studio name is set in the heading face, so it reads as a maker's
+   mark stamped at the end rather than as a second logo competing with
+   the one above it. */
 .credit {
-  color: inherit;
-  text-decoration: underline;
-  text-decoration-color: rgba(107, 90, 78, 0.35);
-  text-underline-offset: 3px;
-  transition: color 0.3s var(--ease-soft), text-decoration-color 0.3s var(--ease-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(107, 90, 78, 0.16);
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--text-secondary);
+  transition:
+    color 0.35s var(--ease-soft),
+    border-color 0.35s var(--ease-soft),
+    background 0.35s var(--ease-soft),
+    transform 0.35s var(--ease-soft);
 }
 
 .credit:hover {
   color: var(--color-chilli);
-  text-decoration-color: currentColor;
+  border-color: rgba(230, 51, 36, 0.3);
+  background: var(--color-white);
+  transform: translateY(-2px);
 }
 
 .credit:focus-visible {
   outline: 3px solid var(--color-turmeric);
   outline-offset: 3px;
-  border-radius: 3px;
+}
+
+.creditLabel {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.creditMark {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.94rem;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  transition: color 0.35s var(--ease-soft);
+}
+
+.credit:hover .creditMark {
+  color: var(--color-chilli);
+}
+
+/* The slash is the studio's own mark, so it is the one coloured thing */
+.creditSlash {
+  color: var(--color-turmeric);
+  margin: 0 1px;
+}
+
+.creditArrow {
+  width: 12px;
+  height: 12px;
+  opacity: 0.55;
+  transition:
+    transform 0.35s var(--ease-soft),
+    opacity 0.35s var(--ease-soft);
+}
+
+.credit:hover .creditArrow {
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+
+@media (max-width: 980px) {
+  .packList {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
   .main {
     grid-template-columns: 1fr;
+    gap: 30px;
   }
 
   .bottom {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    gap: 16px;
+  }
+
+  .legal {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* Stacked, the dot between the two legal lines has nothing to separate */
+  .sep {
+    display: none;
   }
 }
