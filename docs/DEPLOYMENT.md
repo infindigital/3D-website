@@ -39,7 +39,7 @@ file under `public/`, served from your own origin — there is no CDN to
 configure, no third-party media dependency, and `next.config.ts` allows no
 remote image hosts at all.
 
-The one file worth knowing about is `public/assets/home/kitchen-film.mp4`,
+The one file worth knowing about is `public/assets/home/kitchen-film-v2.mp4`,
 which both the hero and the 3D world play — once for both, since it is the
 same URL. Serve it with byte ranges (any ordinary static host does, and so
 does `next start`): the world's six screens each seek to their own segment,

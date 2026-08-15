@@ -17,8 +17,22 @@
  * showing the shot the screen in front of you is asking for.
  */
 
-export const FILM_SRC = "/assets/home/kitchen-film.mp4";
-export const FILM_POSTER = "/assets/home/kitchen-film-poster.webp";
+/**
+ * The `-v2` is a cache bust, and it is load-bearing.
+ *
+ * The film was recropped to drop a generator's watermark out of its bottom
+ * right corner, and the poster with it. Both kept their old names at first,
+ * and both went on being served from before the cut: a browser holds a
+ * video it has already fetched, and Next's image optimizer keeps its own
+ * copy of every still it has resized, keyed on the source path. Changing
+ * the path is what makes every one of those caches miss.
+ *
+ * One poster, not two. The hero and the world open on the same frame of the
+ * same film, and when that was two identical files under two names, fixing
+ * the film meant remembering to regenerate both.
+ */
+export const FILM_SRC = "/assets/home/kitchen-film-v2.mp4";
+export const FILM_POSTER = "/assets/home/kitchen-film-poster-v2.webp";
 
 /** The film's own shape, so a screen's height never has to be guessed */
 export const FILM_ASPECT = 1280 / 720;

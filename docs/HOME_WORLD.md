@@ -43,7 +43,7 @@ for that width.
 
 ## The film
 
-`public/assets/home/kitchen-film.mp4` is a ten-second film shot with the real
+`public/assets/home/kitchen-film-v2.mp4` is a ten-second film shot with the real
 packets. Its six shots happen to be, in order, exactly the six beats this
 page already told:
 
@@ -231,7 +231,7 @@ the 760vh flight is navigable without a scroll wheel.
 
 The packet artwork and the logo are owner-supplied files, never generated.
 The film is owner-supplied too, and it is the only film on the page: the
-hero plays it as well. `kitchen-film-poster.webp` is a frame pulled from the
+hero plays it as well. `kitchen-film-poster-v2.webp` is a frame pulled from the
 film itself (9.35 s) and is only used by the flat layout's `<video>`.
 
 Nothing on this page is fetched from a third-party host. `next.config.ts`

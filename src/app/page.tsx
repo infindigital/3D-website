@@ -4,7 +4,7 @@ import Hero, { type HeroAssets } from "@/components/sections/Hero";
 import HomeWorld from "@/components/home/HomeWorld";
 import type { StagePack } from "@/three/world/types";
 import { products } from "@/config/products";
-import { FILM_SRC } from "@/three/world/film";
+import { FILM_SRC, FILM_POSTER } from "@/three/world/film";
 
 const publicDir = join(process.cwd(), "public");
 
@@ -20,7 +20,9 @@ function has(publicPath: string): boolean {
  * The poster is the film's own first frame, so the still and the video line
  * up exactly and the crossfade between them is invisible: the intro can
  * open on the poster the instant the HTML lands and let the picture take
- * over underneath it without anything on screen moving.
+ * over underneath it without anything on screen moving. It is the world's
+ * poster, the same file rather than a copy of it — the two can then never
+ * be regenerated apart.
  *
  * The logo is the one the navigation bar uses, and it is gated the same way
  * the bar gates it: the brand mark is owner-supplied and never generated, so
@@ -30,7 +32,7 @@ function getHeroAssets(): HeroAssets {
   const logo = "/assets/brand/logo.png";
   return {
     videoSrc: FILM_SRC,
-    posterSrc: "/assets/hero/hero-poster.webp",
+    posterSrc: FILM_POSTER,
     logoSrc: has(logo) ? logo : undefined,
   };
 }

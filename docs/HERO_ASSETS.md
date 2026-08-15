@@ -1,6 +1,6 @@
 # Hero film
 
-The hero plays `public/assets/home/kitchen-film.mp4` — the owner's ten-second
+The hero plays `public/assets/home/kitchen-film-v2.mp4` — the owner's ten-second
 kitchen film, shot with the real packets. It is the same file the 3D world
 below the hero is built from, cut differently: the hero plays the whole ten
 seconds on a loop, the world takes six shots out of it and holds each one on
@@ -300,7 +300,7 @@ before any of them is changed back.
   ffmpeg -i in.mp4 -an -c:v libx264 -profile:v main -pix_fmt yuv420p \
     -crf 29 -preset veryslow -tune film \
     -g 12 -keyint_min 12 -sc_threshold 0 -movflags +faststart \
-    public/assets/home/kitchen-film.mp4
+    public/assets/home/kitchen-film-v2.mp4
   ```
 
   Resolution is worth more here than bitrate, and it is not close: at a
@@ -354,20 +354,23 @@ once the page has moved.
 
 | File | Purpose | Source |
 | ---- | ------- | ------ |
-| `public/assets/home/kitchen-film.mp4` | The film. Played whole by the hero, cut into six segments by the world. 1280×720, 10s, silent, 0.5s keyframes, ~1.6 MB | owner-supplied, re-encoded |
-| `public/assets/hero/hero-poster.webp` | The hero's poster, and the whole picture under reduced motion. The film's own frame 0 | pulled from the film |
-| `public/assets/home/kitchen-film-poster.webp` | Poster for the flat layout's ordinary `<video>`. Also frame 0 | pulled from the film |
+| `public/assets/home/kitchen-film-v2.mp4` | The film. Played whole by the hero, cut into six segments by the world. 1280×720, 10s, silent, 0.5s keyframes, ~1.6 MB | owner-supplied, re-encoded |
+| `public/assets/home/kitchen-film-poster-v2.webp` | The film's own frame 0. One file for three jobs: the hero's poster, the whole picture under reduced motion, and the poster on the flat layout's ordinary `<video>` | pulled from the film |
 | `public/assets/textures/ingredients-scatter.png` | Scattered ingredients, reserved for the brand story section | generated |
 | `public/assets/textures/spice-dust.webp` | Powder swirl texture, reserved for section transitions | generated |
 
-Both posters are the film's own frame 0, pulled straight out of the mp4.
-That is not a nicety: the still and the video are registered to the same
-pixel, so the dissolve between them has nothing to give away. Re-pull them
-whenever the film is re-encoded:
+The poster is the film's own frame 0, pulled straight out of the mp4. That
+is not a nicety: the still and the video are registered to the same pixel,
+so the dissolve between them has nothing to give away. Re-pull it whenever
+the film is re-encoded — and if the re-encode changes the picture rather
+than just its compression, give both files a new name. A browser holds the
+video it already has, and Next's image optimizer keeps its own copy of every
+still it has resized, keyed on the source path; same path, same old frame,
+however many times the file on disk is replaced.
 
 ```
-ffmpeg -i public/assets/home/kitchen-film.mp4 -frames:v 1 \
-  -c:v libwebp -quality 84 public/assets/home/kitchen-film-poster.webp
+ffmpeg -i public/assets/home/kitchen-film-v2.mp4 -frames:v 1 \
+  -c:v libwebp -quality 84 public/assets/home/kitchen-film-poster-v2.webp
 ```
 
 ## Verifying a change
