@@ -191,8 +191,12 @@ const TALL_TARGET_KEYS: [number, number, number][] = [
  * before the camera reaches where they stood.
  */
 const TALL_SLOTS: PackSlot[] = [
-  { id: "lineup-0", product: 0, position: [-0.72, 0.75, 0], rotation: [0, 0.26, 0.03], scale: 0.95, visible: [-1, 0.26] },
-  { id: "lineup-1", product: 1, position: [0.72, 0.75, 0], rotation: [0, -0.26, -0.03], scale: 0.95, visible: [-1, 0.26] },
+  /* Standing well inside the frame rather than filling it edge to edge: an
+     upright screen is barely two and a half units wide where the pair
+     stands, so a pack set as far out as the corridor's is a pack with its
+     outside edge on the glass. */
+  { id: "lineup-0", product: 0, position: [-0.62, 0.75, 0], rotation: [0, 0.26, 0.03], scale: 0.85, visible: [-1, 0.26] },
+  { id: "lineup-1", product: 1, position: [0.62, 0.75, 0], rotation: [0, -0.26, -0.03], scale: 0.85, visible: [-1, 0.26] },
   { id: "flavour-0", product: 0, position: [0, 0.75, -18], rotation: [0, -0.16, 0.02], scale: 1.6, visible: [0.42, 0.62], turnOver: [0.5, 0.585] },
   { id: "flavour-1", product: 1, position: [0, 0.75, -26], rotation: [0, 0.16, -0.02], scale: 1.6, visible: [0.58, 0.78], turnOver: [0.665, 0.75] },
   { id: "finale-0", product: 0, position: [-0.68, 0.75, -40], rotation: [0, 0.24, 0.02], scale: 0.9, visible: [0.88, 2] },

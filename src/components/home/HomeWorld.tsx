@@ -80,18 +80,6 @@ const WIDE =
 const TALL =
   "(max-width: 1023px) and (min-height: 600px) and (prefers-reduced-motion: no-preference)";
 
-/**
- * The tall world's stylesheet is not written yet.
- *
- * Everything behind it is — the flight, the framing, the film, the driver —
- * but the layout that seats the copy under the pack lives in
- * HomeWorld.module.css, and until it does, driving TALL would set `--o` and
- * `visibility` on beats that nothing has positioned, which blanks the page.
- * So the query is built and inert: flip this to true in the same change
- * that adds the stylesheet, and nowhere else.
- */
-const TALL_READY = false;
-
 /** Which world is being driven, if any */
 type Layout = "flat" | WorldMode;
 
@@ -205,9 +193,7 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
        expensive thing to mount by mistake. */
     const decide = () => {
       setCapable(capableEnough());
-      setLayout(
-        wide.matches ? "wide" : tall.matches && TALL_READY ? "tall" : "flat",
-      );
+      setLayout(wide.matches ? "wide" : tall.matches ? "tall" : "flat");
     };
     decide();
 
@@ -375,7 +361,7 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
     };
 
     mm.add(WIDE, () => drive(true));
-    if (TALL_READY) mm.add(TALL, () => drive(false));
+    mm.add(TALL, () => drive(false));
 
     return () => mm.revert();
   }, []);

@@ -2,9 +2,10 @@
    The 3D world: everything on the home page below the hero.
 
    The default rules below are the ordinary page — one section after
-   another, no pinning, no canvas. The immersive layout is added by the
-   media query at the bottom, which is repeated verbatim as IMMERSIVE in
-   HomeWorld.tsx. THE TWO MUST STAY IN STEP.
+   another, no pinning, no canvas. Two media queries at the bottom pin it
+   instead: the corridor you look across, and the shaft an upright screen
+   falls down. They are repeated verbatim as WIDE and TALL in
+   HomeWorld.tsx. ALL FOUR MUST STAY IN STEP.
 
    Deciding the shape in the stylesheet rather than in an effect is what
    keeps the page correct on the very first paint, before any JavaScript
@@ -512,7 +513,8 @@
 }
 
 /* ============================================================
-   The immersive world. Repeated verbatim as IMMERSIVE in HomeWorld.tsx.
+   The wide world: the corridor, looked across. Repeated verbatim as WIDE
+   in HomeWorld.tsx.
    ============================================================ */
 
 @media (min-width: 1024px) and (min-height: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -745,6 +747,529 @@
   .dot:hover .dotLabel,
   .dot[data-on="true"] .dotLabel {
     opacity: 1;
+  }
+}
+
+/* ============================================================
+   The tall world: the shaft, fallen down. Repeated verbatim as TALL in
+   HomeWorld.tsx.
+
+   Same six beats, same film, same flight — turned on its side. A portrait
+   frame has no other half to hand a panel, so nothing is set beside
+   anything here: the pack holds the upper half of the frame and the words
+   are read underneath it, which is the one arrangement an upright screen
+   is actually shaped for.
+
+   Where each panel sits vertically is not a style choice, it is where the
+   camera is pointing. At the lineup, the two flavours and the finale there
+   is a pack in the middle of the frame, so the copy keeps to the bottom.
+   At the three statements and the ritual there is nothing but film, so
+   those panels take the middle. See TALL_FLIGHT in flightPath.ts.
+   ============================================================ */
+
+@media (max-width: 1023px) and (min-height: 600px) and (prefers-reduced-motion: no-preference) {
+  .world {
+    /* Shorter than the corridor's 760vh. The same six acts, but read with
+       a thumb: a phone's scroll carries far less page per gesture, and a
+       flight that takes eight full screens to get through stops being a
+       flight and becomes a chore. */
+    height: 700vh;
+  }
+
+  .viewport {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    /* The small viewport height, so the frame is sized to the window with
+       the browser's chrome *showing*. With `vh` alone, the address bar
+       sliding away mid-scroll grows the viewport under a pinned frame and
+       everything in it jumps. */
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    animation: worldFadeTall 1.4s var(--ease-soft) both;
+  }
+
+  @keyframes worldFadeTall {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .world[data-canvas="on"] .backdrop {
+    opacity: 0;
+    transition: opacity 1.4s var(--ease-soft);
+  }
+
+  /* The packs are standing in the world itself now */
+  .world[data-canvas="on"] .packShots {
+    display: none;
+  }
+
+  /* With no world to stand in they are pictures again, back inside the
+     panel — so there is no pack above to keep the upper half clear for,
+     and the beat takes the middle of the frame like any other page. The
+     artwork comes down a size to pay for the room it now needs in the
+     column rather than beside it. */
+  .world[data-canvas="off"] .beat {
+    align-content: center;
+  }
+
+  .world[data-canvas="off"] .packShots {
+    margin-top: 0.85rem;
+  }
+
+  .world[data-canvas="off"] .packShot {
+    width: clamp(5.5rem, 26vw, 8rem);
+  }
+
+  .world[data-canvas="off"] .packShots[data-single="true"] .packShot {
+    width: clamp(6.5rem, 32vw, 10rem);
+  }
+
+  .beats {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  .beat {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    /* Underneath the pack, not beside it */
+    align-content: end;
+    justify-items: center;
+    gap: 0;
+    max-width: none;
+    padding: calc(var(--nav-height) + 0.5rem) clamp(1rem, 5vw, 2rem)
+      calc(2.75rem + env(safe-area-inset-bottom, 0px));
+    /* Written every frame by the scroll driver in HomeWorld.tsx */
+    opacity: var(--o, 0);
+    transform: translate3d(0, calc((1 - var(--o, 0)) * 22px), 0);
+    will-change: opacity, transform;
+  }
+
+  .beat[data-on="false"] {
+    pointer-events: none;
+  }
+
+  /* The two beats the flat phone layout hangs off a rule in the margin are
+     back to being their own screens here, so the rule and the offsets that
+     positioned it go. Higher specificity than `.beat` above, so they have
+     to be undone by name rather than left to source order. */
+  .beat[data-beat^="story"] {
+    position: absolute;
+    align-items: stretch;
+    align-content: center;
+    padding-block: calc(var(--nav-height) + 0.5rem)
+      calc(2.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .beat[data-beat^="story"]::before {
+    content: none;
+  }
+
+  /* Nothing but film at these two, so the words may have the middle */
+  .beat[data-beat="ritual"] {
+    align-content: center;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 30rem;
+    text-align: center;
+  }
+
+  .beat .panel {
+    background: rgba(255, 248, 238, 0.86);
+    border: 1px solid var(--surface-glass-border);
+    backdrop-filter: blur(14px);
+    border-radius: 1.5rem;
+    padding: 1.15rem 1.1rem 1.25rem;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Set to the panel's own width rather than a reading column inside it */
+  .sub,
+  .body {
+    max-width: none;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 6vw, 1.9rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .flavourTitle {
+    font-size: clamp(1.55rem, 6.4vw, 2rem);
+    margin-bottom: 0.3rem;
+  }
+
+  .tagline {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .chips {
+    margin-top: 0.75rem;
+    gap: 0.4rem;
+  }
+
+  .chip {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  .links {
+    margin-top: 1rem;
+    gap: 0.55rem;
+  }
+
+  .linkCard,
+  .cta {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .cta {
+    margin-top: 0.9rem;
+  }
+
+  /* The statements are read against the film, so they carry their own pool
+     of light rather than a card — the same trick the corridor uses. */
+  .statement {
+    text-align: center;
+    max-width: 15ch;
+    padding: 0;
+    margin: 0 auto;
+    font-size: clamp(1.9rem, 8.5vw, 2.7rem);
+    line-height: 1.1;
+    position: relative;
+  }
+
+  .statement::before {
+    content: "";
+    position: absolute;
+    inset: -40% -22%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 248, 238, 0.97) 0%,
+      rgba(255, 248, 238, 0.82) 44%,
+      rgba(255, 248, 238, 0) 74%
+    );
+    z-index: -1;
+  }
+
+  /* Three cards inside a fourth is a stack of boxes on a desktop and a
+     column of them on a phone. Both lists lose their chrome here and become
+     what they always were — a number and a line, a tick and a line — laid
+     out as rows so three of them cost the height of one card. */
+  .beat[data-beat="ritual"] .panel {
+    position: relative;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 0;
+  }
+
+  .beat[data-beat="ritual"] .panel::before {
+    content: "";
+    position: absolute;
+    inset: -12% -14%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 248, 238, 0.9) 0%,
+      rgba(255, 248, 238, 0.66) 52%,
+      rgba(255, 248, 238, 0) 78%
+    );
+    z-index: -1;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    margin-top: 1.25rem;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 2.1rem 1fr;
+    column-gap: 0.75rem;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .stepNumber {
+    /* Beside the pair of lines rather than above them */
+    grid-row: 1 / span 2;
+    font-size: 1.5rem;
+    margin-bottom: 0;
+  }
+
+  .stepTitle {
+    font-size: 1rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .stepCopy {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    margin-top: 1.1rem;
+  }
+
+  .card {
+    display: grid;
+    grid-template-columns: 1.7rem 1fr;
+    column-gap: 0.7rem;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .badge {
+    grid-row: 1 / span 2;
+    align-self: start;
+    width: 1.7rem;
+    height: 1.7rem;
+    margin-bottom: 0;
+  }
+
+  .badge svg {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  .cardTitle {
+    font-size: 1rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .cardCopy {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .footnote {
+    margin-top: 1.1rem;
+    font-size: 0.78rem;
+  }
+
+  /* ---- the rail ---- */
+
+  /* Seven screens of pinned page needs a way out of the middle of it as
+     much as the corridor does — laid along the bottom, where a thumb is,
+     and without the labels, which there is no room for and no hover to
+     ask for them with. */
+  .rail {
+    display: flex;
+    flex-direction: row;
+    gap: 0.7rem;
+    position: absolute;
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 3;
+  }
+
+  .dot {
+    position: relative;
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    border-radius: 50%;
+    background: rgba(107, 90, 78, 0.28);
+    transition:
+      background-color 0.5s var(--ease-soft),
+      transform 0.5s var(--ease-cinematic);
+  }
+
+  .dot[data-on="true"] {
+    background: var(--color-chilli);
+    transform: scale(1.35);
+  }
+
+  .dotLabel {
+    display: none;
+  }
+}
+
+/*
+ * A short phone, where the two halves of the frame start arguing.
+ *
+ * The pack's share of the frame is a share — it is framed against the
+ * height, so it takes the same third of a 740px screen as of an 844px one.
+ * The copy underneath is not: it is a fixed stack of words, and on the
+ * shorter screen that same stack is a good deal more of what is left. Left
+ * alone the panel grows up into the pack and covers its feet.
+ *
+ * So the words give the ground back rather than the pack: one size down
+ * through the panel, and the air between them tightened to match.
+ */
+@media (max-width: 1023px) and (min-height: 600px) and (max-height: 800px) and (prefers-reduced-motion: no-preference) {
+  .beat .panel {
+    border-radius: 1.25rem;
+    padding: 0.85rem 0.85rem 0.95rem;
+  }
+
+  .eyebrow {
+    font-size: 0.66rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .title,
+  .flavourTitle {
+    font-size: clamp(1.3rem, 5.6vw, 1.55rem);
+    margin-bottom: 0.35rem;
+  }
+
+  .tagline {
+    font-size: 0.92rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .sub,
+  .body {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .chips {
+    margin-top: 0.55rem;
+    gap: 0.35rem;
+  }
+
+  .chip {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+  }
+
+  .links {
+    margin-top: 0.8rem;
+    gap: 0.45rem;
+  }
+
+  .linkCard,
+  .cta {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.85rem;
+  }
+
+  .cta {
+    margin-top: 0.7rem;
+  }
+
+  .steps {
+    gap: 0.65rem;
+    margin-top: 0.9rem;
+  }
+
+  .stepCopy,
+  .cardCopy {
+    font-size: 0.82rem;
+  }
+
+  .cards {
+    gap: 0.55rem;
+    margin-top: 0.85rem;
+  }
+
+  .footnote {
+    margin-top: 0.85rem;
+  }
+}
+
+/* ============================================================
+   Either pinned world, with no canvas behind it.
+
+   A machine that cannot be asked for WebGL — or owns up to too little
+   memory to be asked — still gets the pinned flight, because the flight is
+   the page's shape and not its decoration. What it gets instead of the
+   world is the two things CSS can do honestly: the film itself, played
+   full-frame and held well back, and real perspective on the panels, so a
+   beat arrives out of the depth of the frame rather than merely fading up.
+
+   Both queries are repeated verbatim from above; a comma between them is
+   "either one".
+   ============================================================ */
+
+@media (min-width: 1024px) and (min-height: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference),
+  (max-width: 1023px) and (min-height: 600px) and (prefers-reduced-motion: no-preference) {
+  .world[data-canvas="off"] .beats {
+    perspective: 900px;
+  }
+
+  /* The same `--o` the driver already writes, spent on distance as well as
+     on opacity: at rest a panel is a third of a metre further away. */
+  .world[data-canvas="off"] .beat {
+    transform: translate3d(
+      0,
+      calc((1 - var(--o, 0)) * 22px),
+      calc((var(--o, 0) - 1) * 130px)
+    );
+  }
+
+  /*
+   * The film, which in this layout has nowhere to be but behind everything.
+   *
+   * It is rendered in the flow of `.beats`, and `.beats` is an absolutely
+   * positioned frame here, so left alone it lands on top of the panels
+   * rather than under them. Taken out of the flow and pushed behind, it
+   * becomes what the six screens in the world are: the room the words are
+   * spoken in.
+   */
+  .world[data-canvas="off"] .filmBlock {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: block;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .world[data-canvas="off"] .film {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+    box-shadow: none;
+    opacity: 0.32;
+  }
+
+  .world[data-canvas="off"] .filmCaption {
+    display: none;
   }
 }
 
