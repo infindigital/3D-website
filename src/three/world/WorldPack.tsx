@@ -64,8 +64,17 @@ export default function WorldPack({
     /* Everything is damped rather than lerped by a fixed factor, so the
        lean settles in the same time on a 60Hz laptop and a 144Hz monitor. */
     const lean = hovered ? 0.35 : 1;
+    /* Half a turn across the beat that names it, so the recipes the panel
+       promises are on the back are actually shown. Damped like everything
+       else here, so scrolling back through the beat turns it back. */
+    const turn = slot.turnOver
+      ? Math.PI * THREE.MathUtils.smoothstep(worldState.progress, slot.turnOver[0], slot.turnOver[1])
+      : 0;
     const targetY =
-      slot.rotation[1] + worldState.pointerX * 0.26 * lean - (hovered ? slot.rotation[1] * 0.8 : 0);
+      slot.rotation[1] +
+      turn +
+      worldState.pointerX * 0.26 * lean -
+      (hovered ? slot.rotation[1] * 0.8 : 0);
     const targetX = -worldState.pointerY * 0.14 * lean;
 
     g.rotation.y = THREE.MathUtils.damp(g.rotation.y, targetY, 5, delta);
@@ -81,11 +90,13 @@ export default function WorldPack({
     );
 
     /* A slot that stands beyond an earlier beat waits its turn rather than
-       hanging in the distance behind someone else's headline */
-    const reveal =
-      slot.revealFrom === undefined
-        ? 1
-        : THREE.MathUtils.smoothstep(worldState.progress, slot.revealFrom, slot.revealFrom + 0.06);
+       hanging in the distance behind someone else's headline — and, where
+       the flight is aimed straight at it, leaves again before the camera
+       arrives rather than being flown through. */
+    const reveal = slot.visible
+      ? THREE.MathUtils.smoothstep(worldState.progress, slot.visible[0], slot.visible[0] + 0.06) *
+        (1 - THREE.MathUtils.smoothstep(worldState.progress, slot.visible[1] - 0.06, slot.visible[1]))
+      : 1;
 
     const scale = slot.scale * (hovered ? 1.06 : 1) * reveal;
     const eased = THREE.MathUtils.damp(g.scale.x, scale, 6, delta);

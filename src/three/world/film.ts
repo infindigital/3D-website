@@ -55,7 +55,7 @@ export interface FilmScreen {
  * light in HomeWorld.module.css — that is what buys legibility now, rather
  * than dimming the film for everyone.
  */
-export const FILM_SCREENS: FilmScreen[] = [
+export const WIDE_SCREENS: FilmScreen[] = [
   {
     id: "lineup",
     /* The toss: florets and chilli hanging over the plate */
@@ -114,6 +114,78 @@ export const FILM_SCREENS: FilmScreen[] = [
     position: [0, 0.8, -40.6],
     rotation: [0, 0, 0],
     width: 8.6,
+    opacity: 1,
+  },
+];
+
+/**
+ * The same six shots, framed for a screen held upright.
+ *
+ * A sixteen-by-nine film in a portrait frame is a band whatever you do
+ * with it, so here it is allowed to be one: a strip of the kitchen running
+ * edge to edge behind the pack, at about the height of a horizon. Every
+ * width below is set against the shaft's own wide-angle lens so the strip
+ * reaches both edges of a phone at the moment its beat peaks — on a wider
+ * portrait tablet it stops short of them instead, which reads as a screen
+ * standing in a room rather than as a film cropped to fit.
+ *
+ * The bands and the segments are the wide world's, unchanged: this is the
+ * same page, and the same six beats, from a different seat.
+ */
+export const TALL_SCREENS: FilmScreen[] = [
+  {
+    id: "lineup",
+    segment: [0.15, 2.35],
+    band: [-0.14, 0.22],
+    position: [0, 0.7, -3.6],
+    rotation: [0, 0, 0],
+    width: 5,
+    opacity: 1,
+  },
+  {
+    id: "story",
+    segment: [4.5, 5.5],
+    band: [0.21, 0.46],
+    position: [0, 0.7, -11],
+    rotation: [0, 0, 0],
+    width: 4.6,
+    /* The statements are read against this one rather than beside it */
+    opacity: 0.86,
+  },
+  {
+    id: "flavour0",
+    segment: [7.45, 8.65],
+    band: [0.45, 0.6],
+    position: [0, 0.7, -21.5],
+    rotation: [0, 0, 0],
+    width: 5,
+    opacity: 1,
+  },
+  {
+    id: "flavour1",
+    segment: [2.45, 4.45],
+    band: [0.6, 0.75],
+    position: [0, 0.7, -29.5],
+    rotation: [0, 0, 0],
+    width: 5,
+    opacity: 1,
+  },
+  {
+    id: "ritual",
+    segment: [5.55, 7.4],
+    band: [0.75, 0.9],
+    position: [0, 0.7, -34.5],
+    rotation: [0, 0, 0],
+    width: 5,
+    opacity: 0.95,
+  },
+  {
+    id: "finale",
+    segment: [8.75, 9.95],
+    band: [0.9, 1.1],
+    position: [0, 0.7, -43.5],
+    rotation: [0, 0, 0],
+    width: 5.2,
     opacity: 1,
   },
 ];

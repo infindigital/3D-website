@@ -6,14 +6,24 @@ import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import type { StagePack } from "@/three/world/types";
 import { worldState } from "./worldState";
-import {
-  LIGHT_KEYS,
-  PACK_SLOTS,
-  cameraCurve,
-  targetCurve,
-} from "./flightPath";
-import FilmDeck from "./FilmDeck";
+import { LIGHT_KEYS, TALL_FLIGHT, WIDE_FLIGHT, type Flight } from "./flightPath";
+import { TALL_SCREENS, WIDE_SCREENS } from "./film";
+import FilmDeck, { TALL_GRID, WIDE_GRID } from "./FilmDeck";
 import WorldPack, { createPackGeometry } from "./WorldPack";
+
+/**
+ * Which of the two worlds this is. `wide` is the corridor a desktop looks
+ * across; `tall` is the shaft a phone falls down. Everything that differs
+ * between them — the route, where the packs stand, how the film is framed,
+ * and how much of the machine any of it is allowed to cost — is chosen
+ * here and nowhere else.
+ */
+export type WorldMode = "wide" | "tall";
+
+const WORLDS: Record<WorldMode, { flight: Flight; screens: typeof WIDE_SCREENS; grid: typeof WIDE_GRID }> = {
+  wide: { flight: WIDE_FLIGHT, screens: WIDE_SCREENS, grid: WIDE_GRID },
+  tall: { flight: TALL_FLIGHT, screens: TALL_SCREENS, grid: TALL_GRID },
+};
 
 /** Fog and clear colour: the page's own cream, so the corridor has no walls */
 const CREAM = "#fff8ee";
@@ -32,6 +42,7 @@ interface WorldCanvasProps {
   packs: StagePack[];
   /** Whether the world is near enough to be worth drawing at all */
   awake: boolean;
+  mode: WorldMode;
   onSelect: (slug: string) => void;
 }
 
@@ -44,7 +55,8 @@ interface WorldCanvasProps {
  * camera rather than a cursor, and it is time-based so the weight of the
  * move is the same on every display.
  */
-function Rig() {
+function Rig({ flight }: { flight: Flight }) {
+  const { cameraCurve, targetCurve } = flight;
   const camera = useThree((state) => state.camera);
   const position = useRef(new THREE.Vector3().copy(cameraCurve.getPoint(0)));
   const target = useRef(new THREE.Vector3().copy(targetCurve.getPoint(0)));
@@ -116,7 +128,8 @@ function TravellingLight() {
   return <pointLight ref={light} intensity={6} distance={16} decay={1.4} />;
 }
 
-function Scene({ packs, awake, onSelect }: WorldCanvasProps) {
+function Scene({ packs, awake, mode, onSelect }: WorldCanvasProps) {
+  const { flight, screens, grid } = WORLDS[mode];
   const geometry = useMemo(() => createPackGeometry(), []);
   useEffect(() => () => geometry.dispose(), [geometry]);
 
@@ -145,10 +158,10 @@ function Scene({ packs, awake, onSelect }: WorldCanvasProps) {
       <directionalLight position={[-5, 3, 4]} intensity={0.5} color="#fff0d8" />
       <TravellingLight />
 
-      <Rig />
-      <FilmDeck awake={awake} />
+      <Rig flight={flight} />
+      <FilmDeck awake={awake} screens={screens} grid={grid} />
 
-      {PACK_SLOTS.map((slot) => {
+      {flight.slots.map((slot) => {
         const pack = packs[slot.product];
         if (!pack) return null;
         return (
@@ -179,21 +192,42 @@ function Scene({ packs, awake, onSelect }: WorldCanvasProps) {
  * textures are all built and standing by, and not one frame is rendered.
  * Everything above this canvas gets the whole machine to itself.
  */
-export default function WorldCanvas({ packs, awake, onSelect }: WorldCanvasProps) {
+export default function WorldCanvas({ packs, awake, mode, onSelect }: WorldCanvasProps) {
+  const { flight } = WORLDS[mode];
+  const tall = mode === "tall";
+  /* Where the flight starts, so the very first frame is already in frame
+     rather than a jump from a hard-coded seat to the real one */
+  const start = flight.cameraCurve.getPoint(0);
+
   return (
     <Canvas
       /* Nothing is drawn behind the hero. The scene is still here, and the
          first frame after waking is a frame of the same continuous flight —
          the camera is a pure function of scroll, so it has not drifted. */
       frameloop={awake ? "always" : "never"}
-      /* Capped rather than uncapped: the difference between 2x and 1.75x on
-         a wall of video is invisible and the fill cost is not. */
-      dpr={[1, 1.75]}
-      camera={{ position: [0, 0.3, 6.6], fov: 38, near: 0.1, far: 120 }}
+      /*
+       * Capped rather than uncapped: the difference between 2x and 1.75x on
+       * a wall of video is invisible and the fill cost is not.
+       *
+       * A phone is capped harder again, and the reason is not the phone's
+       * screen — it is that a phone's screen is three device pixels to the
+       * CSS pixel and its fill rate is a fraction of a laptop's, so the
+       * honest ratio between what a shaft of transparent tiles costs and
+       * what it buys is worse there by about the amount this takes off.
+       */
+      dpr={tall ? [1, 1.4] : [1, 1.75]}
+      camera={{
+        position: [start.x, start.y, start.z],
+        fov: flight.fov,
+        near: 0.1,
+        far: 120,
+      }}
       gl={{
         alpha: true,
         antialias: true,
-        powerPreference: "high-performance",
+        /* Asking a phone for the high-performance adapter is asking for the
+           battery, and there is only ever one GPU there to give. */
+        powerPreference: tall ? "default" : "high-performance",
         /*
          * No filmic curve over this world.
          *
@@ -212,7 +246,7 @@ export default function WorldCanvas({ packs, awake, onSelect }: WorldCanvasProps
       }}
     >
       <Suspense fallback={null}>
-        <Scene packs={packs} awake={awake} onSelect={onSelect} />
+        <Scene packs={packs} awake={awake} mode={mode} onSelect={onSelect} />
       </Suspense>
     </Canvas>
   );

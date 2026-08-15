@@ -7,9 +7,9 @@ import { worldState } from "./worldState";
 import { bandOpacity } from "./bands";
 import {
   FILM_ASPECT,
-  FILM_SCREENS,
   FILM_SRC,
   segmentRate,
+  type FilmScreen,
 } from "./film";
 
 /**
@@ -26,9 +26,20 @@ import {
  * the corridor reaches it.
  */
 
-const COLS = 30;
-const ROWS = 17;
-const TILES = COLS * ROWS;
+/**
+ * How finely a screen is broken up.
+ *
+ * The wide world draws six of these across a desktop GPU. A phone draws the
+ * same six through a fraction of the fill rate, and every tile is a
+ * transparent quad that overruns its neighbour — so the grid there is
+ * roughly a third of the tiles for the same wall. It is not a downgrade
+ * anyone can see: the tiles on a portrait screen are already smaller in
+ * absolute terms, because the wall itself is.
+ */
+export type TileGrid = readonly [cols: number, rows: number];
+
+export const WIDE_GRID: TileGrid = [30, 17];
+export const TALL_GRID: TileGrid = [18, 10];
 
 /** How far the brightest part of a shot stands out from the darkest.
  *  Kept small on purpose: relief is what stops the wall reading as a
@@ -81,7 +92,8 @@ function makeRandom(seed: number) {
   };
 }
 
-function createTileGeometry(): THREE.InstancedBufferGeometry {
+function createTileGeometry([COLS, ROWS]: TileGrid): THREE.InstancedBufferGeometry {
+  const TILES = COLS * ROWS;
   const base = new THREE.PlaneGeometry(1, 1);
   const geo = new THREE.InstancedBufferGeometry();
   geo.setIndex(base.index);
@@ -129,6 +141,7 @@ function createScreenMaterial(
   texture: THREE.Texture,
   size: THREE.Vector2,
   opacity: number,
+  [COLS, ROWS]: TileGrid,
 ): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
     transparent: true,
@@ -286,7 +299,15 @@ function createScreenMaterial(
   });
 }
 
-export default function FilmDeck({ awake }: { awake: boolean }) {
+interface FilmDeckProps {
+  /** Whether the world is near enough to be worth decoding a film for */
+  awake: boolean;
+  /** The six screens as this flight frames them */
+  screens: FilmScreen[];
+  grid: TileGrid;
+}
+
+export default function FilmDeck({ awake, screens, grid }: FilmDeckProps) {
   const video = useMemo(() => {
     const element = document.createElement("video");
     element.muted = true;
@@ -308,18 +329,19 @@ export default function FilmDeck({ awake }: { awake: boolean }) {
     return created;
   }, [video]);
 
-  const geometry = useMemo(() => createTileGeometry(), []);
+  const geometry = useMemo(() => createTileGeometry(grid), [grid]);
 
   const materials = useMemo(
     () =>
-      FILM_SCREENS.map((screen) =>
+      screens.map((screen) =>
         createScreenMaterial(
           texture,
           new THREE.Vector2(screen.width, screen.width / FILM_ASPECT),
           screen.opacity,
+          grid,
         ),
       ),
-    [texture],
+    [texture, screens, grid],
   );
 
   /** Which segment is playing, so a beat only cues its shot once */
@@ -371,8 +393,8 @@ export default function FilmDeck({ awake }: { awake: boolean }) {
     /* Whichever screen is most present owns the decoder */
     let strongest = 0;
     let index = 0;
-    for (let i = 0; i < FILM_SCREENS.length; i += 1) {
-      const o = bandOpacity(p, FILM_SCREENS[i].band);
+    for (let i = 0; i < screens.length; i += 1) {
+      const o = bandOpacity(p, screens[i].band);
       if (o > strongest) {
         strongest = o;
         index = i;
@@ -384,11 +406,11 @@ export default function FilmDeck({ awake }: { awake: boolean }) {
     ready.current = THREE.MathUtils.damp(ready.current, decoded ? 1 : 0, 5, delta);
 
     if (player && decoded) {
-      const [from, to] = FILM_SCREENS[index].segment;
+      const [from, to] = screens[index].segment;
       sinceCue.current += delta;
 
       const cue = () => {
-        player.playbackRate = segmentRate(FILM_SCREENS[index].segment);
+        player.playbackRate = segmentRate(screens[index].segment);
         player.currentTime = from;
         sinceCue.current = 0;
       };
@@ -420,11 +442,11 @@ export default function FilmDeck({ awake }: { awake: boolean }) {
       }
     }
 
-    for (let i = 0; i < FILM_SCREENS.length; i += 1) {
+    for (let i = 0; i < screens.length; i += 1) {
       const screen = screenRefs.current[i];
       if (!screen) continue;
       screen.uniforms.uTime.value += delta;
-      const target = bandOpacity(p, FILM_SCREENS[i].band) * ready.current;
+      const target = bandOpacity(p, screens[i].band) * ready.current;
       screen.uniforms.uReveal.value = THREE.MathUtils.damp(
         screen.uniforms.uReveal.value,
         target,
@@ -436,7 +458,7 @@ export default function FilmDeck({ awake }: { awake: boolean }) {
 
   return (
     <>
-      {FILM_SCREENS.map((screen, i) => (
+      {screens.map((screen, i) => (
         <mesh
           key={screen.id}
           geometry={geometry}

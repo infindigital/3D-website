@@ -17,6 +17,7 @@ import { worldState } from "@/three/world/worldState";
 import { bandOpacity } from "@/three/world/bands";
 import { FILM_POSTER, FILM_SRC } from "@/three/world/film";
 import { supportsWebGL } from "@/utils/webgl";
+import type { WorldMode } from "@/three/world/WorldCanvas";
 import styles from "./HomeWorld.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -26,34 +27,73 @@ const WorldCanvas = dynamic(() => import("@/three/world/WorldCanvas"), {
 });
 
 /**
- * The immersive layout is decided by this media query and by the identical
- * one in HomeWorld.module.css. **The two must stay in step**, exactly as
- * the hero's do: the stylesheet alone decides the page's shape so it is
- * right on the first paint, and this decides whether to drive it.
+ * Whether this machine should be asked to draw a world at all.
  *
- * Four conditions, and each of them is here because of something the
- * corridor cannot do without it:
- *
- * `pointer: fine` — a mouse. This is the one that keeps phones and tablets
- * out, and the reason is not only that a nine-screen pinned WebGL flight
- * asks more of a tablet's GPU than it can give while the page is also
- * scrolling. It is that the corridor is composed for a frame you look
- * across: the packs stand to one side and the copy sits in the other half.
- * On a portrait tablet there is no other half — the words land on top of
- * the artwork and the rail lands on top of the words. Every touch device
- * gets the flat page instead, which is not a lesser version of this one;
- * it is the same six acts, read straight down, and it stays legible at any
- * width.
- *
- * `min-width` and `min-height` — enough of a window to hold that
- * composition. A desktop browser dragged narrow or short is in the same
- * position as the tablet.
- *
- * `prefers-reduced-motion` — the flight is the motion. There is no reduced
- * version of it worth having.
+ * `deviceMemory` is the only honest signal a browser will give about the
+ * class of device it is running on, and it is Chrome-only — which is the
+ * right way round, since the phones that cannot afford a shaft of
+ * transparent tiles are overwhelmingly the cheap Android ones that report
+ * it. Anything that declines to answer is taken at its word and given the
+ * world; anything that owns up to under three gigabytes gets the flat page,
+ * where the same six acts are read straight down.
  */
-const IMMERSIVE =
+function capableEnough(): boolean {
+  if (!supportsWebGL()) return false;
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  return typeof memory !== "number" || memory >= 3;
+}
+
+/**
+ * Which world a visitor gets is decided by these two media queries and by
+ * the identical pair in HomeWorld.module.css. **All four must stay in
+ * step**, exactly as the hero's do: the stylesheet alone decides the page's
+ * shape so it is right on the first paint, and these decide whether to
+ * drive it.
+ *
+ * WIDE is the corridor. `pointer: fine` is not a snobbery about touch — the
+ * corridor is composed for a frame you look *across*, with the pack out to
+ * one side and the copy panel filling the other half, and the pointer is
+ * what moves the camera inside it. `min-width` and `min-height` ask for
+ * enough window to hold that composition; a desktop browser dragged narrow
+ * is in the same position as a tablet.
+ *
+ * TALL is the shaft, and it is why phones are no longer sent to the flat
+ * page. A portrait frame has no other half to give a panel, so nothing
+ * about the wide composition survives being narrowed — but the fault was
+ * always the composition, never the device. Turned on its side the same
+ * six beats work perfectly well: the pack dead centre in the upper half,
+ * the words in the lower, and the flight falling past instead of running
+ * along. It takes anything upright and tall enough to seat that, which is
+ * every phone held normally, every portrait tablet, and a desktop window
+ * dragged narrow.
+ *
+ * What is left over — a phone on its side, a landscape tablet — reads the
+ * six acts straight down as an ordinary page. That is the right answer for
+ * a frame with no room above the fold rather than a consolation prize.
+ *
+ * `prefers-reduced-motion` is on both, because in both the flight is the
+ * motion. There is no reduced version of it worth having.
+ */
+const WIDE =
   "(min-width: 1024px) and (min-height: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+
+const TALL =
+  "(max-width: 1023px) and (min-height: 600px) and (prefers-reduced-motion: no-preference)";
+
+/**
+ * The tall world's stylesheet is not written yet.
+ *
+ * Everything behind it is — the flight, the framing, the film, the driver —
+ * but the layout that seats the copy under the pack lives in
+ * HomeWorld.module.css, and until it does, driving TALL would set `--o` and
+ * `visibility` on beats that nothing has positioned, which blanks the page.
+ * So the query is built and inert: flip this to true in the same change
+ * that adds the stylesheet, and nowhere else.
+ */
+const TALL_READY = false;
+
+/** Which world is being driven, if any */
+type Layout = "flat" | WorldMode;
 
 /**
  * Where each panel of copy lives on the flight, as a range of world
@@ -136,7 +176,12 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
   const router = useRouter();
   const worldRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
-  const [canvasOn, setCanvasOn] = useState(false);
+  /* Which world the stylesheet has laid out, and whether this machine is
+     up to drawing it. They are separate answers: the pinned layout is what
+     the media query says, the canvas behind it is a further permission. */
+  const [layout, setLayout] = useState<Layout>("flat");
+  const [capable, setCapable] = useState(false);
+  const canvasOn = layout !== "flat" && capable;
   /* Whether the world is close enough to be worth drawing. See below. */
   const [awake, setAwake] = useState(false);
   /* Only relevant to the flat layout: whether the film may play itself */
@@ -153,11 +198,25 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
   }
 
   useEffect(() => {
-    const query = window.matchMedia(IMMERSIVE);
-    const decide = () => setCanvasOn(query.matches && supportsWebGL());
+    const wide = window.matchMedia(WIDE);
+    const tall = window.matchMedia(TALL);
+    /* Wide first: the two cannot both match, but a browser mid-resize can
+       report a stale answer for one of them, and the corridor is the more
+       expensive thing to mount by mistake. */
+    const decide = () => {
+      setCapable(capableEnough());
+      setLayout(
+        wide.matches ? "wide" : tall.matches && TALL_READY ? "tall" : "flat",
+      );
+    };
     decide();
-    query.addEventListener("change", decide);
-    return () => query.removeEventListener("change", decide);
+
+    wide.addEventListener("change", decide);
+    tall.addEventListener("change", decide);
+    return () => {
+      wide.removeEventListener("change", decide);
+      tall.removeEventListener("change", decide);
+    };
   }, []);
 
   /*
@@ -219,7 +278,19 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
 
     const mm = gsap.matchMedia();
 
-    mm.add(IMMERSIVE, () => {
+    /*
+     * The driver, which is the same for both worlds because the copy is the
+     * same copy: one ScrollTrigger over the whole pinned region, writing
+     * the beat it lands in to `--o` and the flight's progress to the one
+     * channel the canvas reads.
+     *
+     * The pointer is the only thing that differs, and it differs by not
+     * existing: a finger is not a cursor hovering over a scene, it is the
+     * thing scrolling it. On a phone the flight is a pure function of how
+     * far down the page you are and nothing else — which is also why it can
+     * never drift, stick, or need catching up.
+     */
+    const drive = (withPointer: boolean) => {
       const beats = gsap.utils.toArray<HTMLElement>(`.${styles.beat}`);
       const dots = railRef.current
         ? gsap.utils.toArray<HTMLElement>(`.${styles.dot}`, railRef.current)
@@ -269,7 +340,9 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
         worldState.pointerX = (event.clientX / window.innerWidth) * 2 - 1;
         worldState.pointerY = (event.clientY / window.innerHeight) * 2 - 1;
       };
-      window.addEventListener("pointermove", onPointer, { passive: true });
+      if (withPointer) {
+        window.addEventListener("pointermove", onPointer, { passive: true });
+      }
 
       const jump = (index: number) => {
         const stop = STOPS[index];
@@ -296,8 +369,13 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
           delete beat.dataset.on;
         }
         worldState.progress = 0;
+        worldState.pointerX = 0;
+        worldState.pointerY = 0;
       };
-    });
+    };
+
+    mm.add(WIDE, () => drive(true));
+    if (TALL_READY) mm.add(TALL, () => drive(false));
 
     return () => mm.revert();
   }, []);
@@ -326,9 +404,14 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
       <div className={styles.viewport}>
         {canvasOn && (
           <div className={styles.canvas}>
+            {/* Keyed on the world, so a window dragged from wide to narrow
+                rebuilds the scene at the other flight's lens rather than
+                flying the shaft through a corridor's framing. */}
             <WorldCanvas
+              key={layout}
               packs={packs}
               awake={awake}
+              mode={layout}
               onSelect={(slug) => router.push(`/products/${slug}`)}
             />
           </div>
