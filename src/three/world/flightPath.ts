@@ -187,27 +187,42 @@ const TALL_TARGET_KEYS: [number, number, number][] = [
  * of an upright screen with the copy panel below it. It is a lift rather
  * than a tilt on purpose — see the target keys.
  *
- * Each pack is sized against the width of the frame it is standing in, not
- * against the corridor's numbers: a phone is barely two and a half units
- * wide where the lineup stands and three and a half where a flavour pack
- * does, so the same scale means two very different pictures. A pack that
- * has the whole frame to itself takes most of the width; a pair splits it,
- * with a hand's gap between them and a margin at each edge that the
- * narrowest phone still keeps.
+ * The pack is the thing being sold, so on a phone it is sized to the frame
+ * rather than to the corridor's numbers, and sized up to whatever the frame
+ * will hold. A pack alone in the frame takes it to the panel's edge: its
+ * limit is the height, since a pouch is half again as tall as it is wide
+ * and the copy is underneath it.
+ *
+ * A pair is a harder shape, and side by side is the wrong answer to it. Two
+ * packs that must both clear the glass and leave a gap between them are two
+ * small packs — a portrait frame is simply not wide enough to hold that
+ * arrangement at any size worth looking at. So the pair is staggered
+ * instead: one stands nearer the lens and low, the other further and high,
+ * and they overlap at the shoulder the way two packs on a shelf do. The
+ * depth between them is what makes the overlap read as one in front of the
+ * other rather than as a collision, and it lets each of them be half again
+ * the pack it could have been in a row.
+ *
+ * The stagger is also what fills the frame. Two packs in a row leave a band
+ * of empty world between their feet and the copy; one up and one down
+ * reaches from under the navigation bar to the top of the panel.
  *
  * The lifts come down as the packs grow, because they grow from the middle:
  * left alone, a bigger pack puts its head behind the navigation bar.
  *
  * The two flavour packs turn over inside their own beat, and are gone
- * before the camera reaches where they stood.
+ * before the camera reaches where they stood. The lineup pair leaves
+ * earlier than it used to for the same reason: overlapping, they no longer
+ * hold a gap between them for the camera to pass through, so they have to
+ * be gone by the time it gets there.
  */
 const TALL_SLOTS: PackSlot[] = [
-  { id: "lineup-0", product: 0, position: [-0.62, 0.6, 0], rotation: [0, 0.26, 0.03], scale: 0.98, visible: [-1, 0.26] },
-  { id: "lineup-1", product: 1, position: [0.62, 0.6, 0], rotation: [0, -0.26, -0.03], scale: 0.98, visible: [-1, 0.26] },
-  { id: "flavour-0", product: 0, position: [0, 0.62, -18], rotation: [0, -0.16, 0.02], scale: 1.85, visible: [0.42, 0.62], turnOver: [0.5, 0.585] },
-  { id: "flavour-1", product: 1, position: [0, 0.62, -26], rotation: [0, 0.16, -0.02], scale: 1.85, visible: [0.58, 0.78], turnOver: [0.665, 0.75] },
-  { id: "finale-0", product: 0, position: [-0.75, 0.68, -40], rotation: [0, 0.24, 0.02], scale: 1.28, visible: [0.88, 2] },
-  { id: "finale-1", product: 1, position: [0.75, 0.68, -40], rotation: [0, -0.24, -0.02], scale: 1.28, visible: [0.88, 2] },
+  { id: "lineup-0", product: 0, position: [-0.34, 0.3, 0.55], rotation: [0, 0.28, 0.03], scale: 1.24, visible: [-1, 0.2] },
+  { id: "lineup-1", product: 1, position: [0.52, 0.7, -0.55], rotation: [0, -0.28, -0.03], scale: 1.24, visible: [-1, 0.2] },
+  { id: "flavour-0", product: 0, position: [0, 0.62, -18], rotation: [0, -0.16, 0.02], scale: 2.05, visible: [0.42, 0.6], turnOver: [0.5, 0.575] },
+  { id: "flavour-1", product: 1, position: [0, 0.62, -26], rotation: [0, 0.16, -0.02], scale: 2.05, visible: [0.58, 0.76], turnOver: [0.665, 0.74] },
+  { id: "finale-0", product: 0, position: [-0.44, 0.38, -39.2], rotation: [0, 0.26, 0.02], scale: 1.62, visible: [0.88, 2] },
+  { id: "finale-1", product: 1, position: [0.62, 0.88, -40.8], rotation: [0, -0.26, -0.02], scale: 1.62, visible: [0.88, 2] },
 ];
 
 export const TALL_FLIGHT: Flight = {
