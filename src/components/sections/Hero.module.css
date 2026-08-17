@@ -828,11 +828,78 @@
   }
 }
 
-/* A portrait tablet is a tall room, and the film would float in it at the
-   landscape width */
+/*
+ * A portrait tablet.
+ *
+ * It was being given the desktop composition at a smaller width, and a
+ * portrait window is the one shape that composition cannot be narrowed
+ * into: a 16:9 picture in a room half again as tall as it is wide leaves
+ * the film floating in the middle with a third of a screen of empty paper
+ * under it, the buttons stranded at the very bottom, and — because the
+ * line of copy belonged to the phone alone — not one word between them.
+ *
+ * So it takes the phone's answer rather than the desktop's, at a tablet's
+ * size. The film stands up into the room, the line of copy comes back, and
+ * the buttons sit under it in one row, which is the one thing a tablet can
+ * do that a phone cannot. Every number below is the same number the phone
+ * block chooses, read off a frame twice the size.
+ */
 @media (min-width: 641px) and (max-width: 1023px) and (orientation: portrait) {
   .hero {
-    --film-w: min(84vw, 620px, calc((100svh - 280px) * 16 / 9));
+    /* Portrait, and stopping well short of the edges for the same two
+       reasons it does on a phone: the rings are cut from this width and
+       need somewhere to close, and the words run behind the film. */
+    --film-w: min(72vw, 560px, calc((100svh - 330px) * 4 / 5));
+    --film-ar: 4 / 5;
+    --film-cut: 13% 15% 12% 14% / 9% 10.5% 8.5% 10%;
+
+    /* The room below holds a line of copy and a row of buttons. The floor
+       is what that block actually measures; the rest is breathing. */
+    --film-top: calc(var(--nav-height) + 12px);
+    --film-bottom: clamp(196px, 19vh, 236px);
+  }
+
+  /* The morph is written per-axis, so a standing box needs the tall one */
+  .mask {
+    animation-name: morphTall;
+  }
+
+  /* Sized to what is left down each flank of the film — big enough to
+     still be scenery, small enough that whole words pass through it */
+  .bandRun {
+    font-size: clamp(2.4rem, 6.8vw, 4rem);
+  }
+
+  .bandWord[data-ink="line"] {
+    -webkit-text-stroke-width: 2.2px;
+  }
+
+  /* The line the phone says out loud, said here too: the room under a
+     standing film is even emptier on a tablet than it is on a phone. */
+  .pitch {
+    display: block;
+    /* The block wraps, so a full-width item is what puts the line on its
+       own row above the buttons rather than in among them. It has to be
+       the whole row, not a capped one: a narrower item leaves room beside
+       itself, and the first button climbs up into it. */
+    flex: 0 0 100%;
+    margin: 0 0 6px;
+    font-family: var(--font-heading);
+    font-size: 1.12rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--text-primary);
+  }
+
+  /* One of the three is where the page wants you to go, same as the phone */
+  .actionLead {
+    background: var(--ember);
+    border-color: var(--ember);
+    color: var(--text-on-accent);
+    box-shadow: 0 14px 30px rgba(217, 90, 26, 0.28);
   }
 }
 

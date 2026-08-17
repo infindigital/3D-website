@@ -85,6 +85,93 @@ function Rig({ flight }: { flight: Flight }) {
   return null;
 }
 
+/**
+ * The shape the shaft is composed for: a phone held upright, which is a
+ * frame about half as wide as it is tall.
+ */
+const PHONE_ASPECT = 0.5;
+
+/**
+ * How much longer a lens a wider portrait frame is given, and the ceiling
+ * on it.
+ *
+ * A portrait tablet gets the shaft rather than the corridor, and it should
+ * — the six beats work the same way falling down a tall frame whatever is
+ * holding it. But fov is vertical, so the same lens in a frame half again
+ * as wide puts the same pack in the middle of a field of paper: the pack
+ * keeps its share of the height and loses half its share of the width, and
+ * the copy panel ends up sitting well below the pack's feet with nothing in
+ * between. It reads as a phone's composition stretched, which is what it is.
+ *
+ * The staging is not what is wrong — a wider frame simply wants a longer
+ * lens. The ceiling is what the tightest beat can pay for: on the closing
+ * pair the packs stand just above the promise panel, and that clearance is
+ * the whole budget. It is set by the smallest tablet rather than the
+ * largest, because the panel is sized by its words and not by the screen —
+ * on a shorter frame the same paragraph is a bigger share of it, and the
+ * feet of the packs run out of floor first there.
+ */
+const MAX_FRAME_ZOOM = 1.12;
+const ZOOM_PER_ASPECT = 0.9;
+
+/**
+ * Fits the shaft to the frame that is holding it.
+ *
+ * `setViewOffset` rather than a smaller fov, because a fov is measured
+ * about the point the camera is aimed at and the shaft's pack is not there
+ * — it is up in the top half, with its head a few pixels under the
+ * navigation bar. Narrowing the lens would grow it about the middle of the
+ * screen and push that head straight behind the bar.
+ *
+ * The offset is a window onto a larger frame, so the anchor is ours to
+ * choose: the window is taken from the top edge, which is exactly the edge
+ * the composition is already tight against. The pack grows downward, into
+ * the empty band above the copy, and stays where it was under the bar.
+ * Horizontally the window stays centred, because nothing about the shaft is
+ * off to one side.
+ *
+ * A phone lands on zoom 1 and clears the offset entirely — this is a
+ * correction for frames wider than the one the world was drawn for, and a
+ * phone is that frame.
+ */
+function Framing({ mode }: { mode: WorldMode }) {
+  const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera;
+  const width = useThree((state) => state.size.width);
+  const height = useThree((state) => state.size.height);
+
+  useEffect(() => {
+    const zoom =
+      mode === "tall"
+        ? THREE.MathUtils.clamp(
+            1 + (width / height - PHONE_ASPECT) * ZOOM_PER_ASPECT,
+            1,
+            MAX_FRAME_ZOOM,
+          )
+        : 1;
+
+    if (zoom <= 1.001) {
+      camera.clearViewOffset();
+    } else {
+      camera.setViewOffset(
+        width * zoom,
+        height * zoom,
+        (width * (zoom - 1)) / 2,
+        0,
+        width,
+        height,
+      );
+    }
+    camera.updateProjectionMatrix();
+
+    return () => {
+      camera.clearViewOffset();
+      camera.updateProjectionMatrix();
+    };
+  }, [camera, mode, width, height]);
+
+  return null;
+}
+
 /** The one moving light, carrying each beat's colour down the corridor */
 function TravellingLight() {
   const light = useRef<THREE.PointLight>(null);
@@ -159,6 +246,7 @@ function Scene({ packs, awake, mode, onSelect }: WorldCanvasProps) {
       <TravellingLight />
 
       <Rig flight={flight} />
+      <Framing mode={mode} />
       <FilmDeck awake={awake} screens={screens} grid={grid} />
 
       {flight.slots.map((slot) => {
