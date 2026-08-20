@@ -73,11 +73,6 @@
   color: #ff6f62;
 }
 
-/* A warm halo so the artwork lifts off the charcoal instead of sinking in */
-.onDark .brandLogo {
-  filter: drop-shadow(0 0 14px rgba(255, 210, 150, 0.45));
-}
-
 .onDark .menuButton {
   background: rgba(26, 15, 9, 0.6);
   border-color: rgba(255, 226, 190, 0.22);
@@ -141,13 +136,12 @@
 
 /* Real logo, transparent background, swapped in once
    public/assets/brand/logo.png exists */
+/* No halo behind the mark. The artwork is a red wordmark on a green pair of
+   letters, and a warm glow behind it bled into both and read as a smudge;
+   the logo carries enough contrast against the charcoal on its own. */
 .brandLogo {
   width: auto;
   height: 40px;
-  /* A warm halo so the artwork lifts off the charcoal instead of sinking
-     into it. The bright edition needs this only over a dark section; here
-     every section is one. */
-  filter: drop-shadow(0 0 14px rgba(255, 210, 150, 0.45));
 }
 
 .links {
