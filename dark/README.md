@@ -34,7 +34,23 @@ not share a build, a domain or an environment.
    of the repository root.
 3. Framework preset stays **Next.js**; leave the build and output settings
    at their defaults.
-4. Deploy, then give it whatever domain the dark edition should answer on
+4. **Environment variables.** The import wizard offers to create every
+   variable it finds in `.env.example`. Either fill them in or remove them
+   from the list — do not deploy with them present and blank:
+
+   | Variable | Value |
+   | --- | --- |
+   | `NEXT_PUBLIC_SITE_URL` | the dark site's own origin, no trailing slash — or leave it out entirely |
+   | `NEXT_PUBLIC_WHATSAPP_NUMBER` | country code + number, digits only — or leave it out entirely |
+
+   A variable that is *present and empty* is not the same as one that is
+   absent: `NEXT_PUBLIC_SITE_URL=""` used to reach `new URL("")` in the
+   root layout and fail the build with `ERR_INVALID_URL`. `getSiteUrl()`
+   now treats blank as missing, so this can no longer break a deploy, but
+   an empty value still costs you correct canonical URLs in the metadata
+   and sitemap.
+
+5. Deploy, then give it whatever domain the dark edition should answer on
    (a subdomain such as `dark.<yourdomain>` is the usual choice).
 
 The existing project needs no changes at all. It keeps building from the
