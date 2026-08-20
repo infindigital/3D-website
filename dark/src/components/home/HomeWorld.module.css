@@ -1,0 +1,1291 @@
+/* ============================================================
+   The 3D world: everything on the home page below the hero.
+
+   The default rules below are the ordinary page — one section after
+   another, no pinning, no canvas. Two media queries at the bottom pin it
+   instead: the corridor you look across, and the shaft an upright screen
+   falls down. They are repeated verbatim as WIDE and TALL in
+   HomeWorld.tsx. ALL FOUR MUST STAY IN STEP.
+
+   Deciding the shape in the stylesheet rather than in an effect is what
+   keeps the page correct on the very first paint, before any JavaScript
+   has run and before the canvas exists.
+   ============================================================ */
+
+.world {
+  position: relative;
+  background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-white) 46%, var(--color-cream) 100%);
+}
+
+.viewport {
+  position: relative;
+}
+
+.canvas {
+  display: none;
+}
+
+/* The CSS stand-in for the world: three slow warm glows. Visible whenever
+   the canvas is not, which covers phones, reduced motion and any browser
+   without WebGL, so the copy is never marooned on a flat white field. */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+}
+
+.glowTurmeric {
+  top: -14vmax;
+  left: -18vmax;
+  background: radial-gradient(circle, var(--tint-turmeric) 0%, transparent 68%);
+}
+
+.glowChilli {
+  top: 38%;
+  right: -22vmax;
+  background: radial-gradient(circle, var(--tint-chilli) 0%, transparent 68%);
+}
+
+.glowGreen {
+  bottom: -16vmax;
+  left: 8vmax;
+  background: radial-gradient(circle, var(--tint-green) 0%, transparent 68%);
+}
+
+.beats {
+  position: relative;
+  z-index: 1;
+}
+
+.beat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: clamp(4rem, 11vw, 8rem) clamp(1.25rem, 5vw, 3rem);
+}
+
+.panel {
+  max-width: 46rem;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-chilli);
+  margin-bottom: 0.9rem;
+}
+
+.title {
+  font-size: clamp(2rem, 5.2vw, 3.4rem);
+  margin-bottom: 1rem;
+}
+
+.flavourTitle {
+  font-size: clamp(2rem, 5.2vw, 3.4rem);
+  margin-bottom: 0.75rem;
+}
+
+.sub,
+.body {
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 38rem;
+  margin: 0 auto;
+}
+
+.tagline {
+  font-family: var(--font-heading);
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  font-weight: 600;
+  color: var(--accent, var(--color-chilli));
+  margin-bottom: 0.9rem;
+}
+
+.statement {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(2rem, 6.5vw, 4.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-align: center;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+/* ---------------------------------------------------- the pack artwork */
+
+.packShots {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(1rem, 4vw, 2.75rem);
+  width: 100%;
+  /* Inside the panel, so the flow gap above does not reach it */
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/*
+ * A pack is a standing pouch: a shade taller than it is wide, and nothing
+ * like the column it used to be drawn as. The link's width used to be the
+ * only thing set, which left the picture inside it at its markup height —
+ * so the artwork was squeezed to a quarter of its width and stretched down
+ * the screen. Both are set here now, and only one of them is a number: the
+ * width is chosen, the height follows the artwork.
+ */
+.packShot {
+  display: block;
+  width: clamp(8rem, 30vw, 15rem);
+  filter: drop-shadow(0 26px 46px rgba(0, 0, 0, 0.6));
+  transition: transform 0.6s var(--ease-cinematic);
+}
+
+/* One pack rather than the pair, so it may have the room of both */
+.packShots[data-single="true"] .packShot {
+  width: clamp(11rem, 52vw, 20rem);
+}
+
+.packShot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.packShot:hover {
+  transform: translateY(-10px) rotate(-1.5deg);
+}
+
+/* ------------------------------------------------------------- actions */
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.linkCard,
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-on-accent);
+  background: var(--accent, var(--color-chilli));
+  box-shadow: var(--shadow-soft);
+  transition:
+    box-shadow 0.4s var(--ease-soft),
+    filter 0.4s var(--ease-soft);
+}
+
+.linkCard:hover,
+.cta:hover {
+  box-shadow: var(--shadow-lift);
+  filter: saturate(1.15);
+}
+
+.cta {
+  margin-top: 1.6rem;
+}
+
+.ctaArrow {
+  transition: transform 0.4s var(--ease-cinematic);
+}
+
+.cta:hover .ctaArrow {
+  transform: translateX(5px);
+}
+
+/* --------------------------------------------------------------- chips */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  list-style: none;
+  margin-top: 1.5rem;
+}
+
+.chip {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-glass-border);
+  backdrop-filter: blur(8px);
+}
+
+/* --------------------------------------------------------------- steps */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  list-style: none;
+  margin-top: 2.5rem;
+  text-align: left;
+}
+
+.step {
+  position: relative;
+  padding: 1.6rem 1.4rem 1.5rem;
+  border-radius: 1.25rem;
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-glass-border);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+}
+
+.stepNumber {
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-turmeric);
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+.stepTitle {
+  font-size: 1.25rem;
+  margin-bottom: 0.4rem;
+}
+
+.stepCopy {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------- promise */
+
+.cards {
+  display: grid;
+  /* Narrow enough that all three still sit in a row inside the immersive
+     panel, which is a good deal tighter than the flat page's column; a
+     2 + 1 wrap under a two-line headline reads as a mistake. */
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  list-style: none;
+  margin-top: 2.25rem;
+  text-align: left;
+}
+
+.card {
+  padding: 1.5rem 1.4rem;
+  border-radius: 1.25rem;
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-glass-border);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+}
+
+.badge {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: 0.9rem;
+  color: var(--text-on-accent);
+  background: var(--color-green);
+  /* Pentagon, echoing the mark in the logo */
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+.badge svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  margin-bottom: 0.35rem;
+}
+
+.cardCopy {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.footnote {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------ the film */
+
+/* The flat layout's version of the world: the same kitchen film, played
+   straight through instead of cut across six screens standing in a 3D
+   corridor. It is only rendered when there is no canvas to put it in. */
+
+.filmBlock {
+  width: 100%;
+  /* The same gutter the panels above and below use, so the film sits in
+     the page's column rather than running off both edges of a phone */
+  max-width: calc(46rem + 2 * clamp(1.25rem, 5vw, 3rem));
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+  margin: clamp(2.5rem, 7vw, 4.5rem) auto 0;
+  display: grid;
+  gap: 0.9rem;
+  justify-items: center;
+}
+
+.film {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 1.25rem;
+  background: var(--color-cream);
+  box-shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.75);
+  object-fit: cover;
+}
+
+.filmCaption {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- rail */
+
+.rail {
+  display: none;
+}
+
+/* ------------------------------------------------------- narrow screens */
+
+/*
+ * Every touch device reads the six acts straight down, so what they need
+ * from this stylesheet is not a different layout — it is less air. The
+ * padding above is `11vw`, which was measured against a desktop column and
+ * is a good deal more room than a hand-held page wants between every two
+ * things worth reading. Left alone it is what makes a page feel long
+ * rather than generous.
+ */
+@media (max-width: 1023px) {
+  .beat {
+    gap: 2rem;
+    padding: clamp(3.25rem, 7vw, 5rem) clamp(1.25rem, 5vw, 3rem);
+  }
+
+  /* A statement is the one thing here that should still take a screen */
+  .beat[data-beat^="story"] {
+    padding-block: clamp(5rem, 12vw, 8rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .beat {
+    gap: 1.75rem;
+  }
+
+  /*
+   * The three statements, read as one stanza rather than as three screens.
+   *
+   * They are one sentence in three parts, and on a desktop they are three
+   * panels dissolving into each other over the same piece of film, which is
+   * what makes that true there. Laid flat on a phone the dissolve is gone
+   * and all that is left of it is the spacing — three short lines, each
+   * centred in its own half-screen of nothing, with no way to tell they
+   * belong together. So on a phone they are set as a stanza instead: hung
+   * off one rule running down the margin, close enough to be read in a
+   * single breath, and the rule fades in above the first line and out below
+   * the last so the block has a beginning and an end.
+   */
+  .beat[data-beat^="story"] {
+    position: relative;
+    align-items: stretch;
+    padding-block: 0.5rem;
+  }
+
+  .beat[data-beat="story0"] {
+    padding-top: clamp(3rem, 10vw, 4.5rem);
+  }
+
+  .beat[data-beat="story2"] {
+    padding-bottom: clamp(3rem, 10vw, 4.5rem);
+  }
+
+  /* The rule. One per beat, and they meet: the three boxes are stacked
+     with nothing between them, so the three segments read as one line. */
+  .beat[data-beat^="story"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    /* The page's own gutter, which is also where the copy's column starts */
+    left: clamp(1.25rem, 5vw, 3rem);
+    width: 2px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--color-chilli) 34%, transparent);
+  }
+
+  .beat[data-beat="story0"]::before {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--color-chilli) 34%, transparent) 46%
+    );
+  }
+
+  .beat[data-beat="story2"]::before {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-chilli) 34%, transparent) 42%,
+      transparent 100%
+    );
+  }
+
+  .statement {
+    font-size: clamp(1.6rem, 7.4vw, 2.15rem);
+    line-height: 1.14;
+    /* Hung off the rule, so the three lines share one left edge */
+    text-align: left;
+    max-width: none;
+    padding-left: 1.05rem;
+  }
+
+  .links {
+    margin-top: 1.5rem;
+    flex-direction: column;
+  }
+
+  /* Full-width and stacked. Two long labels side by side on a phone wrap
+     inside their own pills, which reads as a mistake rather than a pair.
+
+     The first selector is the magnetic wrapper each link is inside: it is
+     an inline-flex box that shrinks to its content, so a link set to the
+     full width of *that* is as wide as its own label and no wider — which
+     is how two pills meant to match came out two different sizes. */
+  .links > *,
+  .links,
+  .linkCard,
+  .cta {
+    width: 100%;
+  }
+
+  .linkCard,
+  .cta {
+    justify-content: center;
+  }
+
+  .steps,
+  .cards {
+    margin-top: 1.75rem;
+    gap: 0.9rem;
+  }
+
+  .step {
+    padding: 1.35rem 1.25rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+}
+
+/* ============================================================
+   The wide world: the corridor, looked across. Repeated verbatim as WIDE
+   in HomeWorld.tsx.
+   ============================================================ */
+
+@media (min-width: 1024px) and (min-height: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .world {
+    /* The length of the flight. Every band in BANDS is a fraction of this,
+       so lengthening it slows the whole world down evenly. */
+    height: 760vh;
+    background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-white) 50%, var(--color-cream) 100%);
+  }
+
+  .viewport {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    /* The canvas is the picture, the copy is the caption: pointer events
+       reach it only where no panel is on top. */
+    animation: worldFade 1.4s var(--ease-soft) both;
+  }
+
+  @keyframes worldFade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Once the real world is drawing, the CSS stand-in gets out of its way */
+  .world[data-canvas="on"] .backdrop {
+    opacity: 0;
+    transition: opacity 1.4s var(--ease-soft);
+  }
+
+  .world[data-canvas="on"] .packShots {
+    display: none;
+  }
+
+  .beats {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  .beat {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0;
+    max-width: none;
+    padding: var(--nav-height) clamp(1.5rem, 6vw, 5rem) 4rem;
+    /* Written every frame by the scroll driver in HomeWorld.tsx */
+    opacity: var(--o, 0);
+    transform: translate3d(0, calc((1 - var(--o, 0)) * 26px), 0);
+    will-change: opacity, transform;
+  }
+
+  /* Only the panel that is actually up can be clicked through to */
+  .beat[data-on="false"] {
+    pointer-events: none;
+  }
+
+  /* Charcoal, and a good deal more solid than the flat page's glass: the
+     film behind these panels now plays at full strength, and a thin veil
+     over a moving kitchen is a panel you have to stop and decipher. */
+  .beat .panel {
+    background: rgba(20, 14, 11, 0.84);
+    border: 1px solid var(--surface-glass-border);
+    backdrop-filter: blur(14px);
+    border-radius: 1.75rem;
+    padding: clamp(1.75rem, 3vw, 2.75rem);
+    box-shadow: var(--shadow-soft);
+    max-width: 34rem;
+  }
+
+  /* The two product beats sit to one side so the pack the camera is
+     looking at keeps the other half of the frame to itself. */
+  .beatLeft,
+  .beatRight {
+    justify-items: start;
+  }
+
+  .beatLeft {
+    padding-right: 46vw;
+  }
+
+  .beatRight {
+    justify-items: end;
+    padding-left: 46vw;
+  }
+
+  .beatLeft .panel,
+  .beatRight .panel {
+    text-align: left;
+  }
+
+  .beatLeft .chips,
+  .beatRight .chips,
+  .beatLeft .sub,
+  .beatRight .sub {
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
+  /* The statements have no card behind them — they are read against the
+     film itself — so they carry their own pool of light instead, the same
+     trick the hero uses over its own footage. A pool rather than a card
+     because the film is the point: it stays visible right up to the words
+     and only gives way where a letter actually needs the contrast. */
+  .beatCentre .statement {
+    position: relative;
+    padding: 2rem 3rem;
+  }
+
+  .beatCentre .statement::before {
+    content: "";
+    position: absolute;
+    inset: -30% -12%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(20, 14, 11, 0.97) 0%,
+      rgba(20, 14, 11, 0.82) 44%,
+      rgba(20, 14, 11, 0) 74%
+    );
+    z-index: -1;
+  }
+
+  /* No card here either: three cards inside a fourth is a stack of boxes,
+     and the fry playing behind them is what the beat is about. */
+  .beat[data-beat="ritual"] .panel {
+    position: relative;
+    max-width: 62rem;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 0;
+  }
+
+  .beat[data-beat="ritual"] .panel::before {
+    content: "";
+    position: absolute;
+    inset: -16% -9%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(20, 14, 11, 0.72) 0%,
+      rgba(20, 14, 11, 0.44) 48%,
+      rgba(20, 14, 11, 0) 76%
+    );
+    z-index: -1;
+  }
+
+  /* The three step cards sit inside that pool, so they only have to carry
+     the last of the contrast rather than all of it */
+  .beat[data-beat="ritual"] .step {
+    background: rgba(20, 14, 11, 0.82);
+  }
+
+  .beat[data-beat="finale"] .panel {
+    /* Narrow enough that the two packs flank the card rather than hide
+       behind it */
+    max-width: 44rem;
+  }
+
+  .panelCard {
+    background: rgba(20, 14, 11, 0.93);
+  }
+
+  /* ---- the rail ---- */
+
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    position: absolute;
+    right: clamp(1rem, 2.5vw, 2rem);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+  }
+
+  .dot {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border-radius: 50%;
+    background: rgba(231, 210, 193, 0.28);
+    transition:
+      background-color 0.5s var(--ease-soft),
+      transform 0.5s var(--ease-cinematic);
+  }
+
+  .dot:hover {
+    transform: scale(1.35);
+    background: rgba(231, 210, 193, 0.5);
+  }
+
+  .dot[data-on="true"] {
+    background: var(--color-chilli);
+    transform: scale(1.35);
+  }
+
+  .dotLabel {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-soft);
+    pointer-events: none;
+  }
+
+  .dot:hover .dotLabel,
+  .dot[data-on="true"] .dotLabel {
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   The tall world: the shaft, fallen down. Repeated verbatim as TALL in
+   HomeWorld.tsx.
+
+   Same six beats, same film, same flight — turned on its side. A portrait
+   frame has no other half to hand a panel, so nothing is set beside
+   anything here: the pack holds the upper half of the frame and the words
+   are read underneath it, which is the one arrangement an upright screen
+   is actually shaped for.
+
+   Where each panel sits vertically is not a style choice, it is where the
+   camera is pointing. At the lineup, the two flavours and the finale there
+   is a pack in the middle of the frame, so the copy keeps to the bottom.
+   At the three statements and the ritual there is nothing but film, so
+   those panels take the middle. See TALL_FLIGHT in flightPath.ts.
+   ============================================================ */
+
+@media (max-width: 1023px) and (min-height: 600px) and (prefers-reduced-motion: no-preference) {
+  .world {
+    /* Shorter than the corridor's 760vh. The same six acts, but read with
+       a thumb: a phone's scroll carries far less page per gesture, and a
+       flight that takes eight full screens to get through stops being a
+       flight and becomes a chore. */
+    height: 700vh;
+  }
+
+  .viewport {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    /* The small viewport height, so the frame is sized to the window with
+       the browser's chrome *showing*. With `vh` alone, the address bar
+       sliding away mid-scroll grows the viewport under a pinned frame and
+       everything in it jumps. */
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    animation: worldFadeTall 1.4s var(--ease-soft) both;
+  }
+
+  @keyframes worldFadeTall {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .world[data-canvas="on"] .backdrop {
+    opacity: 0;
+    transition: opacity 1.4s var(--ease-soft);
+  }
+
+  /* The packs are standing in the world itself now */
+  .world[data-canvas="on"] .packShots {
+    display: none;
+  }
+
+  /* With no world to stand in they are pictures again, back inside the
+     panel — so there is no pack above to keep the upper half clear for,
+     and the beat takes the middle of the frame like any other page. The
+     artwork comes down a size to pay for the room it now needs in the
+     column rather than beside it. */
+  .world[data-canvas="off"] .beat {
+    align-content: center;
+  }
+
+  .world[data-canvas="off"] .packShots {
+    margin-top: 0.85rem;
+  }
+
+  .world[data-canvas="off"] .packShot {
+    width: clamp(5.5rem, 26vw, 8rem);
+  }
+
+  .world[data-canvas="off"] .packShots[data-single="true"] .packShot {
+    width: clamp(6.5rem, 32vw, 10rem);
+  }
+
+  .beats {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  .beat {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    /* Underneath the pack, not beside it */
+    align-content: end;
+    justify-items: center;
+    gap: 0;
+    max-width: none;
+    padding: calc(var(--nav-height) + 0.5rem) clamp(1rem, 5vw, 2rem)
+      calc(2.75rem + env(safe-area-inset-bottom, 0px));
+    /* Written every frame by the scroll driver in HomeWorld.tsx */
+    opacity: var(--o, 0);
+    transform: translate3d(0, calc((1 - var(--o, 0)) * 22px), 0);
+    will-change: opacity, transform;
+  }
+
+  .beat[data-on="false"] {
+    pointer-events: none;
+  }
+
+  /* The two beats the flat phone layout hangs off a rule in the margin are
+     back to being their own screens here, so the rule and the offsets that
+     positioned it go. Higher specificity than `.beat` above, so they have
+     to be undone by name rather than left to source order. */
+  .beat[data-beat^="story"] {
+    position: absolute;
+    align-items: stretch;
+    align-content: center;
+    padding-block: calc(var(--nav-height) + 0.5rem)
+      calc(2.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .beat[data-beat^="story"]::before {
+    content: none;
+  }
+
+  /* Nothing but film at these two, so the words may have the middle */
+  .beat[data-beat="ritual"] {
+    align-content: center;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 30rem;
+    text-align: center;
+  }
+
+  .beat .panel {
+    background: rgba(20, 14, 11, 0.86);
+    border: 1px solid var(--surface-glass-border);
+    backdrop-filter: blur(14px);
+    border-radius: 1.5rem;
+    padding: 1.15rem 1.1rem 1.25rem;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Set to the panel's own width rather than a reading column inside it */
+  .sub,
+  .body {
+    max-width: none;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 6vw, 1.9rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .flavourTitle {
+    font-size: clamp(1.55rem, 6.4vw, 2rem);
+    margin-bottom: 0.3rem;
+  }
+
+  .tagline {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .chips {
+    margin-top: 0.75rem;
+    gap: 0.4rem;
+  }
+
+  .chip {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  .links {
+    margin-top: 1rem;
+    gap: 0.55rem;
+  }
+
+  .linkCard,
+  .cta {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .cta {
+    margin-top: 0.9rem;
+  }
+
+  /* The statements are read against the film, so they carry their own pool
+     of light rather than a card — the same trick the corridor uses. */
+  .statement {
+    text-align: center;
+    max-width: 15ch;
+    padding: 0;
+    margin: 0 auto;
+    font-size: clamp(1.9rem, 8.5vw, 2.7rem);
+    line-height: 1.1;
+    position: relative;
+  }
+
+  .statement::before {
+    content: "";
+    position: absolute;
+    inset: -40% -22%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(20, 14, 11, 0.97) 0%,
+      rgba(20, 14, 11, 0.82) 44%,
+      rgba(20, 14, 11, 0) 74%
+    );
+    z-index: -1;
+  }
+
+  /* Three cards inside a fourth is a stack of boxes on a desktop and a
+     column of them on a phone. Both lists lose their chrome here and become
+     what they always were — a number and a line, a tick and a line — laid
+     out as rows so three of them cost the height of one card. */
+  .beat[data-beat="ritual"] .panel {
+    position: relative;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 0;
+  }
+
+  .beat[data-beat="ritual"] .panel::before {
+    content: "";
+    position: absolute;
+    inset: -12% -14%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(20, 14, 11, 0.9) 0%,
+      rgba(20, 14, 11, 0.66) 52%,
+      rgba(20, 14, 11, 0) 78%
+    );
+    z-index: -1;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    margin-top: 1.25rem;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 2.1rem 1fr;
+    column-gap: 0.75rem;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .stepNumber {
+    /* Beside the pair of lines rather than above them */
+    grid-row: 1 / span 2;
+    font-size: 1.5rem;
+    margin-bottom: 0;
+  }
+
+  .stepTitle {
+    font-size: 1rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .stepCopy {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    margin-top: 1.1rem;
+  }
+
+  .card {
+    display: grid;
+    grid-template-columns: 1.7rem 1fr;
+    column-gap: 0.7rem;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .badge {
+    grid-row: 1 / span 2;
+    align-self: start;
+    width: 1.7rem;
+    height: 1.7rem;
+    margin-bottom: 0;
+  }
+
+  .badge svg {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  .cardTitle {
+    font-size: 1rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .cardCopy {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .footnote {
+    margin-top: 1.1rem;
+    font-size: 0.78rem;
+  }
+
+  /* ---- the rail ---- */
+
+  /* Seven screens of pinned page needs a way out of the middle of it as
+     much as the corridor does — laid along the bottom, where a thumb is,
+     and without the labels, which there is no room for and no hover to
+     ask for them with. */
+  .rail {
+    display: flex;
+    flex-direction: row;
+    gap: 0.7rem;
+    position: absolute;
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 3;
+  }
+
+  .dot {
+    position: relative;
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    border-radius: 50%;
+    background: rgba(231, 210, 193, 0.28);
+    transition:
+      background-color 0.5s var(--ease-soft),
+      transform 0.5s var(--ease-cinematic);
+  }
+
+  .dot[data-on="true"] {
+    background: var(--color-chilli);
+    transform: scale(1.35);
+  }
+
+  .dotLabel {
+    display: none;
+  }
+}
+
+/*
+ * A short phone, where the two halves of the frame start arguing.
+ *
+ * The pack's share of the frame is a share — it is framed against the
+ * height, so it takes the same third of a 740px screen as of an 844px one.
+ * The copy underneath is not: it is a fixed stack of words, and on the
+ * shorter screen that same stack is a good deal more of what is left. Left
+ * alone the panel grows up into the pack and covers its feet.
+ *
+ * So the words give the ground back rather than the pack: one size down
+ * through the panel, and the air between them tightened to match.
+ */
+@media (max-width: 1023px) and (min-height: 600px) and (max-height: 800px) and (prefers-reduced-motion: no-preference) {
+  .beat .panel {
+    border-radius: 1.25rem;
+    padding: 0.85rem 0.85rem 0.95rem;
+  }
+
+  .eyebrow {
+    font-size: 0.66rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .title,
+  .flavourTitle {
+    font-size: clamp(1.3rem, 5.6vw, 1.55rem);
+    margin-bottom: 0.35rem;
+  }
+
+  .tagline {
+    font-size: 0.92rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .sub,
+  .body {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .chips {
+    margin-top: 0.55rem;
+    gap: 0.35rem;
+  }
+
+  .chip {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+  }
+
+  .links {
+    margin-top: 0.8rem;
+    gap: 0.45rem;
+  }
+
+  .linkCard,
+  .cta {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.85rem;
+  }
+
+  .cta {
+    margin-top: 0.7rem;
+  }
+
+  .steps {
+    gap: 0.65rem;
+    margin-top: 0.9rem;
+  }
+
+  .stepCopy,
+  .cardCopy {
+    font-size: 0.82rem;
+  }
+
+  .cards {
+    gap: 0.55rem;
+    margin-top: 0.85rem;
+  }
+
+  .footnote {
+    margin-top: 0.85rem;
+  }
+}
+
+/* ============================================================
+   Either pinned world, with no canvas behind it.
+
+   A machine that cannot be asked for WebGL — or owns up to too little
+   memory to be asked — still gets the pinned flight, because the flight is
+   the page's shape and not its decoration. What it gets instead of the
+   world is the two things CSS can do honestly: the film itself, played
+   full-frame and held well back, and real perspective on the panels, so a
+   beat arrives out of the depth of the frame rather than merely fading up.
+
+   Both queries are repeated verbatim from above; a comma between them is
+   "either one".
+   ============================================================ */
+
+@media (min-width: 1024px) and (min-height: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference),
+  (max-width: 1023px) and (min-height: 600px) and (prefers-reduced-motion: no-preference) {
+  .world[data-canvas="off"] .beats {
+    perspective: 900px;
+  }
+
+  /* The same `--o` the driver already writes, spent on distance as well as
+     on opacity: at rest a panel is a third of a metre further away. */
+  .world[data-canvas="off"] .beat {
+    transform: translate3d(
+      0,
+      calc((1 - var(--o, 0)) * 22px),
+      calc((var(--o, 0) - 1) * 130px)
+    );
+  }
+
+  /*
+   * The film, which in this layout has nowhere to be but behind everything.
+   *
+   * It is rendered in the flow of `.beats`, and `.beats` is an absolutely
+   * positioned frame here, so left alone it lands on top of the panels
+   * rather than under them. Taken out of the flow and pushed behind, it
+   * becomes what the six screens in the world are: the room the words are
+   * spoken in.
+   */
+  .world[data-canvas="off"] .filmBlock {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: block;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .world[data-canvas="off"] .film {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+    box-shadow: none;
+    opacity: 0.32;
+  }
+
+  .world[data-canvas="off"] .filmCaption {
+    display: none;
+  }
+}
+
+/* A narrow-but-tall desktop window cannot afford the side padding that
+   keeps a pack in frame, so the product panels come back to the middle. */
+@media (min-width: 1024px) and (max-width: 1100px) and (min-height: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .beatLeft {
+    padding-right: clamp(1.5rem, 6vw, 5rem);
+  }
+
+  .beatRight {
+    padding-left: clamp(1.5rem, 6vw, 5rem);
+  }
+
+  .beatLeft .panel,
+  .beatRight .panel {
+    max-width: 26rem;
+  }
+}

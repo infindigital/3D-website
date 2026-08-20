@@ -1,0 +1,137 @@
+/* Back out of the cream the collage finished on and into the white the
+   cross-link below starts from, so the two bands meet without a seam. */
+.close {
+  position: relative;
+  padding: clamp(40px, 5.5vh, 72px) 24px clamp(44px, 6vh, 78px);
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 4%, var(--color-cream)) 0%,
+    var(--color-cream) 40%,
+    var(--color-white) 100%
+  );
+}
+
+.wash {
+  position: absolute;
+  inset: -10%;
+  background: radial-gradient(
+    ellipse 56% 66% at 76% 46%,
+    color-mix(in srgb, var(--accent) 14%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: clamp(30px, 5vw, 74px);
+}
+
+.heading {
+  font-size: clamp(2rem, 4.4vw, 3rem);
+  line-height: 1.05;
+  color: var(--text-primary);
+  will-change: clip-path, transform;
+}
+
+.body {
+  max-width: 44ch;
+  margin-top: 16px;
+  font-size: clamp(0.95rem, 1.5vw, 1.04rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.buys {
+  margin-top: clamp(22px, 3.5vh, 34px);
+}
+
+/* ---- the pack ----------------------------------------------------------- */
+
+.stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+}
+
+.pack {
+  position: relative;
+  width: min(100%, 380px);
+  /* The scrubbed float, the pointer's drift and tip, and the entrance's turn,
+     each on its own variable and summed into one chain. */
+  transform: translate3d(
+      calc(var(--parallax-x, 0) * 12px),
+      calc(var(--float, 0px) + var(--parallax-y, 0) * 8px),
+      0
+    )
+    rotateX(calc(var(--parallax-y, 0) * -7deg))
+    rotateY(calc(var(--parallax-x, 0) * 10deg))
+    rotateZ(var(--enter-rz, 0deg));
+  will-change: transform;
+}
+
+.packImg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 40px 52px rgb(120 60 20 / 0.26));
+}
+
+/* The pack's own patch of shade on the page, held still under it */
+.shade {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: min(84%, 320px);
+  aspect-ratio: 1 / 0.32;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--accent) 22%, transparent) 0%,
+    transparent 100%
+  );
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+/* ---- narrower ---------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(26px, 5vh, 40px);
+  }
+
+  .stage {
+    order: -1;
+    perspective: none;
+  }
+
+  .pack {
+    width: min(62vw, 320px);
+  }
+
+  .body {
+    max-width: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .pack {
+    width: min(72vw, 300px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pack {
+    will-change: auto;
+  }
+}

@@ -1,0 +1,264 @@
+/*
+ * The two variables the browser has to be told the type of, because CSS
+ * transitions them rather than script writing them frame by frame — an
+ * unregistered custom property is a string, and a string cannot be
+ * interpolated, so the hover would snap instead of sliding.
+ */
+@property --hover-x {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --hover-ry {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* The comparison above finishes white. This warms back into cream so the table
+   of dishes below has a floor to stand on. */
+.edge {
+  position: relative;
+  padding: clamp(40px, 5.5vh, 72px) 24px clamp(38px, 5vh, 66px);
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    var(--color-white) 0%,
+    color-mix(in srgb, var(--accent) 4%, var(--color-cream)) 58%,
+    var(--color-cream) 100%
+  );
+}
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 4.5vw, 64px);
+}
+
+.copy {
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+/* The cap is measured here rather than on the header above it, because `ch` is
+   read off the element's own font — 18ch of body text is a third of 18ch of
+   display type, and putting it up there wrapped the title onto five lines. */
+.heading {
+  max-width: 18ch;
+  font-size: clamp(2rem, 4.2vw, 2.9rem);
+  line-height: 1.05;
+  color: var(--text-primary);
+  will-change: clip-path, transform;
+}
+
+.marked {
+  color: var(--accent);
+}
+
+/* ---- the six lines ------------------------------------------------------ */
+
+/*
+ * Ticked lines ruled off each other, not six more boxes. Everything else on
+ * this page is already a card, and a page of cards has no hierarchy left to
+ * spend — a rule is the quietest thing that still separates two lines.
+ */
+.list {
+  list-style: none;
+  margin: clamp(18px, 2.6vh, 26px) 0 0;
+  padding: 0;
+  /* Their own room, so a line's swing is read against a horizon rather than as
+     a flat skew. The list drifts as one piece, the lines turn individually. */
+  perspective: 900px;
+  perspective-origin: 0% 50%;
+  transform: translate3d(0, var(--drift, 0px), 0);
+  will-change: transform;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: clamp(9px, 1.4vh, 13px) 0;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--accent) 16%, transparent);
+  /* The swing of the entrance and the nudge a hover adds, each its own
+     variable summed into one chain — two rules writing `transform` would
+     leave only the last one standing. */
+  transform: translate3d(calc(var(--enter-x, 0px) + var(--hover-x, 0px)), 0, 0)
+    rotateY(calc(var(--enter-ry, 0deg) + var(--hover-ry, 0deg)));
+  transform-origin: 0% 50%;
+  transition:
+    --hover-x 0.45s var(--ease-cinematic),
+    --hover-ry 0.45s var(--ease-cinematic);
+  will-change: transform;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.tick {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: clamp(24px, 2.6vw, 28px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--color-white));
+  transition: background 0.45s var(--ease-soft);
+}
+
+.tick svg {
+  width: 58%;
+  height: 58%;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.itemText {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.94rem, 1.55vw, 1.06rem);
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .item:hover {
+    --hover-x: 8px;
+    --hover-ry: 5deg;
+  }
+
+  .item:hover .tick {
+    background: color-mix(in srgb, var(--accent) 24%, var(--color-white));
+  }
+}
+
+/* ---- the photograph ----------------------------------------------------- */
+
+.stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+}
+
+.frame {
+  position: relative;
+  width: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  /*
+   * Four movements on one transform: the scroll's rise, the pointer's drift,
+   * the pointer's tip and the entrance. Each its own variable added into the
+   * chain rather than its own rule.
+   */
+  transform: translate3d(
+      calc(var(--parallax-x, 0) * 12px),
+      calc(var(--drift, 0px) + var(--parallax-y, 0) * 9px),
+      0
+    )
+    scale(var(--enter-s, 1))
+    rotateX(calc(var(--parallax-y, 0) * -5deg))
+    rotateY(calc(var(--parallax-x, 0) * 7deg))
+    rotateZ(var(--enter-rz, 0deg));
+  box-shadow: 0 30px 60px -34px rgb(43 29 22 / 0.6);
+  will-change: transform;
+}
+
+/* The spread is shot wide and the list beside it is six short lines, so the
+   frame is held at the photograph's own proportions rather than cropped — the
+   two columns come out level on their own. */
+.frameImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+/* The one line on the photograph, sat on the glass at its foot. */
+.frameTag {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  background: var(--surface-glass);
+  backdrop-filter: blur(10px);
+}
+
+.shade {
+  position: absolute;
+  left: 50%;
+  bottom: -5%;
+  width: 84%;
+  aspect-ratio: 1 / 0.26;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--accent) 26%, transparent) 0%,
+    transparent 100%
+  );
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+/* ---- narrower ----------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(22px, 3.6vh, 34px);
+  }
+
+  .stage {
+    /* Turning something the reader is also scrolling past on a phone reads as
+       swimming rather than as depth. */
+    perspective: none;
+  }
+
+  .heading {
+    max-width: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .list {
+    perspective: none;
+  }
+}
+
+/* Nothing to undo for reduced motion: every movement here is either a GSAP
+   timeline that is never built under that preference, or a pointer variable
+   the hook never writes on it, so each term falls back to rest on its own. */
+@media (prefers-reduced-motion: reduce) {
+  .frame,
+  .list,
+  .item {
+    will-change: auto;
+  }
+}

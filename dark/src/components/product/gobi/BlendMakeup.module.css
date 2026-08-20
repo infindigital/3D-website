@@ -1,0 +1,298 @@
+.makeup {
+  position: relative;
+  padding: clamp(40px, 5.4vh, 66px) 0 clamp(44px, 6vh, 74px);
+  /* Cream, because the section above it ends white and the section below it
+     starts white — otherwise the three run together as one long panel. */
+  background: var(--color-cream);
+  overflow: hidden;
+}
+
+/* One low wash of warmth behind the pack, so the section is not a white box
+   with a photo in the middle of it. */
+.makeup::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 48% 46% at 50% 62%,
+    color-mix(in srgb, var(--color-turmeric) 13%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.head {
+  margin-bottom: clamp(20px, 3vh, 34px);
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.heading {
+  max-width: 20ch;
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+  line-height: 1.06;
+  color: var(--text-primary);
+}
+
+/* ---- the board -------------------------------------------------------- */
+
+.board {
+  --lead: clamp(28px, 5vw, 74px);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--lead);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.2vh, 26px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.part {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.left .part {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+/*
+ * The lead into the pack. It is the gap between the columns and nothing else,
+ * so it is always exactly as long as the space it has to cross — no measuring
+ * and no resize handler.
+ */
+.part::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: var(--lead);
+  border-top: 2px dashed color-mix(in srgb, var(--color-green) 52%, transparent);
+}
+
+.left .part::after {
+  left: 100%;
+}
+
+.right .part::after {
+  right: 100%;
+}
+
+/*
+ * The ingredient itself. There is no plate or ring around it — the light is a
+ * wash of the spice's own colour behind the cut-out, so what you see is the
+ * chilli rather than a swatch of chilli red.
+ */
+.shot {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: clamp(68px, 8vw, 96px);
+  height: clamp(68px, 8vw, 96px);
+}
+
+.shot::before {
+  content: "";
+  position: absolute;
+  inset: -6%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 54%,
+    color-mix(in srgb, var(--tone) 26%, transparent) 0%,
+    color-mix(in srgb, var(--tone) 10%, transparent) 46%,
+    transparent 72%
+  );
+}
+
+.shot img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Its own shadow, so it sits on the cream instead of floating over it */
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.38));
+}
+
+.partBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.partName {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: var(--text-primary);
+}
+
+.partRole {
+  font-size: clamp(0.8rem, 1.3vw, 0.9rem);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* ---- the pack --------------------------------------------------------- */
+
+.stage {
+  position: relative;
+  width: clamp(180px, 24vw, 300px);
+}
+
+.pack {
+  position: relative;
+  animation: float 7s var(--ease-soft) infinite alternate;
+  will-change: transform;
+}
+
+.packImg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.49));
+}
+
+@keyframes float {
+  from {
+    transform: translate3d(0, -6px, 0);
+  }
+  to {
+    transform: translate3d(0, 8px, 0);
+  }
+}
+
+.seal {
+  position: absolute;
+  top: -6%;
+  right: -14%;
+  width: clamp(92px, 9vw, 108px);
+  height: clamp(92px, 9vw, 108px);
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 50%;
+  background: var(--color-white);
+  border: 2px solid var(--color-green);
+  box-shadow: 0 12px 26px rgba(0, 90, 45, 0.16);
+  transform: rotate(-9deg);
+  text-align: center;
+}
+
+.seal svg {
+  width: clamp(22px, 2.4vw, 28px);
+  height: clamp(22px, 2.4vw, 28px);
+  stroke: var(--color-green);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.seal span {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(0.5rem, 0.85vw, 0.66rem);
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-green);
+  /* The line breaks are written into the markup. Left to itself the seal is
+     narrow enough at the small end to split "artificial" in two. */
+  white-space: nowrap;
+}
+
+/* ---- narrower screens ------------------------------------------------- */
+
+@media (max-width: 860px) {
+  /*
+   * The pack goes over the top and the six parts underneath it in two
+   * columns. Leads that no longer lead anywhere are dropped rather than left
+   * pointing at the edge of the screen.
+   */
+  .board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "stage stage"
+      "left  right";
+    gap: clamp(22px, 4vw, 34px);
+    justify-items: center;
+  }
+
+  .stage {
+    grid-area: stage;
+    width: clamp(170px, 42vw, 240px);
+  }
+
+  .left {
+    grid-area: left;
+  }
+
+  .right {
+    grid-area: right;
+  }
+
+  .column {
+    width: 100%;
+    gap: clamp(16px, 3vw, 24px);
+  }
+
+  .left .part {
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .part::after {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .board {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "stage"
+      "left"
+      "right";
+  }
+
+  .column {
+    gap: 14px;
+  }
+
+  .shot {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pack {
+    animation: none;
+  }
+}

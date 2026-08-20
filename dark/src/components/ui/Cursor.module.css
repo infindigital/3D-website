@@ -1,0 +1,66 @@
+/* The trailing ring and its dot. Both are pure decoration: pointer-events
+   are off, so nothing here can ever swallow a click. */
+
+.ring,
+.dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-soft);
+  will-change: transform;
+}
+
+.ring {
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid rgba(230, 51, 36, 0.55);
+  border-radius: 50%;
+  transition:
+    opacity 0.3s var(--ease-soft),
+    width 0.35s var(--ease-cinematic),
+    height 0.35s var(--ease-cinematic),
+    background-color 0.35s var(--ease-cinematic),
+    border-color 0.35s var(--ease-cinematic);
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-chilli);
+}
+
+:global(body[data-cursor-ready="true"]) .ring,
+:global(body[data-cursor-ready="true"]) .dot {
+  opacity: 1;
+}
+
+/* Over a link or button: the ring opens up and fills faintly */
+:global(body[data-cursor="link"]) .ring {
+  width: 62px;
+  height: 62px;
+  background: rgba(245, 179, 1, 0.16);
+  border-color: rgba(245, 179, 1, 0.7);
+}
+
+/* Over one of the packs in the 3D world: wider still, and turmeric */
+:global(body[data-cursor="pack"]) .ring {
+  width: 88px;
+  height: 88px;
+  background: rgba(245, 179, 1, 0.2);
+  border-color: rgba(230, 51, 36, 0.6);
+}
+
+:global(body[data-cursor="pack"]) .dot {
+  background: var(--color-turmeric);
+}
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .ring,
+  .dot {
+    display: none;
+  }
+}

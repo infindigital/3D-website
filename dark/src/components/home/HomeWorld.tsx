@@ -1,0 +1,619 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { preload } from "react-dom";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Cursor from "@/components/ui/Cursor";
+import Magnetic from "@/components/ui/Magnetic";
+import { scrollToOffset } from "@/components/layout/SmoothScroll";
+import type { Product } from "@/config/products";
+import type { StagePack } from "@/three/world/types";
+import { worldState } from "@/three/world/worldState";
+import { bandOpacity } from "@/three/world/bands";
+import { FILM_POSTER, FILM_SRC } from "@/three/world/film";
+import { supportsWebGL } from "@/utils/webgl";
+import type { WorldMode } from "@/three/world/WorldCanvas";
+import styles from "./HomeWorld.module.css";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const WorldCanvas = dynamic(() => import("@/three/world/WorldCanvas"), {
+  ssr: false,
+});
+
+/**
+ * Whether this machine should be asked to draw a world at all.
+ *
+ * `deviceMemory` is the only honest signal a browser will give about the
+ * class of device it is running on, and it is Chrome-only — which is the
+ * right way round, since the phones that cannot afford a shaft of
+ * transparent tiles are overwhelmingly the cheap Android ones that report
+ * it. Anything that declines to answer is taken at its word and given the
+ * world; anything that owns up to under three gigabytes gets the flat page,
+ * where the same six acts are read straight down.
+ */
+function capableEnough(): boolean {
+  if (!supportsWebGL()) return false;
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  return typeof memory !== "number" || memory >= 3;
+}
+
+/**
+ * Which world a visitor gets is decided by these two media queries and by
+ * the identical pair in HomeWorld.module.css. **All four must stay in
+ * step**, exactly as the hero's do: the stylesheet alone decides the page's
+ * shape so it is right on the first paint, and these decide whether to
+ * drive it.
+ *
+ * WIDE is the corridor. `pointer: fine` is not a snobbery about touch — the
+ * corridor is composed for a frame you look *across*, with the pack out to
+ * one side and the copy panel filling the other half, and the pointer is
+ * what moves the camera inside it. `min-width` and `min-height` ask for
+ * enough window to hold that composition; a desktop browser dragged narrow
+ * is in the same position as a tablet.
+ *
+ * TALL is the shaft, and it is why phones are no longer sent to the flat
+ * page. A portrait frame has no other half to give a panel, so nothing
+ * about the wide composition survives being narrowed — but the fault was
+ * always the composition, never the device. Turned on its side the same
+ * six beats work perfectly well: the pack dead centre in the upper half,
+ * the words in the lower, and the flight falling past instead of running
+ * along. It takes anything upright and tall enough to seat that, which is
+ * every phone held normally, every portrait tablet, and a desktop window
+ * dragged narrow.
+ *
+ * What is left over — a phone on its side, a landscape tablet — reads the
+ * six acts straight down as an ordinary page. That is the right answer for
+ * a frame with no room above the fold rather than a consolation prize.
+ *
+ * `prefers-reduced-motion` is on both, because in both the flight is the
+ * motion. There is no reduced version of it worth having.
+ */
+const WIDE =
+  "(min-width: 1024px) and (min-height: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+
+const TALL =
+  "(max-width: 1023px) and (min-height: 600px) and (prefers-reduced-motion: no-preference)";
+
+/** Which world is being driven, if any */
+type Layout = "flat" | WorldMode;
+
+/**
+ * Where each panel of copy lives on the flight, as a range of world
+ * progress. These are the other half of src/three/world/flightPath.ts: the
+ * camera arrives at the first pack around 0.50, so the panel that names it
+ * is centred there. Move a camera key and the matching band moves with it.
+ */
+const BANDS: Record<string, [number, number]> = {
+  /* Starts before the world does, so the first panel is already up the
+     moment the hero hands over rather than fading in from nothing */
+  lineup: [-0.12, 0.21],
+  /* The three statements overlap rather than butt together: read as one
+     sentence in three parts, they should dissolve into each other. Butted
+     bands leave the page blank for the width of one fade at each join. */
+  story0: [0.19, 0.31],
+  story1: [0.29, 0.39],
+  story2: [0.37, 0.47],
+  flavour0: [0.47, 0.59],
+  flavour1: [0.62, 0.74],
+  ritual: [0.77, 0.89],
+  /* Runs past the end so the closing panel never fades back out */
+  finale: [0.92, 1.08],
+};
+
+/**
+ * The pack artwork's shape. Every pouch is shot to the same frame, so one
+ * pair of numbers covers all of them.
+ *
+ * They are not a size — nothing is drawn this big. They are the ratio the
+ * browser reserves the space in, and the ratio the picture is then drawn
+ * to. Getting them wrong does not scale the pack; it distorts it.
+ */
+const PACK_ART = { width: 1094, height: 1403 } as const;
+
+/** The rail down the side: one stop per act, so 760vh is still navigable */
+const STOPS = [
+  { key: "lineup", at: 0.02, label: "The lineup" },
+  { key: "story", at: 0.3, label: "The story" },
+  { key: "flavour0", at: 0.52, label: "Gobi Manchurian" },
+  { key: "flavour1", at: 0.67, label: "3 in 1" },
+  { key: "ritual", at: 0.83, label: "The ritual" },
+  { key: "finale", at: 0.97, label: "The promise" },
+];
+
+const STATEMENTS = [
+  "Born in Mangaluru's kitchens.",
+  "Blended the way chefs blend.",
+  "Cooked in yours, in minutes.",
+];
+
+const STEPS = [
+  { number: "01", title: "Blend", copy: "Mix the masala with curd or water into a thick, clinging paste." },
+  { number: "02", title: "Rest", copy: "Coat and let it sit for thirty minutes so the spice sinks deep." },
+  { number: "03", title: "Fry", copy: "Into hot oil until golden and crisp. Garnish and serve hot." },
+];
+
+const PROMISES = [
+  { title: "No artificial colors", copy: "The red comes from chillies." },
+  { title: "No preservatives", copy: "Sealed fresh, nothing added." },
+  { title: "No artificial flavors", copy: "Only ground spice and skill." },
+];
+
+interface HomeWorldProps {
+  /** Only the products whose artwork has actually been supplied */
+  packs: StagePack[];
+  products: Product[];
+}
+
+/**
+ * The whole home page below the hero, as one continuous flight through a
+ * single 3D world rather than a stack of sections.
+ *
+ * The HTML here is the content: every word is in the server-rendered
+ * markup and every link is a real link. The canvas behind it is pure
+ * enhancement, so a browser without WebGL, a phone, or anyone who prefers
+ * reduced motion gets the same copy laid out as an ordinary page — see the
+ * media query above.
+ */
+export default function HomeWorld({ packs, products }: HomeWorldProps) {
+  const router = useRouter();
+  const worldRef = useRef<HTMLElement>(null);
+  const railRef = useRef<HTMLDivElement>(null);
+  /* Which world the stylesheet has laid out, and whether this machine is
+     up to drawing it. They are separate answers: the pinned layout is what
+     the media query says, the canvas behind it is a further permission. */
+  const [layout, setLayout] = useState<Layout>("flat");
+  const [capable, setCapable] = useState(false);
+  const canvasOn = layout !== "flat" && capable;
+  /* Whether the world is close enough to be worth drawing. See below. */
+  const [awake, setAwake] = useState(false);
+  /* Only relevant to the flat layout: whether the film may play itself */
+  const [filmPlays, setFilmPlays] = useState(false);
+  const filmRef = useRef<HTMLVideoElement>(null);
+
+  /* The texture loader fetches the raw artwork files, so warm them the
+     moment we know the world will mount rather than waiting for three.js */
+  if (canvasOn) {
+    for (const pack of packs) {
+      preload(pack.front, { as: "image" });
+      if (pack.back) preload(pack.back, { as: "image" });
+    }
+  }
+
+  useEffect(() => {
+    const wide = window.matchMedia(WIDE);
+    const tall = window.matchMedia(TALL);
+    /* Wide first: the two cannot both match, but a browser mid-resize can
+       report a stale answer for one of them, and the corridor is the more
+       expensive thing to mount by mistake. */
+    const decide = () => {
+      setCapable(capableEnough());
+      setLayout(wide.matches ? "wide" : tall.matches ? "tall" : "flat");
+    };
+    decide();
+
+    wide.addEventListener("change", decide);
+    tall.addEventListener("change", decide);
+    return () => {
+      wide.removeEventListener("change", decide);
+      tall.removeEventListener("change", decide);
+    };
+  }, []);
+
+  /*
+   * The world sleeps until it is nearly on screen.
+   *
+   * It is one canvas for the whole page below the hero, and it used to start
+   * drawing the moment it mounted — six walls of tiles, a video texture
+   * re-uploaded every frame and a second copy of the film decoding, all of
+   * it behind a hero nobody has scrolled past yet. The hero is a 720p film
+   * playing inside a perspective with blur and blend over it, so the two
+   * were spending the same GPU on the same frame and the picture the viewer
+   * was actually looking at was the one that stuttered.
+   *
+   * How much warning it gets has to be read against the height of the hero
+   * standing in front of it. A third of a screen was right while the hero
+   * was several screens tall; against a hero that is exactly one screen
+   * tall, the world's own top edge sits at the fold, so a third of a screen
+   * of margin means the world is awake — canvas drawing, second decoder
+   * running — from the moment the page loads, behind a hero nobody has
+   * scrolled yet. That is the stutter this comment was written to prevent,
+   * reintroduced by the hero shrinking.
+   *
+   * So the margin now pulls the other way: the world sleeps until it has
+   * genuinely come into view. There is still a full screen of scrolling
+   * before any of its content has to be right, which is all the warning it
+   * ever needed, and while the hero is the whole picture the hero has the
+   * GPU to itself.
+   */
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world || !canvasOn) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setAwake(entry.isIntersecting),
+      { rootMargin: "0px 0px -6% 0px" },
+    );
+    observer.observe(world);
+
+    return () => observer.disconnect();
+  }, [canvasOn]);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: no-preference)");
+    const decide = () => setFilmPlays(query.matches);
+    decide();
+    query.addEventListener("change", decide);
+    return () => query.removeEventListener("change", decide);
+  }, []);
+
+  /* React writes `muted` as an attribute, which a video that is already in
+     the document ignores; without the property set, autoplay is refused. */
+  useEffect(() => {
+    if (filmRef.current) filmRef.current.muted = true;
+  }, [canvasOn, filmPlays]);
+
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+
+    const mm = gsap.matchMedia();
+
+    /*
+     * The driver, which is the same for both worlds because the copy is the
+     * same copy: one ScrollTrigger over the whole pinned region, writing
+     * the beat it lands in to `--o` and the flight's progress to the one
+     * channel the canvas reads.
+     *
+     * The pointer is the only thing that differs, and it differs by not
+     * existing: a finger is not a cursor hovering over a scene, it is the
+     * thing scrolling it. On a phone the flight is a pure function of how
+     * far down the page you are and nothing else — which is also why it can
+     * never drift, stick, or need catching up.
+     */
+    const drive = (withPointer: boolean) => {
+      const beats = gsap.utils.toArray<HTMLElement>(`.${styles.beat}`);
+      const dots = railRef.current
+        ? gsap.utils.toArray<HTMLElement>(`.${styles.dot}`, railRef.current)
+        : [];
+
+      const paint = (p: number) => {
+        worldState.progress = p;
+
+        for (const beat of beats) {
+          const band = BANDS[beat.dataset.beat ?? ""];
+          if (!band) continue;
+          const o = bandOpacity(p, band);
+          beat.style.setProperty("--o", o.toFixed(3));
+          /* Hidden rather than merely transparent, so a panel that is not
+             on screen is also out of the tab order and off the screen
+             reader's path instead of being an invisible trap. */
+          beat.style.visibility = o > 0.02 ? "visible" : "hidden";
+          beat.dataset.on = o > 0.55 ? "true" : "false";
+        }
+
+        let active = 0;
+        for (let i = 0; i < STOPS.length; i += 1) {
+          if (p >= STOPS[i].at - 0.06) active = i;
+        }
+        dots.forEach((dot, i) => {
+          dot.dataset.on = i === active ? "true" : "false";
+        });
+      };
+
+      const trigger = ScrollTrigger.create({
+        trigger: world,
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: (self) => paint(self.progress),
+        onRefresh: (self) => paint(self.progress),
+        /* The film only runs while the world is the part of the page
+           being looked at */
+        onToggle: (self) => {
+          worldState.active = self.isActive;
+        },
+      });
+      worldState.active = trigger.isActive;
+
+      /* The pointer moves the camera, so it is tracked against the window
+         rather than against any one panel. */
+      const onPointer = (event: PointerEvent) => {
+        worldState.pointerX = (event.clientX / window.innerWidth) * 2 - 1;
+        worldState.pointerY = (event.clientY / window.innerHeight) * 2 - 1;
+      };
+      if (withPointer) {
+        window.addEventListener("pointermove", onPointer, { passive: true });
+      }
+
+      const jump = (index: number) => {
+        const stop = STOPS[index];
+        scrollToOffset(trigger.start + (trigger.end - trigger.start) * stop.at);
+      };
+      const listeners = dots.map((dot, i) => {
+        const handler = () => jump(i);
+        dot.addEventListener("click", handler);
+        return { dot, handler };
+      });
+
+      paint(trigger.progress);
+
+      return () => {
+        window.removeEventListener("pointermove", onPointer);
+        for (const { dot, handler } of listeners) {
+          dot.removeEventListener("click", handler);
+        }
+        trigger.kill();
+        worldState.active = false;
+        for (const beat of beats) {
+          beat.style.removeProperty("--o");
+          beat.style.visibility = "";
+          delete beat.dataset.on;
+        }
+        worldState.progress = 0;
+        worldState.pointerX = 0;
+        worldState.pointerY = 0;
+      };
+    };
+
+    mm.add(WIDE, () => drive(true));
+    mm.add(TALL, () => drive(false));
+
+    return () => mm.revert();
+  }, []);
+
+  const explore = (product: Product) => (
+    <Magnetic>
+      <Link href={`/products/${product.slug}`} className={styles.cta}>
+        Explore the pack
+        <span aria-hidden="true" className={styles.ctaArrow}>
+          &rarr;
+        </span>
+      </Link>
+    </Magnetic>
+  );
+
+  return (
+    <section
+      id="products"
+      ref={worldRef}
+      className={styles.world}
+      data-canvas={canvasOn ? "on" : "off"}
+      aria-label="The RS Chef'z lineup, story and promise"
+    >
+      <Cursor />
+
+      <div className={styles.viewport}>
+        {canvasOn && (
+          <div className={styles.canvas}>
+            {/* Keyed on the world, so a window dragged from wide to narrow
+                rebuilds the scene at the other flight's lens rather than
+                flying the shaft through a corridor's framing. */}
+            <WorldCanvas
+              key={layout}
+              packs={packs}
+              awake={awake}
+              mode={layout}
+              onSelect={(slug) => router.push(`/products/${slug}`)}
+            />
+          </div>
+        )}
+
+        {/* The world without WebGL: the same warm space, drawn in CSS */}
+        <div className={styles.backdrop} aria-hidden="true">
+          <span className={`${styles.glow} ${styles.glowTurmeric}`} />
+          <span className={`${styles.glow} ${styles.glowChilli}`} />
+          <span className={`${styles.glow} ${styles.glowGreen}`} />
+        </div>
+
+        <div className={styles.beats}>
+          {/* ---------------------------------------------- the lineup */}
+          <div className={styles.beat} data-beat="lineup">
+            <div className={styles.panel}>
+              <p className={styles.eyebrow}>The Lineup</p>
+              <h2 className={styles.title}>Two packs. Every favourite.</h2>
+              <p className={styles.sub}>
+                Take a pack in hand and turn it around. The recipes live on
+                the back.
+              </p>
+
+              <div
+                className={styles.packShots}
+                data-single={packs.length === 1 ? "true" : "false"}
+              >
+                {packs.map((pack) => (
+                  <Link
+                    key={pack.slug}
+                    href={`/products/${pack.slug}`}
+                    className={styles.packShot}
+                    aria-label={`Explore ${pack.name}`}
+                  >
+                    {/* The artwork's own proportions. These two decide the
+                        box the picture is drawn in, so a guess at them is a
+                        pack that comes out stretched. */}
+                    <Image
+                      src={pack.front}
+                      alt={`${pack.name} pack`}
+                      width={PACK_ART.width}
+                      height={PACK_ART.height}
+                      sizes="(max-width: 640px) 30vw, 240px"
+                    />
+                  </Link>
+                ))}
+              </div>
+
+              <div className={styles.links}>
+                {packs.map((pack) => (
+                  <Magnetic key={pack.slug}>
+                    <Link
+                      href={`/products/${pack.slug}`}
+                      className={styles.linkCard}
+                      style={{ "--accent": pack.accent } as React.CSSProperties}
+                    >
+                      Explore {pack.name}
+                      <span aria-hidden="true"> {"→"}</span>
+                    </Link>
+                  </Magnetic>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* The film itself, for the layout that has no world to put it
+              in. In the immersive layout it is playing on the screens
+              standing in the 3D world instead. */}
+          {!canvasOn && (
+            <div className={styles.filmBlock}>
+              <video
+                ref={filmRef}
+                className={styles.film}
+                src={FILM_SRC}
+                poster={FILM_POSTER}
+                width={1280}
+                height={720}
+                muted
+                loop
+                playsInline
+                autoPlay={filmPlays}
+                controls={!filmPlays}
+                preload={filmPlays ? "metadata" : "none"}
+              />
+              <p className={styles.filmCaption}>
+                From the pack to the plate, in one go.
+              </p>
+            </div>
+          )}
+
+          {/* ----------------------------------------------- the story */}
+          {STATEMENTS.map((statement, index) => (
+            <div
+              key={statement}
+              className={`${styles.beat} ${styles.beatCentre}`}
+              data-beat={`story${index}`}
+            >
+              <p className={styles.statement}>{statement}</p>
+            </div>
+          ))}
+
+          {/* --------------------------------------- one beat per pack */}
+          {products.map((product, index) => (
+            <div
+              key={product.slug}
+              className={`${styles.beat} ${index % 2 ? styles.beatRight : styles.beatLeft}`}
+              data-beat={`flavour${index}`}
+              style={{ "--accent": product.accentColor } as React.CSSProperties}
+            >
+              <div className={styles.panel}>
+                <h2 className={styles.flavourTitle}>{product.name}</h2>
+                <p className={styles.tagline}>{product.tagline}</p>
+                <p className={styles.body}>{product.description}</p>
+                <ul className={styles.chips} aria-label="Signature dishes">
+                  {product.dishes.map((dish) => (
+                    <li key={dish} className={styles.chip}>
+                      {dish}
+                    </li>
+                  ))}
+                </ul>
+                {explore(product)}
+              </div>
+
+              <div className={styles.packShots} data-single="true">
+                <Link
+                  href={`/products/${product.slug}`}
+                  className={styles.packShot}
+                  aria-label={`Explore ${product.name}`}
+                >
+                  <Image
+                    src={product.images.front}
+                    alt={`${product.name} pack`}
+                    width={PACK_ART.width}
+                    height={PACK_ART.height}
+                    sizes="(max-width: 640px) 52vw, 320px"
+                  />
+                </Link>
+              </div>
+            </div>
+          ))}
+
+          {/* ---------------------------------------------- the ritual */}
+          <div className={`${styles.beat} ${styles.beatCentre}`} data-beat="ritual">
+            <div className={styles.panel}>
+              <p className={styles.eyebrow}>The Ritual</p>
+              <h2 className={styles.title}>Three steps. Zero guesswork.</h2>
+              <p className={styles.sub}>
+                Every pack carries the full recipe on the back. The short
+                version never changes.
+              </p>
+              <ol className={styles.steps}>
+                {STEPS.map((step) => (
+                  <li key={step.number} className={styles.step}>
+                    <span className={styles.stepNumber} aria-hidden="true">
+                      {step.number}
+                    </span>
+                    <h3 className={styles.stepTitle}>{step.title}</h3>
+                    <p className={styles.stepCopy}>{step.copy}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          {/* --------------------------------------------- the promise */}
+          <div className={`${styles.beat} ${styles.beatCentre}`} data-beat="finale">
+            <div className={`${styles.panel} ${styles.panelCard}`}>
+              <p className={styles.eyebrow}>The Promise</p>
+              <h2 className={styles.title}>
+                Printed on every pack. Kept in every batch.
+              </h2>
+              <ul className={styles.cards}>
+                {PROMISES.map((promise) => (
+                  <li key={promise.title} className={styles.card}>
+                    <span className={styles.badge} aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 12.5 10 17.5 19 7" />
+                      </svg>
+                    </span>
+                    <h3 className={styles.cardTitle}>{promise.title}</h3>
+                    <p className={styles.cardCopy}>{promise.copy}</p>
+                  </li>
+                ))}
+              </ul>
+              {/* The brand signs its own promise: no second name here */}
+              <p className={styles.footnote}>
+                FSSAI licensed. Proudly a Product of India.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Where you are in the flight, and a way to skip to any of it */}
+        <div className={styles.rail} ref={railRef} aria-hidden="true">
+          {STOPS.map((stop) => (
+            <button
+              key={stop.key}
+              type="button"
+              className={styles.dot}
+              /* A shortcut for the mouse, not a second navigation: the rail
+                 is hidden from assistive tech, so it stays out of the tab
+                 order too rather than being six unlabelled stops. */
+              tabIndex={-1}
+            >
+              <span className={styles.dotLabel}>{stop.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

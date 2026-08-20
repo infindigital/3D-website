@@ -1,0 +1,172 @@
+/* ============================================================
+   RS Chef'z - Global styles and design tokens (dark edition)
+
+   This is the black-theme copy of the site. It is the same build as the
+   bright one, file for file, with the palette turned over: everything
+   below the "Base" block is a re-fill of a name the components already
+   use, so the layout, motion and 3D work are untouched and only the
+   colour moves.
+
+   The room is warm charcoal rather than black. The whole identity is
+   food — turmeric, chilli, cream — and a neutral grey under it reads as
+   a dashboard rather than a kitchen, so every dark value here keeps a
+   red-brown bias.
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  /* Base.
+
+     In the bright edition these are literally white and cream and are
+     used all over the site to mean "the page". Here they carry the same
+     meaning and so become the dark grounds, lightest first. The names
+     stay as they are because every component already reaches for them;
+     what they hold is the theme's business, not the component's. */
+  --color-white: #1a1310;
+  --color-cream: #120d0b;
+  --color-cream-deep: #0c0807;
+
+  /* A real white, for the few places that need one on top of an accent:
+     text on a chilli chip, a rule over artwork. Never a background. */
+  --color-true-white: #ffffff;
+
+  /* Brand, reds and greens sampled from the RS Chef'z logo. The reds and
+     the turmeric carry onto a dark ground as they are. The green does
+     not — at #009b4c it disappears into the charcoal — so the ink green
+     lifts while the logo green stays exactly as the logo prints. */
+  --color-turmeric: #f5b301;
+  --color-chilli: #e63324;
+  --color-green: #2fc274;
+  --color-orange: #f2860d;
+  --color-logo-red: #e8252a;
+  --color-logo-green: #009b4c;
+
+  /* Soft tints for gradients and section washes. The same four hues as
+     the bright edition, taken right down: on a dark ground these are
+     what stops a section reading as a lightbox. */
+  --tint-turmeric: #2f2410;
+  --tint-chilli: #331a18;
+  --tint-green: #12291d;
+  --tint-orange: #33220f;
+
+  /* Text.
+
+     Never pure white on near-black: the glare is what makes long copy
+     hard to stay in. Both of these are warm off-whites, and the second —
+     which every description on the site is set in — sits a step below
+     the first so headings still lead. */
+  --text-primary: #f7ede3;
+  --text-secondary: #ddcec1;
+  --text-on-accent: #ffffff;
+
+  /* Surfaces.
+
+     Glass stops being white-over-colour and becomes warm-dark-over-
+     colour, or the panels glow. Shadow gives up the brown, which does
+     nothing against a dark ground, and goes to black at a deeper alpha —
+     on dark, a shadow is read by its spread rather than its hue. */
+  --surface-glass: rgba(36, 26, 21, 0.72);
+  --surface-glass-border: rgba(255, 236, 220, 0.14);
+  --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 30px 80px rgba(0, 0, 0, 0.62);
+
+  /* Panels that have to lift off the page rather than sink into it:
+     cards, chips, the boxes copy sits in. In the bright edition these
+     are plain white against cream; here they are a step *up* from the
+     page for the same reason. */
+  --surface-raised: #241a15;
+  --surface-raised-soft: #1f1712;
+
+  /* Hairlines. Borders on dark have to invert or they vanish. */
+  --hairline: rgba(231, 210, 193, 0.14);
+  --hairline-strong: rgba(231, 210, 193, 0.26);
+
+  /* Type */
+  --font-heading: var(--font-poppins), sans-serif;
+  --font-body: var(--font-manrope), sans-serif;
+  /* Signage: heavy and condensed, caps only. Navigation, hero buttons and
+     the giant words behind the hero film — nothing that runs as prose. */
+  --font-display: var(--font-anton), "Arial Narrow", sans-serif;
+
+  /* Motion */
+  --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+
+  /* Layout */
+  --nav-height: 76px;
+  --page-max-width: 1280px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis owns scrolling */
+  background: var(--color-cream);
+}
+
+html,
+body {
+  max-width: 100vw;
+  /* clip, not hidden: hidden turns body into a scroll container and stops
+     position: sticky from working anywhere on the page */
+  overflow-x: clip;
+}
+
+body {
+  color: var(--text-primary);
+  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 100%);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::selection {
+  background: var(--color-turmeric);
+  /* On turmeric the selected word has to go dark, not stay off-white. */
+  color: #1a1310;
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

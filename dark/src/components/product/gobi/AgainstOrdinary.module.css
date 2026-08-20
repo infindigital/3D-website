@@ -1,0 +1,401 @@
+.against {
+  position: relative;
+  padding: clamp(40px, 5.4vh, 66px) 0 clamp(44px, 6vh, 74px);
+  background: var(--color-cream);
+  overflow: hidden;
+}
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* The caps belong on the lines themselves. A ch on the wrapper is measured in
+   the wrapper's font, which is body size — so it wraps the heading at about
+   half the width it was meant to have. */
+.head {
+  margin-bottom: clamp(20px, 3vh, 34px);
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.heading {
+  max-width: 18ch;
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+  line-height: 1.06;
+  color: var(--text-primary);
+}
+
+.lead {
+  margin-top: 14px;
+  max-width: 54ch;
+  font-size: clamp(0.96rem, 1.6vw, 1.05rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+/* ---- the board ------------------------------------------------------- */
+
+.board {
+  position: relative;
+  padding: clamp(20px, 2.8vw, 32px) clamp(16px, 2.2vw, 30px);
+  border-radius: 26px;
+  background: var(--color-white);
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.17);
+  /* The depth the two sides lean out of. Shallow enough that the rows at the
+     top and the foot are not distorted differently from the ones in between. */
+  perspective: 1700px;
+  perspective-origin: 50% 50%;
+}
+
+/* The line the two sides meet at. It is drawn behind the middle column and
+   sized to the board, so nothing has to know how tall six rows came out. */
+.spine {
+  position: absolute;
+  top: clamp(24px, 3.4vw, 40px);
+  bottom: clamp(24px, 3.4vw, 40px);
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 26%, transparent) 12%,
+    color-mix(in srgb, var(--accent) 26%, transparent) 88%,
+    transparent 100%
+  );
+}
+
+/*
+ * A real table, laid out as a grid. `display: contents` drops the row and
+ * section boxes so the cells become grid items of the table itself — which is
+ * the only way to get a three-column layout that keeps its row headers.
+ */
+.table {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(8px, 1.1vh, 13px) clamp(12px, 2vw, 28px);
+  width: 100%;
+  border-collapse: collapse;
+  /* So the cells can stand off the board rather than being flattened onto it */
+  transform-style: preserve-3d;
+}
+
+.table thead,
+.table tbody,
+.table tr {
+  display: contents;
+}
+
+.caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.colHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: clamp(12px, 1.8vh, 20px);
+  text-align: right;
+}
+
+.colTheirs {
+  text-align: left;
+}
+
+.colBrand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1rem, 1.9vw, 1.3rem);
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+
+.colTheirs .colBrand {
+  color: var(--text-secondary);
+}
+
+.colName {
+  font-size: clamp(0.78rem, 1.3vw, 0.88rem);
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.colVersus {
+  padding-bottom: clamp(12px, 1.8vh, 20px);
+}
+
+.versus {
+  display: grid;
+  place-items: center;
+  width: clamp(44px, 5vw, 60px);
+  height: clamp(44px, 5vw, 60px);
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(0.86rem, 1.6vw, 1.05rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 34%, transparent);
+}
+
+/* ---- the cells -------------------------------------------------------- */
+
+/* Its own background, so the spine behind it is broken by each label the way
+   an axis is by its ticks rather than ruled straight through the words. */
+.feature {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.72rem, 1.2vw, 0.82rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  padding: 6px clamp(6px, 1vw, 12px);
+  background: var(--color-white);
+}
+
+.ours,
+.theirs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(10px, 1.3vw, 14px) clamp(12px, 1.5vw, 17px);
+  border-radius: 14px;
+  font-size: clamp(0.85rem, 1.45vw, 0.98rem);
+  line-height: 1.4;
+}
+
+/*
+ * The two sides lean out of the board like a book opening toward the reader,
+ * hinged on the feature between them. The slide-in is a variable inside the
+ * same transform, because a second one — or an inline one from GSAP — would
+ * replace the lean instead of adding to it.
+ */
+.ours {
+  flex-direction: row-reverse;
+  text-align: right;
+  /* Hugging the spine rather than filling the column: a card stretched to the
+     full width would be mostly empty on its outer side, and the two claims are
+     supposed to meet in the middle. */
+  justify-self: end;
+  background: color-mix(in srgb, var(--accent) 7%, var(--color-white));
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  font-weight: 600;
+  color: var(--text-primary);
+  /* Nearer, which is the whole point of standing them up */
+  transform: translate3d(var(--enter-x, 0px), 0, 26px) rotateY(5deg);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.17);
+}
+
+/* The side being compared against: no border, no weight, set back and held
+   down a little — it is context, not an accusation. */
+/* Turned less far than the side facing it: there is no card under this text to
+   carry the angle, and past about three degrees the letters start to soften. */
+.theirs {
+  opacity: 0.72;
+  color: var(--text-secondary);
+  transform: translate3d(var(--enter-x, 0px), 0, -14px) rotateY(-3deg);
+}
+
+.tick,
+.cross {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+}
+
+.tick {
+  background: color-mix(in srgb, var(--color-green) 16%, transparent);
+}
+
+.tick::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid var(--color-green);
+  border-top: 0;
+  border-left: 0;
+  transform: rotate(42deg);
+}
+
+.cross {
+  background: rgba(0, 0, 0, 0.13);
+}
+
+.cross::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 9px;
+  width: 10px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+  opacity: 0.6;
+}
+
+/* ---- the tally -------------------------------------------------------- */
+
+.tally {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  margin-top: clamp(16px, 2.2vh, 26px);
+  padding-top: clamp(14px, 1.9vh, 20px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+  text-align: center;
+}
+
+.tallyNum {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 2.9rem);
+  line-height: 1;
+  color: var(--accent);
+  /* The digit swaps as rows land, so the box it sits in must not resize */
+  min-width: 1.1em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tallyOf {
+  font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* ---- narrower screens ------------------------------------------------- */
+
+@media (max-width: 860px) {
+  /*
+   * One column below the tablet break: the feature names the pair, then the
+   * two answers sit under it. The spine and the facing layout only make sense
+   * when there is room for two columns to face each other.
+   *
+   * Each row becomes its own grid rather than staying a set of cells in the
+   * table's — the feature has to come first here, and reordering cells inside
+   * one shared grid would move every feature ahead of every answer instead.
+   */
+  .table,
+  .table thead,
+  .table tbody {
+    display: block;
+  }
+
+  /* Stacked, so there are no two sides to stand facing each other */
+  .board {
+    perspective: none;
+  }
+
+  .ours,
+  .theirs {
+    transform: translate3d(var(--enter-x, 0px), 0, 0);
+    box-shadow: none;
+    justify-self: stretch;
+  }
+
+  .table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "feature"
+      "ours"
+      "theirs";
+  }
+
+  .table thead tr {
+    display: block;
+    text-align: center;
+  }
+
+  .spine {
+    display: none;
+  }
+
+  .colHead {
+    display: none;
+  }
+
+  .colVersus {
+    display: block;
+    padding-bottom: clamp(14px, 2.4vh, 22px);
+  }
+
+  .feature {
+    grid-area: feature;
+    text-align: left;
+    white-space: normal;
+    padding: clamp(16px, 3vw, 22px) 0 8px;
+    background: none;
+    color: var(--accent);
+  }
+
+  /* The disc above it already stands the first pair off the top of the board */
+  .table tbody tr:first-child .feature {
+    padding-top: 0;
+  }
+
+  .ours {
+    grid-area: ours;
+  }
+
+  .theirs {
+    grid-area: theirs;
+  }
+
+  .ours {
+    flex-direction: row;
+    text-align: left;
+  }
+
+  /* A rule under each pair, so six of them do not run together */
+  .theirs {
+    padding-top: 10px;
+    padding-bottom: clamp(16px, 3vw, 22px);
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .board {
+    padding: 20px 16px 24px;
+    border-radius: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theirs {
+    opacity: 0.72;
+  }
+}

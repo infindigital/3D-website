@@ -1,0 +1,950 @@
+/* ============================================================
+   Hero — the opening film.
+
+   This stylesheet describes the FINISHED hero and nothing else. The
+   intro's opening frame — the orange sheet, the buttons parked below
+   their line, the logo standing in the middle of the film — is written
+   from script in a layout effect before the first paint, so a visitor
+   whose script never runs, or who has asked for less motion, gets an
+   ordinary still hero rather than an intro frozen at frame one.
+
+   The film is the same size in both. The intro does not grow it; the
+   only thing that changes between the two is the room around it.
+   ============================================================ */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+
+  /* The hero's ground. In the bright edition this is warm off-white, a
+     shade *below* the white page so the hero reads as its own room; here
+     the move is the same one mirrored — a shade *above* the charcoal
+     page — and it still hands over through the fade at the bottom of
+     this file. */
+  --paper: #241c17;
+  /* Deep restaurant orange: the intro sheet, and the accent every button
+     and outline in here answers to. */
+  --ember: #d95a1a;
+
+  /*
+   * The film's footprint, and the only place it is decided.
+   *
+   * The rings are concentric offsets of the film's own outline, so they are
+   * cut from these two values as well — that is what makes them read as the
+   * shape pushing outward rather than as ovals drawn around it. A breakpoint
+   * changes the picture and the rings together by changing these, and there
+   * is no second place for them to fall out of agreement.
+   *
+   * Only the width is ever chosen. The height follows the ratio, so no
+   * breakpoint can turn the frame into a crop. The third term is the
+   * short-window guard: below roughly 230px of room for the bar above and
+   * the buttons below, the width gives way rather than the ratio.
+   */
+  --film-w: min(58vw, 700px, calc((100svh - 230px) * 16 / 9));
+  --film-ar: 16 / 9;
+
+  /*
+   * The room the film stands in — and with it, the centre the whole opening
+   * is aimed at.
+   *
+   * The film is centred between the bar above and the buttons below, which
+   * is not the middle of the screen: the buttons need far more room than the
+   * bar, so the picture sits high. On a phone that is some seventy-five
+   * pixels above centre.
+   *
+   * The rings are laid out in this same room and the orange closes on this
+   * same point, so all three agree by construction. Nothing here is allowed
+   * to be written down twice — a breakpoint that gives the buttons more room
+   * moves the film, the rings and the wipe together.
+   */
+  --film-top: calc(var(--nav-height) + 14px);
+  --film-bottom: clamp(96px, 15vh, 156px);
+  --film-cy: calc(50% + (var(--film-top) - var(--film-bottom)) / 2);
+
+  /* How far the pointer carries the picture. The rings ride the same two, so
+     the film never drifts out from inside them. */
+  --film-drift-x: calc(var(--parallax-x, 0) * 16px);
+  --film-drift-y: calc(var(--parallax-y, 0) * 11px);
+
+  /*
+   * The outline both are cut to: a rounded rectangle with no two corners
+   * alike. Rectangular enough to be a frame around a film, uneven enough
+   * never to look like a box — which is the shape the reference hero uses
+   * and the reason it reads as hand-cut rather than as a border-radius.
+   */
+  --film-cut: 11% 13% 10% 12% / 19% 22% 18% 21%;
+
+  background: var(--paper);
+}
+
+/* The room hands over to the page below rather than butting into it.
+   Under the intro sheet, above the scenery: a strip of the next page
+   showing through an intro that has not opened yet would give the whole
+   thing away.
+
+   The transparent stop has to be the paper's own colour. A gradient
+   interpolates colour and alpha together, so fading from a transparent
+   *light* shade to an opaque dark one passes through half-lit grey and
+   lays a milky band across the join. */
+.hero::after {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16vh;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(36, 28, 23, 0) 0%, var(--color-white) 100%);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------
+   Scenery: giant outlined words crossing the room
+   ------------------------------------------------------------ */
+
+.bands {
+  position: absolute;
+  z-index: 1;
+  /* Overhung on every side so the tilt never exposes a corner */
+  inset: -14% -10%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(6px, 1.6vh, 26px);
+  pointer-events: none;
+  transform: rotate(-7deg);
+  /* No veil over this layer. The words are the brand's exact orange and
+     exact red, at full strength — what separates them from the film is the
+     drawn word in every third position, not a wash over all of them. */
+}
+
+.band {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+  animation: bandLeft 68s linear infinite;
+}
+
+/* The middle row runs the other way, so the room reads as depth rather
+   than as one sheet sliding past */
+.band[data-row="1"] {
+  animation-name: bandRight;
+  animation-duration: 84s;
+}
+
+.band[data-row="2"] {
+  animation-duration: 56s;
+}
+
+.bandRun {
+  display: flex;
+  padding-right: 0.28em;
+  font-family: var(--font-display), var(--font-heading);
+  font-size: clamp(3.2rem, 11vw, 10rem);
+  line-height: 1;
+  letter-spacing: 0.012em;
+  text-transform: uppercase;
+}
+
+/*
+ * Three inks on a three-word cycle: the exact orange, the exact red, and
+ * one word in every three drawn rather than filled.
+ *
+ * The drawn word is what keeps a band of solid colour from becoming a slab.
+ * It is also what lets the ink stay at full strength — the eye reads the
+ * hollow letters as air, so the room breathes without the colours having to
+ * be watered down to make it.
+ *
+ * The rows are offset by their own index, so all three inks are on screen
+ * at once and no two rows put the same one in a column.
+ */
+.bandWord {
+  padding-right: 0.22em;
+  white-space: nowrap;
+  color: var(--ember);
+}
+
+.bandWord[data-ink="red"] {
+  color: var(--color-chilli);
+}
+
+.bandWord[data-ink="line"] {
+  color: transparent;
+  -webkit-text-stroke: 3px var(--ember);
+}
+
+/* Two identical runs, so half the band's width is exactly one run */
+@keyframes bandLeft {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes bandRight {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ------------------------------------------------------------
+   Herbs and seed, hanging at three depths
+   ------------------------------------------------------------ */
+
+.air {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.airLayer {
+  position: absolute;
+  inset: 0;
+  /* The whole layer swings with the pointer; each bit inside drifts on its
+     own clock. Two transforms, two elements, no fighting. */
+  transform: translate3d(
+    calc(var(--parallax-x, 0) * var(--swing, 20px)),
+    calc(var(--parallax-y, 0) * var(--swing, 20px) * 0.6),
+    0
+  );
+}
+
+.airLayer[data-depth="1"] {
+  --swing: 34px;
+}
+
+.airLayer[data-depth="2"] {
+  --swing: 54px;
+}
+
+/* The nearest layer is out of focus, which is what puts the film at the
+   depth the eye is meant to be reading.
+
+   The blur goes on the three specks rather than on the layer holding them.
+   A filter on the layer makes the compositor blur a sheet the size of the
+   window, every frame the pointer moves it; on the specks it blurs three
+   boxes a few dozen pixels across, and looks identical. */
+.airLayer[data-depth="2"] .bit {
+  filter: blur(1.4px);
+}
+
+.bit {
+  position: absolute;
+  display: block;
+  will-change: transform;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.bit:nth-child(2) {
+  animation-duration: 18s;
+  animation-delay: -4s;
+}
+
+.bit:nth-child(3) {
+  animation-duration: 22s;
+  animation-delay: -9s;
+}
+
+.bit:nth-child(4) {
+  animation-duration: 16s;
+  animation-delay: -13s;
+}
+
+/* A curry leaf: pointed at both ends */
+.leaf {
+  width: 26px;
+  height: 13px;
+  border-radius: 0 100% 0 100%;
+  background: linear-gradient(120deg, #2f7d4f 0%, #0f5c33 100%);
+  opacity: 0.72;
+}
+
+/* A dried chilli */
+.chilli {
+  width: 34px;
+  height: 9px;
+  border-radius: 60% 8% 8% 60% / 50%;
+  background: linear-gradient(100deg, var(--color-chilli) 0%, #a51a10 100%);
+  opacity: 0.7;
+}
+
+/* Peppercorn */
+.seed {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4a3527;
+  opacity: 0.55;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) rotate(-14deg);
+  }
+  to {
+    transform: translate3d(26px, -34px, 0) rotate(22deg);
+  }
+}
+
+/* ------------------------------------------------------------
+   The intro sheet
+   ------------------------------------------------------------ */
+
+.intro {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  pointer-events: none;
+  /* How much of the sheet is still on screen. Script closes this on the
+     film, so the orange collapses into the picture rather than fading. */
+  --wipe: 118%;
+  /*
+   * The one clip, on the sheet itself rather than on each thing inside it.
+   * The orange and the rings are the same sheet and have to leave through
+   * the same door; clipping the sheet is what makes that true by
+   * construction rather than by two declarations agreeing.
+   *
+   * It also frees the rings to drift with the pointer: the clip is applied
+   * to whatever the children paint, wherever they paint it, so the ring
+   * layer can move without taking the closing edge with it.
+   */
+  clip-path: circle(var(--wipe) at 50% var(--film-cy));
+}
+
+.wash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    112% 84% at 50% 26%,
+    #ef7c33 0%,
+    var(--ember) 46%,
+    #b8420f 100%
+  );
+}
+
+/* ------------------------------------------------------------
+   The rings
+
+   The opening's, and the opening's only. They live inside the intro sheet
+   and are clipped to exactly what is left of it, so they close on the
+   centre in step with the orange and are gone the moment it is — no fade
+   of their own, no second set carrying on underneath, and nothing left
+   running behind a hero that is finished.
+
+   Which is also why they cost nothing after the first few seconds: the
+   layer is unmounted with the rest of the intro, so the compositor is not
+   blending five translucent sheets over the page for as long as it is open.
+   ------------------------------------------------------------ */
+
+.rings {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  /* The film's own room, so the rings are centred on the picture rather
+     than on the screen — see `--film-top` at the top of this file. Every
+     ring is stacked in the one cell, which is what makes them concentric
+     without a single offset being written anywhere. */
+  padding: var(--film-top) 0 var(--film-bottom);
+  pointer-events: none;
+  transform: translate3d(var(--film-drift-x), var(--film-drift-y), 0);
+  --ring-ink: rgba(255, 244, 232, 0.62);
+}
+
+.ring {
+  grid-area: 1 / 1;
+  /* Cut from the film's own footprint and outline, so each ring is the
+     shape itself pushed outward rather than an oval drawn around it */
+  width: var(--film-w);
+  aspect-ratio: var(--film-ar);
+  border: 1.5px solid var(--ring-ink);
+  border-radius: var(--film-cut);
+  opacity: 0;
+  will-change: transform, opacity;
+  /* Even steps, evenly spaced: the reference holds five or six rings on
+     screen at once, not a burst that bunches at the outside. Linear is
+     what keeps the gaps regular. */
+  animation: ripple 7.5s linear infinite;
+}
+
+.ring:nth-child(2) {
+  animation-delay: -1.5s;
+}
+
+.ring:nth-child(3) {
+  animation-delay: -3s;
+}
+
+.ring:nth-child(4) {
+  animation-delay: -4.5s;
+}
+
+.ring:nth-child(5) {
+  animation-delay: -6s;
+}
+
+/*
+ * How far out they go: just past the widest room the film is sized for, and
+ * no further. Past that they are being drawn off-screen at the exact moment
+ * the film is decoding its first frames.
+ *
+ * And how they leave: brightest where they are still wrapped around the
+ * picture, falling away as they go. That is the difference between a ripple
+ * and a set of stripes, and on a phone it is the whole difference. The film
+ * is most of the width of the screen there, so every ring past the first one
+ * is wider than the screen and shows only its top and bottom edge — held at
+ * full strength those edges read as horizontal rules ruled across the room.
+ * Faded, they read as what they are: the near ring is the one being looked
+ * at, and the rest are its wake.
+ */
+@keyframes ripple {
+  0% {
+    transform: scale(1.06);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  46% {
+    opacity: 0.5;
+  }
+  76% {
+    opacity: 0.16;
+  }
+  100% {
+    transform: scale(2.25);
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------
+   The film
+   ------------------------------------------------------------ */
+
+.stage {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  /* Clear of the bar above and the buttons below, without either of them
+     having to know the film's size. The ring layer is padded by the same
+     two, which is what puts the two on one centre. */
+  padding: var(--film-top) 0 var(--film-bottom);
+  pointer-events: none;
+}
+
+/* Pointer parallax. The film's own box carries nothing else: it opens at
+   the size it keeps, and the intro grows the room around it rather than
+   it. */
+.shift {
+  will-change: transform;
+  transform: translate3d(var(--film-drift-x), var(--film-drift-y), 0);
+}
+
+.mask {
+  position: relative;
+  /*
+   * Held well back from the edges of the room. The film is the subject, not
+   * the backdrop: paper around it is what makes it read as an object
+   * standing in the hero rather than as a window cut into it.
+   *
+   * The size and the outline both come from the hero — see `--film-w` and
+   * `--film-cut` at the top of this file. The rings are cut from the same
+   * two, which is the whole reason they sit concentric with this.
+   */
+  width: var(--film-w);
+  aspect-ratio: var(--film-ar);
+  overflow: hidden;
+  background: var(--color-cream-deep);
+  border-radius: var(--film-cut);
+  /* Black rather than warm brown: a brown shadow on a charcoal ground is
+     invisible, and what lifts the film here is depth, not hue. */
+  box-shadow:
+    0 34px 84px rgba(0, 0, 0, 0.55),
+    0 8px 22px rgba(0, 0, 0, 0.4);
+  /* The corners wander, slowly and never far. A rounded rectangle that is
+     exactly the same rounded rectangle for ten minutes is a box. */
+  animation: morph 26s ease-in-out infinite;
+}
+
+@keyframes morph {
+  0% {
+    border-radius: 11% 13% 10% 12% / 19% 22% 18% 21%;
+  }
+  34% {
+    border-radius: 13% 10% 12% 11% / 22% 18% 21% 19%;
+  }
+  67% {
+    border-radius: 10% 12% 11% 13% / 18% 21% 19% 22%;
+  }
+  100% {
+    border-radius: 11% 13% 10% 12% / 19% 22% 18% 21%;
+  }
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The picture never sits perfectly still */
+  animation: breathe 20s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.09);
+  }
+}
+
+.video {
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-soft);
+}
+
+/* Crossfades up over its own frame zero, so the join is invisible */
+.video[data-ready="true"] {
+  opacity: 1;
+}
+
+/* Enough grade to seat the film in the room and hold the shape's edge */
+.grade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(43, 29, 22, 0.1) 0%, rgba(43, 29, 22, 0) 32%),
+    linear-gradient(0deg, rgba(43, 29, 22, 0.16) 0%, rgba(43, 29, 22, 0) 30%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.23);
+}
+
+/* ------------------------------------------------------------
+   The three buttons
+   ------------------------------------------------------------ */
+
+.actions {
+  position: absolute;
+  z-index: 7;
+  left: 0;
+  right: 0;
+  bottom: clamp(28px, 5.5vh, 66px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(8px, 1.2vw, 16px);
+  padding: 0 16px;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(112px, 15vw, 190px);
+  padding: 15px 26px;
+  border: 1.6px solid rgba(217, 90, 26, 0.5);
+  border-radius: 10px;
+  /* Charcoal glass rather than white. The ember outline and the hover
+     fill do the work of marking these as buttons, so the resting state
+     only has to be a shade the paper is not. */
+  background: rgba(58, 42, 34, 0.86);
+  font-family: var(--font-display), var(--font-heading);
+  font-size: clamp(0.76rem, 1.05vw, 0.95rem);
+  font-weight: 400;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  transition:
+    background 0.45s var(--ease-cinematic),
+    border-color 0.45s var(--ease-cinematic),
+    color 0.45s var(--ease-cinematic),
+    box-shadow 0.45s var(--ease-cinematic),
+    transform 0.45s var(--ease-cinematic);
+}
+
+.action:hover {
+  background: var(--ember);
+  border-color: var(--ember);
+  color: var(--text-on-accent);
+  box-shadow: 0 16px 34px rgba(217, 90, 26, 0.32);
+  transform: scale(1.03);
+}
+
+.action:focus-visible {
+  outline: 3px solid var(--ember);
+  outline-offset: 3px;
+}
+
+/* The line of copy above the buttons. It belongs to the phone alone — see
+   the narrow-screen block at the bottom of this file — because it is the
+   answer to a problem only a phone has. */
+.pitch {
+  display: none;
+}
+
+/* ------------------------------------------------------------
+   The travelling mark
+
+   Standing in the middle of the film while the orange is up, and in the
+   navigation bar once it has gone. One element, one uniform scale, both
+   ends measured from the things it has to agree with — see Hero.tsx.
+
+   It is portalled to the body: the bar is not inside the hero's stacking
+   context, so nothing rendered in here can land on top of it.
+   ------------------------------------------------------------ */
+
+.brandFly {
+  position: fixed;
+  z-index: 120;
+  top: 0;
+  left: 0;
+  /* The one number script needs to be able to scale from. Nothing sees it
+     at this size; it is the unit both ends are expressed in. */
+  width: 240px;
+  pointer-events: none;
+  /* Standing on a kitchen film, the artwork needs to be lifted off it. The
+     shadow is tweened away over the flight, so what lands in the bar is
+     the same mark the bar draws itself. */
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.65));
+  will-change: transform, opacity;
+}
+
+.brandArt {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * A pool of light under the mark rather than a plate behind it. The logo is
+ * red, green and near-black on nothing, and a kitchen is dark — it needs
+ * something bright under it or half of it disappears. A hard panel would
+ * read as a sticker on the film and would have to be explained away at the
+ * other end; a soft pool reads as light and simply stops being there.
+ */
+.brandGlow {
+  position: absolute;
+  inset: -52% -20%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 250, 243, 0.95) 0%,
+    rgba(255, 250, 243, 0.74) 48%,
+    rgba(255, 250, 243, 0) 100%
+  );
+}
+
+/* ------------------------------------------------------------
+   Narrow screens
+   ------------------------------------------------------------ */
+
+@media (max-width: 640px) {
+  /*
+   * A phone is a portrait window, so the film is a portrait picture.
+   *
+   * It was landscape here for as long as the desktop composition was being
+   * copied down, and that is what left the hero looking half-empty: a 3:2
+   * frame across a phone is a little over two hundred pixels tall standing
+   * in five hundred pixels of room, so a third of the screen was paper with
+   * nothing on it. 4:5 fills that room, and it costs the shot nothing that
+   * matters — the dish, the pan and the garnish coming down are all in the
+   * middle of the frame, and the middle is exactly what a centre crop keeps.
+   *
+   * The width stops well short of the edges, for two reasons.
+   *
+   * The rings are cut from these same two values, so a film across the full
+   * width of a phone leaves them nowhere to be rings: every one would be
+   * wider than the screen and show only its top and bottom edge, which reads
+   * as stripes ruled across the room. And the words run behind the film, so
+   * a film that reaches the edges hides the middle of every line and leaves
+   * two ragged ends — scenery that has been cut in half rather than passed
+   * behind something. At 70vw the first ring closes on both sides inside the
+   * screen, and there is a hand's width of paper down each flank for the
+   * words to be read in. The film keeps that size afterwards, because the
+   * one thing it must never do is change size.
+   *
+   * The second term is the short-phone guard: where there is not the height
+   * for a portrait film above the buttons, the width gives way rather than
+   * the ratio.
+   */
+  .hero {
+    --film-w: min(70vw, calc((100svh - 310px) * 4 / 5));
+    --film-ar: 4 / 5;
+
+    /* The column under the film — the line of copy and the buttons — is set
+       to the film's own width, so the three of them share one pair of edges.
+       The floor is there for the short phones where the guard above takes
+       the film below a comfortable width for a label; the ceiling keeps that
+       floor inside a narrow screen. */
+    --phone-col: min(max(var(--film-w), 240px), 82vw);
+
+    /* The outline, made for a portrait box. The percentages are read off
+       each axis separately, so the desktop cut — built for a frame twice as
+       wide as it is tall — turns into a lozenge when the box stands up. */
+    --film-cut: 13% 15% 12% 14% / 9% 10.5% 8.5% 10%;
+
+    /* The room below holds the line of copy and three buttons in a column,
+       rather than two buttons on one line and one stranded underneath. The
+       film rides up out of the way, and — because these are the same two
+       numbers the ring layer is padded by and the wipe is centred on — the
+       rings and the closing orange ride up with it.
+
+       The floor of this is what that block actually measures — a line of
+       copy, three buttons and the gap they stand on — and not a pixel less,
+       or the picture is drawn straight through the first button. */
+    --film-top: calc(var(--nav-height) + 8px);
+    --film-bottom: clamp(250px, 30vh, 272px);
+  }
+
+  /* The morph is written in per-axis percentages too, so a portrait box
+     needs its own. Same amount of wander, read off the taller frame. */
+  .mask {
+    animation-name: morphTall;
+  }
+
+  @keyframes morphTall {
+    0% {
+      border-radius: 13% 15% 12% 14% / 9% 10.5% 8.5% 10%;
+    }
+    34% {
+      border-radius: 15% 12% 14% 13% / 10.5% 8.5% 10% 9%;
+    }
+    67% {
+      border-radius: 12% 14% 13% 15% / 8.5% 10% 9% 10.5%;
+    }
+    100% {
+      border-radius: 13% 15% 12% 14% / 9% 10.5% 8.5% 10%;
+    }
+  }
+
+  /*
+   * The words behind it come down with the film.
+   *
+   * A phone is narrow enough that a band at the viewport-derived size shows
+   * a word and a half at a time, and half a word is a fragment — the room
+   * stops reading as writing and starts reading as clutter. Smaller type
+   * puts two or three whole words on screen per row, which is what makes it
+   * scenery again.
+   */
+  .bandRun {
+    font-size: clamp(1.9rem, 9.4vw, 2.7rem);
+  }
+
+  .bands {
+    gap: 8px;
+  }
+
+  /* A stroke is an absolute width: left at the desktop weight it would be
+     three times the share of a letter this size */
+  .bandWord[data-ink="line"] {
+    -webkit-text-stroke-width: 1.4px;
+  }
+
+  /*
+   * Three buttons across a phone is three cramped labels; two across and
+   * one stranded underneath is worse. A single column of equal buttons is
+   * the only arrangement of three that does not look like an accident.
+   */
+  .actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    bottom: clamp(22px, 4vh, 40px);
+  }
+
+  /* The one line the hero says out loud. On a wider screen the film has
+     paper either side of it to be composed against; here it has the length
+     of the screen, and a picture with three buttons under it and not one
+     word anywhere is a page that looks unfinished rather than quiet. */
+  .pitch {
+    display: block;
+    width: var(--phone-col);
+    margin-bottom: 6px;
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--text-primary);
+  }
+
+  .action {
+    width: var(--phone-col);
+    min-width: 0;
+    padding: 13px 18px;
+    font-size: 0.74rem;
+    letter-spacing: 0.09em;
+  }
+
+  /* One of the three is where the page actually wants you to go. Three
+     identical outlines in a column read as a form to be filled in; filling
+     the first one is what turns the column back into a hero's call to
+     action with two ways past it. */
+  .actionLead {
+    background: var(--ember);
+    border-color: var(--ember);
+    color: var(--text-on-accent);
+    box-shadow: 0 14px 30px rgba(217, 90, 26, 0.28);
+  }
+}
+
+/*
+ * A short phone cannot hold all three.
+ *
+ * A picture worth looking at, a line of copy and three buttons want
+ * something like eight hundred pixels of window between them; on a phone
+ * with six hundred and sixty, keeping the line costs the film a third of
+ * its size. The line is the one of the three the hero can do without — the
+ * page heading says the same words, and the picture is what the visitor
+ * came for.
+ *
+ * After the block above, not inside it: this has to outrank the rule that
+ * puts the line on the page, and at equal weight that is decided by which
+ * one is written last.
+ */
+@media (max-width: 640px) and (max-height: 720px) {
+  .pitch {
+    display: none;
+  }
+
+  .hero {
+    --film-bottom: clamp(198px, 26vh, 216px);
+  }
+}
+
+/*
+ * A portrait tablet.
+ *
+ * It was being given the desktop composition at a smaller width, and a
+ * portrait window is the one shape that composition cannot be narrowed
+ * into: a 16:9 picture in a room half again as tall as it is wide leaves
+ * the film floating in the middle with a third of a screen of empty paper
+ * under it, the buttons stranded at the very bottom, and — because the
+ * line of copy belonged to the phone alone — not one word between them.
+ *
+ * So it takes the phone's answer rather than the desktop's, at a tablet's
+ * size. The film stands up into the room, the line of copy comes back, and
+ * the buttons sit under it in one row, which is the one thing a tablet can
+ * do that a phone cannot. Every number below is the same number the phone
+ * block chooses, read off a frame twice the size.
+ */
+@media (min-width: 641px) and (max-width: 1023px) and (orientation: portrait) {
+  .hero {
+    /* Portrait, and stopping well short of the edges for the same two
+       reasons it does on a phone: the rings are cut from this width and
+       need somewhere to close, and the words run behind the film. */
+    --film-w: min(72vw, 560px, calc((100svh - 330px) * 4 / 5));
+    --film-ar: 4 / 5;
+    --film-cut: 13% 15% 12% 14% / 9% 10.5% 8.5% 10%;
+
+    /* The room below holds a line of copy and a row of buttons. The floor
+       is what that block actually measures; the rest is breathing. */
+    --film-top: calc(var(--nav-height) + 12px);
+    --film-bottom: clamp(196px, 19vh, 236px);
+  }
+
+  /* The morph is written per-axis, so a standing box needs the tall one */
+  .mask {
+    animation-name: morphTall;
+  }
+
+  /* Sized to what is left down each flank of the film — big enough to
+     still be scenery, small enough that whole words pass through it */
+  .bandRun {
+    font-size: clamp(2.4rem, 6.8vw, 4rem);
+  }
+
+  .bandWord[data-ink="line"] {
+    -webkit-text-stroke-width: 2.2px;
+  }
+
+  /* The line the phone says out loud, said here too: the room under a
+     standing film is even emptier on a tablet than it is on a phone. */
+  .pitch {
+    display: block;
+    /* The block wraps, so a full-width item is what puts the line on its
+       own row above the buttons rather than in among them. It has to be
+       the whole row, not a capped one: a narrower item leaves room beside
+       itself, and the first button climbs up into it. */
+    flex: 0 0 100%;
+    margin: 0 0 6px;
+    font-family: var(--font-heading);
+    font-size: 1.12rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--text-primary);
+  }
+
+  /* One of the three is where the page wants you to go, same as the phone */
+  .actionLead {
+    background: var(--ember);
+    border-color: var(--ember);
+    color: var(--text-on-accent);
+    box-shadow: 0 14px 30px rgba(217, 90, 26, 0.28);
+  }
+}
+
+/* ------------------------------------------------------------
+   Off screen: the room holds still
+
+   Set from the same observer that pauses the film — see Hero.tsx. Nothing
+   in here is expensive, and all of it together is a hero's worth of
+   compositing being asked for every frame the 3D world below is trying to
+   draw one of its own.
+   ------------------------------------------------------------ */
+
+.hero[data-live="false"] .band,
+.hero[data-live="false"] .bit,
+.hero[data-live="false"] .frame,
+.hero[data-live="false"] .mask {
+  animation-play-state: paused;
+}
+
+/* ------------------------------------------------------------
+   Reduced motion: the still hero. No intro, no drift, no morph.
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .band,
+  .bit,
+  .frame,
+  .mask,
+  .ring {
+    animation: none;
+  }
+
+  .air {
+    display: none;
+  }
+}

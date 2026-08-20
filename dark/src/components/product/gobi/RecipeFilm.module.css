@@ -1,0 +1,703 @@
+.film {
+  position: relative;
+  padding: clamp(52px, 6.6vh, 80px) 0 clamp(56px, 7vh, 88px);
+  background: var(--color-white);
+  overflow: hidden;
+}
+
+.film::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 52% 44% at 22% 30%,
+    color-mix(in srgb, var(--accent) 9%, transparent) 0%,
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---- the head, one heading and one line ------------------------------ */
+
+/*
+ * Three things, and room around them. It used to hold the heading, three facts
+ * beside it and an eight-item shopping list under it — a headline with a
+ * column of type at its shoulder and a list at its feet is a headline nobody
+ * can hear. The facts were all said again by the bar and the method anyway.
+ */
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr);
+  gap: 0 clamp(30px, 5vw, 80px);
+  margin-bottom: clamp(38px, 5.4vh, 62px);
+}
+
+.eyebrow {
+  grid-area: 1 / 1;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+/* Bigger than it was, and with nothing beside it now to keep it small. This is
+   the one line of the section anyone reads standing up. */
+.heading {
+  grid-area: 2 / 1;
+  /* Wide enough for the longer of the two lines to stay one line — the break
+     between them is typed, and a heading that wraps a third time loses it. */
+  max-width: 20ch;
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  line-height: 1.04;
+  color: var(--text-primary);
+}
+
+/* Set on the heading's own baseline rather than under it, so the two read as
+   one band and the white space stays where it does some good — a clear run
+   above the heading and a clear run below the pair. */
+.lead {
+  grid-area: 2 / 2;
+  align-self: end;
+  max-width: 32ch;
+  font-size: clamp(0.95rem, 1.55vw, 1.06rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+/*
+ * The shopping list, at the foot of the method. It is a reminder of what is
+ * already in the kitchen, so it is set as one small run under a hairline
+ * rather than as eight boxes standing between the heading and the recipe.
+ */
+/* Everything in here is one paragraph's worth of inline flow — the label, the
+   items and the dots between them — so the label sits at the front of the
+   first line instead of claiming a line of its own. */
+.also {
+  margin-top: clamp(20px, 2.8vh, 30px);
+  padding-top: clamp(12px, 1.6vh, 16px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+  line-height: 1.75;
+  /* Eight items rarely divide evenly into the width, and the leftover is a
+     single item stranded on a line of its own. Balanced, the run breaks into
+     even lines instead. Ignored where it is unsupported, which only costs the
+     orphan back. */
+  text-wrap: balance;
+}
+
+.alsoLabel {
+  display: inline;
+  margin-right: 10px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.chips {
+  display: inline;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  display: inline;
+  font-size: clamp(0.76rem, 1.05vw, 0.82rem);
+  color: var(--text-secondary);
+}
+
+/* The dot belongs to the item in front of it, so a line that wraps never
+   starts with a separator hanging off its left edge. */
+/*
+ * The dot belongs to the item in front of it. The space is on the far side of
+ * it only, so that is the one place a line can break — a leading space would
+ * let a wrap strand the dot at the start of the next line.
+ */
+.chip:not(:last-child)::after {
+  content: "· ";
+  padding-left: clamp(5px, 0.7vw, 8px);
+  padding-right: clamp(2px, 0.3vw, 4px);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* ---- the film beside the method -------------------------------------- */
+
+/*
+ * The film takes its height from the method beside it rather than from its own
+ * proportions. Fixed at 9:16 it ran a couple of hundred pixels past the last
+ * line of the recipe, and that overhang was pure empty page — the section
+ * looked long because one column had nothing in the bottom third of it.
+ */
+.stage {
+  display: grid;
+  grid-template-columns: clamp(230px, 25vw, 320px) minmax(0, 1fr);
+  gap: clamp(30px, 4vw, 64px);
+  align-items: stretch;
+}
+
+/* The depth the slab is turned in. Set on the column rather than the slab so
+   the edge and the face share one vanishing point. */
+.filmCol {
+  perspective: 1200px;
+  perspective-origin: 50% 44%;
+}
+
+.filmSlab {
+  position: relative;
+  width: 100%;
+  /* Filled to the column, with a floor under it for the odd narrow desktop
+     where the method runs short. The video is cropped to fit either way. */
+  height: 100%;
+  min-height: clamp(340px, 34vw, 470px);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* The thickness. Stood on end at the slab's right edge, so it is invisible
+   face-on and opens out as the scroll turns the slab away. */
+.filmEdge {
+  position: absolute;
+  top: 2%;
+  right: 0;
+  /* Thick enough to still be a few pixels wide at the eight degrees the scroll
+     actually turns the slab through — a thin one is never seen at all. */
+  width: 34px;
+  height: 96%;
+  transform-origin: 100% 50%;
+  transform: rotateY(90deg);
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 34%, #3a1d0d) 0%,
+    #2b1508 100%
+  );
+}
+
+.filmFrame {
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  overflow: hidden;
+  background: var(--color-cream-deep);
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.46),
+    0 4px 14px rgba(0, 0, 0, 0.19);
+}
+
+/* One band of light, wider than the frame so it is always crossing it */
+.sheen {
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 220%;
+  height: 140%;
+  pointer-events: none;
+  background: linear-gradient(
+    108deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.26) 50%,
+    transparent 58%
+  );
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.filmTag {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(22, 16, 13, 0.72);
+  border: 1px solid rgba(255, 236, 220, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+/* ---- the clock -------------------------------------------------------- */
+
+.clock {
+  margin: 0;
+}
+
+.bar {
+  position: relative;
+}
+
+/*
+ * One strip lying on the page, thick enough to have a side. The thickness is
+ * the strip's own dark background showing below the blocks rather than a
+ * shadow, so the wipe that opens the bar cannot clip it away.
+ */
+.barTrack {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  padding-bottom: 8px;
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 46%, #3a1d0d) 0%,
+    color-mix(in srgb, var(--accent) 62%, #24110a) 100%
+  );
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34);
+}
+
+/*
+ * As wide as the minutes it stands for. Flex-grow rather than a width, so the
+ * two blocks divide whatever the column turns out to be — and the inset is on
+ * the words rather than on the block, because padding sits outside a zero
+ * flex-basis and would put the ratio a couple of per cent out.
+ */
+.span {
+  position: relative;
+  flex: var(--share) 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: clamp(56px, 6.4vw, 72px);
+}
+
+.spanTime,
+.spanName {
+  position: relative;
+  padding: 0 clamp(12px, 1.6vw, 18px);
+}
+
+.spanTime {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(0.95rem, 1.7vw, 1.15rem);
+  line-height: 1.1;
+}
+
+.spanName {
+  font-size: clamp(0.74rem, 1.2vw, 0.84rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.wait {
+  background: color-mix(in srgb, var(--accent) 9%, var(--color-white));
+  color: var(--text-primary);
+}
+
+.wait .spanName {
+  color: var(--text-secondary);
+}
+
+/* Minute ticks walking across the empty half hour. Vertical, so the drift
+   repeats exactly on its own period and never jumps. */
+.wait::before {
+  content: "";
+  position: absolute;
+  inset: 0 -30% 0 -30%;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 20%, transparent) 0 1.5px,
+    transparent 1.5px 22px
+  );
+  pointer-events: none;
+}
+
+.work {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
+.work .spanName {
+  color: color-mix(in srgb, var(--text-on-accent) 78%, transparent);
+}
+
+/* The marker walking the bar. It reaches past both ends of the strip so it
+   reads as something passing over it rather than something inside it. */
+.pip {
+  position: absolute;
+  top: -11px;
+  bottom: 1px;
+  left: var(--pip, 0%);
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 72%, #2b1508);
+  pointer-events: none;
+}
+
+.pip::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 13px;
+  height: 13px;
+  margin-left: -6.5px;
+  border-radius: 50%;
+  background: var(--color-white);
+  border: 2.5px solid color-mix(in srgb, var(--accent) 72%, #2b1508);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.46);
+}
+
+/* ---- the four steps, as a numbered list ------------------------------- */
+
+/* One vanishing point for all four, set on the list rather than on each step,
+   so the four of them tip up as things standing in the same room. Deep enough
+   that thirty degrees is a lean rather than a lens. */
+.steps {
+  list-style: none;
+  margin: clamp(30px, 4vh, 46px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(30px, 4vw, 60px);
+  row-gap: clamp(24px, 3.2vh, 36px);
+  perspective: 900px;
+  perspective-origin: 50% 40%;
+}
+
+/*
+ * No card. Four bordered, shadowed boxes standing inside a section that is
+ * already a film beside a chart is what made the page feel full — the walls
+ * were doing no work a rule and a number do not do, and each of them cost
+ * twenty-odd pixels of padding on all four sides.
+ */
+/* Hinged on its own rule, which is what the turn is read off — the line stays
+   put while the type above it swings up to meet the page. */
+.step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(12px, 1.4vw, 18px);
+  padding-top: clamp(11px, 1.5vh, 15px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  transform-origin: 50% 0%;
+  will-change: transform;
+}
+
+/* Set as a numeral rather than drawn inside a disc. At display weight it is
+   already unmistakably a step count, and the disc was another small wall. The
+   column is fixed rather than shrink-wrapped: 01 and 03 do not set to the same
+   width, and four steps whose text starts a pixel or two apart read as sloppy
+   rather than as four steps. */
+.stepIndex {
+  width: clamp(26px, 2.6vw, 34px);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1.9vw, 1.4rem);
+  line-height: 1.15;
+  color: color-mix(in srgb, var(--accent) 76%, transparent);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stepTitle {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1rem, 1.8vw, 1.18rem);
+  color: var(--text-primary);
+}
+
+.stepText {
+  font-size: clamp(0.86rem, 1.4vw, 0.95rem);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* The one line on the pack people miss. A line under a rule of its own colour,
+   not a filled panel — a box drawn around a single sentence shouts it. */
+.note {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: clamp(18px, 2.4vh, 26px);
+  padding-top: clamp(13px, 1.7vh, 17px);
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-turmeric) 62%, transparent);
+  font-size: clamp(0.86rem, 1.4vw, 0.95rem);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.noteMark {
+  flex: none;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--color-turmeric) 58%, #6d3f00);
+}
+
+/* ---- the four drawings ----------------------------------------------- */
+
+.moves {
+  position: relative;
+  margin-top: clamp(38px, 5vh, 60px);
+  padding-top: clamp(28px, 3.6vh, 42px);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* One small line of its own, the size of an eyebrow rather than a heading. The
+   drawings under it are the statement; this only says which method they are. */
+.movesHeading {
+  margin-bottom: clamp(22px, 3vh, 32px);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.movesBody {
+  position: relative;
+}
+
+/* Hung off the top of the list rather than off the section, so the pen runs
+   over the drawings themselves whatever the heading above them does. */
+.thread {
+  position: absolute;
+  left: 2%;
+  width: 92%;
+  height: 58px;
+  top: 6px;
+  pointer-events: none;
+}
+
+.threadPath {
+  stroke: color-mix(in srgb, var(--accent) 46%, transparent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 9 11;
+  vector-effect: non-scaling-stroke;
+}
+
+.moveList {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(22px, 3vw, 44px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* The four drawings share one vanishing point, so the slow lean they keep as
+     the row goes past reads as one surface tilting rather than four skews. */
+  perspective: 1000px;
+  perspective-origin: 50% 40%;
+}
+
+/* The drawing turns inside the move rather than the move turning with its
+   caption — so the depth has to survive the entrance transform sitting on
+   this element, which flattens its children by default. */
+.move {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  transform-style: preserve-3d;
+}
+
+/* The drawing keeps its own square, so four of them line up along one baseline
+   however tall the captions under them run. It sits straight on the page: the
+   plate behind it was a fourth ring of decoration around a drawing that is
+   already a circle, and the numbered badge repeated what the thread through
+   them and the steps above them both say. */
+.moveArt {
+  position: relative;
+  width: clamp(76px, 9vw, 108px);
+  aspect-ratio: 1;
+  margin-bottom: 8px;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+
+.moveArt img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.moveLabel {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.95rem, 1.6vw, 1.08rem);
+  color: var(--text-primary);
+}
+
+.moveText {
+  font-size: clamp(0.82rem, 1.35vw, 0.93rem);
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 26ch;
+}
+
+/* ---- narrower screens ------------------------------------------------ */
+
+@media (max-width: 900px) {
+  /* One column, so the line under the heading becomes a line after it — and it
+     is given the width it just lost in depth. */
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(16px, 3vw, 22px) 0;
+  }
+
+  .lead {
+    grid-area: 3 / 1;
+    max-width: 46ch;
+  }
+
+  .filmCol {
+    perspective: none;
+  }
+
+  .filmEdge {
+    display: none;
+  }
+
+  /* Pinned or stacked, the film no longer has a column of method running
+     alongside it to take its height from, so it goes back to its own shape. */
+  .stage {
+    align-items: start;
+  }
+
+  .filmSlab {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 9 / 16;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Two up rather than four, and the thread goes — an arc drawn for four
+     columns is nonsense over two rows. */
+  .moveList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(26px, 4.4vw, 38px);
+  }
+
+  .thread {
+    display: none;
+  }
+}
+
+/*
+ * A tablet is too narrow to hold four step cards two abreast and too wide to
+ * stack the film above them — laid flat, a portrait film leaves more empty page
+ * either side of it than the film itself takes up. So the film stays beside the
+ * method and is pinned instead: it holds at the top of the screen while the
+ * four steps go past, and the column it is in never runs out under it.
+ */
+@media (min-width: 641px) and (max-width: 900px) {
+  .stage {
+    grid-template-columns: clamp(200px, 30%, 280px) minmax(0, 1fr);
+    gap: clamp(20px, 3vw, 32px);
+  }
+
+  .filmCol {
+    position: sticky;
+    top: calc(var(--nav-height) + 20px);
+    align-self: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .film {
+    padding-top: clamp(40px, 6vh, 60px);
+  }
+
+  /* Stacked, because at this width there is no second column to stand it in */
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(24px, 5vw, 34px);
+  }
+
+  .filmSlab {
+    width: min(100%, 264px);
+    margin: 0 auto;
+  }
+
+  .filmFrame {
+    border-radius: 22px;
+  }
+
+  /* The two blocks stay side by side — drawn to scale is the whole point — and
+     only lose a little height, because the fifteen-minute one is a third of a
+     phone's width and its two lines need the room. */
+  .span {
+    min-height: 62px;
+  }
+
+  .spanTime,
+  .spanName {
+    padding: 0 11px;
+  }
+
+  /* The drawing beside the words instead of above them, so four moves take
+     four short rows rather than half a screen each. */
+  .moveList {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .move {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "art label"
+      "art text";
+    align-items: center;
+    column-gap: 16px;
+    row-gap: 4px;
+  }
+
+  .moveArt {
+    grid-area: art;
+    width: 72px;
+    margin-bottom: 0;
+  }
+
+  .moveLabel {
+    grid-area: label;
+  }
+
+  .moveText {
+    grid-area: text;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pip {
+    display: none;
+  }
+}

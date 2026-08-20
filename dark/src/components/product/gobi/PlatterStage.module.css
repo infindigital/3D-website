@@ -1,0 +1,338 @@
+.serving {
+  position: relative;
+  padding: clamp(40px, 5.4vh, 66px) 0 clamp(44px, 6vh, 74px);
+  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-cream) 48%, var(--color-white) 100%);
+  overflow: hidden;
+}
+
+.inner {
+  position: relative;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.head {
+  margin-bottom: clamp(20px, 3vh, 34px);
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.heading {
+  max-width: 18ch;
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+  line-height: 1.06;
+  color: var(--text-primary);
+}
+
+/* ---- the turntable --------------------------------------------------- */
+
+.stage {
+  /* The turn is written here, by the frame loop, and inherited by the ring
+     and by every platter's counter-rotation. Declaring it on the ring as
+     well would shadow it, and the table would never move. */
+  --spin: 0deg;
+
+  position: relative;
+  /* Only as tall as the ring needs. The platters never filled the old height,
+     so the extra read as a gap above the turntable and another below it. */
+  height: clamp(300px, 36vw, 430px);
+  perspective: 1000px;
+  perspective-origin: 50% 44%;
+  /* The drag is horizontal, so the page keeps the vertical axis and a swipe
+     up the screen still scrolls rather than fighting the turntable. */
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.stage:active {
+  cursor: grabbing;
+}
+
+.ring {
+  /* Rather more than the widest platter, so the three never overlap as they
+     pass, and a shade of tilt so it reads as a table and not a washing line. */
+  --r: clamp(170px, 22vw, 290px);
+
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(-7deg) rotateY(var(--spin));
+  will-change: transform;
+}
+
+.platter {
+  position: absolute;
+  /*
+   * Sat a little above centre, because perspective magnifies whichever plate
+   * is nearest by about half again — the front one has to have room to grow
+   * into without landing on the hint below it.
+   */
+  top: 46%;
+  left: 50%;
+  width: clamp(165px, 21vw, 270px);
+  margin: 0;
+  transform-style: preserve-3d;
+  /*
+   * Out to its place on the circle, then back around by exactly what the
+   * table has turned — so a dish shot from above keeps facing the camera at
+   * every angle instead of shearing into an oval. Perspective still shrinks
+   * the far ones, which is the whole of the depth.
+   */
+  transform: translate(-50%, -50%) rotateY(var(--a)) translateZ(var(--r))
+    rotateY(calc(-1 * var(--a) - var(--spin)));
+}
+
+.platterImg {
+  width: 100%;
+  height: auto;
+  /* The plates are cut-outs, so the shadow has to follow the food rather
+     than a box behind it. */
+  filter: drop-shadow(0 26px 30px rgba(0, 0, 0, 0.61));
+  pointer-events: none;
+}
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(22, 16, 13, 0.7);
+  border: 1px solid rgba(255, 236, 220, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.85;
+  transition: opacity 0.4s var(--ease-soft);
+}
+
+.stage:active .hint {
+  opacity: 0;
+}
+
+/* ---- what is on the plate -------------------------------------------- */
+
+.foot {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(20px, 3.2vw, 44px);
+  align-items: start;
+  margin-top: clamp(20px, 2.8vh, 34px);
+}
+
+.detail {
+  animation: settle 0.55s var(--ease-cinematic) both;
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detailStyle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.detailIndex {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--color-white));
+  letter-spacing: 0.1em;
+}
+
+.detailName {
+  margin-top: 12px;
+  font-size: clamp(1.5rem, 3.2vw, 2.2rem);
+  line-height: 1.12;
+  color: var(--text-primary);
+}
+
+.detailBody {
+  margin-top: 12px;
+  font-size: clamp(0.95rem, 1.6vw, 1.06rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 52ch;
+}
+
+.detailPairs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(18px, 3vw, 40px);
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.detailPairs dt {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.detailPairs dd {
+  font-size: clamp(0.86rem, 1.4vw, 0.95rem);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 32ch;
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pickerItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "index name"
+    "index style";
+  align-items: center;
+  column-gap: 14px;
+  text-align: left;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: var(--color-white);
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  transition: border-color 0.4s var(--ease-soft),
+    background 0.4s var(--ease-soft), transform 0.4s var(--ease-soft);
+}
+
+.pickerItem:hover {
+  transform: translateX(4px);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.pickerItem[aria-current="true"] {
+  background: color-mix(in srgb, var(--accent) 8%, var(--color-white));
+  border-color: color-mix(in srgb, var(--accent) 46%, transparent);
+}
+
+.pickerIndex {
+  grid-area: index;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 10%, var(--color-white));
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--accent);
+}
+
+.pickerItem[aria-current="true"] .pickerIndex {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
+.pickerName {
+  grid-area: name;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  color: var(--text-primary);
+}
+
+.pickerStyle {
+  grid-area: style;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* ---- narrower screens ------------------------------------------------ */
+
+@media (max-width: 900px) {
+  .foot {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .picker {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .pickerItem {
+    flex: 1 1 210px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Out to the full width of the screen, because the plate swinging widest is
+     the one nearest the edge and 24px of page padding is exactly what it was
+     being sliced by. */
+  .stage {
+    height: clamp(290px, 74vw, 360px);
+    margin: 0 -24px;
+    perspective: 720px;
+  }
+
+  /* Sized so the widest swing — the radius plus half a plate — still lands
+     inside the screen rather than being cut off by the section. */
+  .ring {
+    --r: clamp(96px, 27vw, 150px);
+  }
+
+  .platter {
+    width: clamp(140px, 38vw, 200px);
+  }
+
+  .pickerItem {
+    flex: 1 1 100%;
+  }
+
+  .pickerItem:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail {
+    animation: none;
+  }
+
+  .pickerItem,
+  .pickerItem:hover {
+    transform: none;
+    transition: none;
+  }
+}

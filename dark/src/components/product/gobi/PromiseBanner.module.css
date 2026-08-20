@@ -1,0 +1,80 @@
+/* The claim strip, lifted out of "why it works" and set on its own directly
+   under the hero. It is the first thing said after the pack has been shown, so
+   it reads as a banner across the page rather than as a caption on a section
+   halfway down it. */
+.banner {
+  position: relative;
+  overflow: hidden;
+  padding: 15px 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  /* Cream, so it carries the foot of the hero into the white shelf below it */
+  background: var(--color-cream);
+  /* Fade both ends into the page so the strip reads as continuous rather
+     than as something that starts and stops at the window edge. */
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: slide 34s linear infinite;
+}
+
+.banner:hover .track {
+  animation-play-state: paused;
+}
+
+.run {
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 3.2vw, 44px);
+  padding-right: clamp(28px, 4vw, 56px);
+  list-style: none;
+  margin: 0;
+}
+
+.promise {
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 3.2vw, 44px);
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.78rem, 1.5vw, 0.95rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.promise::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+
+@keyframes slide {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    /* Exactly one run, so the second copy lands where the first began */
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (max-width: 640px) {
+  .track {
+    animation-duration: 26s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+  }
+}
