@@ -339,14 +339,35 @@ export interface PackSize {
   /** The second line, when the pack is a multipack */
   unit?: string;
   who: string;
-  /** Worked out from the pack's own 50 g : 700 g ratio */
-  yields: string;
+  /**
+   * Worked out from the pack's own 50 g : 700 g ratio.
+   * Optional: a range whose owner does not want a yield quoted omits it, and
+   * the card closes up around the gap rather than leaving an empty line.
+   */
+  yields?: string;
   /** Relative height on the shelf, so the four packs read as a range of sizes */
   scale: number;
   /** Message pre-filled into the WhatsApp order for this size */
   order: string;
+  /**
+   * This size's own Amazon listing.
+   *
+   * Leave it undefined and the button falls back to the brand storefront in
+   * config/site.ts — which is the right behaviour while a size has no listing
+   * of its own, because a wrong ASIN sells the wrong pack. When Amazon's
+   * per-size URLs are to hand, paste each one here.
+   */
+  amazonUrl?: string;
 }
 
+/**
+ * The four sizes the pack is sold in, smallest first.
+ *
+ * `order` names the pack configuration rather than the weight alone, because
+ * the 30 g row sells ten sachets and a message reading "30 g" would have the
+ * kitchen packing one. `amazonUrl` is where a size's own Amazon listing goes;
+ * every size is on the storefront fallback until those URLs are supplied.
+ */
 export const gobiPacks: PackSize[] = [
   {
     id: "30g",
@@ -356,7 +377,8 @@ export const gobiPacks: PackSize[] = [
     yields: "About 400 g of gobi per sachet",
     scale: 0.72,
     order:
-      "Hi RS Chef'z, I would like to order Gobi Manchurian Masala — 30 g, pack of 10.",
+      "Hi, I would like to order Gobi Manchurian Masala – 30 g Pack of 10.",
+    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
   },
   {
     id: "500g",
@@ -364,16 +386,17 @@ export const gobiPacks: PackSize[] = [
     who: "The everyday kitchen pouch",
     yields: "About 7 kg of gobi",
     scale: 0.86,
-    order:
-      "Hi RS Chef'z, I would like to order Gobi Manchurian Masala — 500 g.",
+    order: "Hi, I would like to order Gobi Manchurian Masala – 500 g.",
+    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
   },
   {
     id: "1kg",
     size: "1 kg",
     who: "Big families and small caterers",
-    yields: "About 14 kg of gobi",
+    yields: "About 15 kg of gobi",
     scale: 1,
-    order: "Hi RS Chef'z, I would like to order Gobi Manchurian Masala — 1 kg.",
+    order: "Hi, I would like to order Gobi Manchurian Masala – 1 kg.",
+    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
   },
   {
     id: "5kg",
@@ -381,6 +404,7 @@ export const gobiPacks: PackSize[] = [
     who: "Restaurant and canteen kitchens",
     yields: "About 70 kg of gobi",
     scale: 1.18,
-    order: "Hi RS Chef'z, I would like to order Gobi Manchurian Masala — 5 kg.",
+    order: "Hi, I would like to order Gobi Manchurian Masala – 5 kg.",
+    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
   },
 ];

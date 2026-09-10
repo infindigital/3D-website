@@ -17,7 +17,10 @@ Project Settings > Environment Variables for Production, Preview and Development
 
 ### NEXT_PUBLIC_WHATSAPP_NUMBER
 
-- Used by: every "Buy on WhatsApp" button on the home page and both product pages.
+- Optional. The number ships as a default in `src/config/site.ts`, so the order
+  buttons work without it. Set this only to point the site at a different
+  number without a code change; it overrides the default when present.
+- Used by: every WhatsApp order button on the home page and both product pages.
 - Format: country code followed by the number, digits only. No plus sign, no spaces, no dashes.
 - Example: `918548043650` for the Indian number 0854-8043650.
 - The site builds a `https://wa.me/<number>?text=<prefilled message>` link from it.

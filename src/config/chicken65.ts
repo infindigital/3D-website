@@ -5,8 +5,8 @@
  * bullet-point brief, the preparation panel printed on the back, the two
  * plated comparison shots and the ten-second film. Nothing is invented. The
  * one number that is worked out rather than quoted is the sachet yield, and
- * it comes from the ratio printed on the pack — 500 g of masala to 7.5 kg of
- * cleaned meat, so one 25 g sachet to 375 g.
+ * it comes from the pack itself. The weights of chicken each size prepares are
+ * deliberately absent — the owner asked for them off this page.
  *
  * It sits beside config/gobi.ts rather than inside config/products.ts for the
  * same reason: the catalogue stays the two-line summary the rest of the site
@@ -41,11 +41,14 @@ export const c65Assets = {
   filmPoster: "/assets/products/three-in-one/c65-film-poster.webp",
 } as const;
 
-/** One 25 g sachet against the ratio printed on the pack. */
+/**
+ * What one sachet is for. Deliberately no weight of chicken: the owner asked
+ * for the "how many grams of chicken" figures off this page, so the sachet is
+ * described by what it cooks, not by what it coats.
+ */
 export const c65Yield = {
-  sachet: "25g",
-  chicken: "375g",
-  note: "One 25 g sachet coats 375 g of cleaned chicken — a plate for four.",
+  sachet: "25 g",
+  note: "One 25 g sachet is one fry — a plate for four.",
 } as const;
 
 /** The short claims that run across the top of the page, under the hero. */
@@ -196,11 +199,13 @@ export interface C65Dish {
 }
 
 /**
- * The four ways the pack is sold, smallest first. The yields are worked out
- * from the ratio printed on the pack — 500 g of masala to 7.5 kg of cleaned
- * meat, so 1 g to 15 g — and not quoted from anywhere else. `scale` is only
- * how tall the card stands on the shelf, so the range reads as a range before
- * a word of it is read.
+ * The four ways the pack is sold, smallest first. `scale` is only how tall the
+ * card stands on the shelf, so the range reads as a range before a word of it
+ * is read.
+ *
+ * No pack quotes how much chicken it prepares: the owner asked for those
+ * figures off this page, and a card here is for choosing a size, not for
+ * working out a marinade. Nothing replaces them — the row is simply shorter.
  *
  * The shape is the one the shelf already speaks, imported rather than copied:
  * two products describing their sizes two different ways would be two
@@ -208,44 +213,36 @@ export interface C65Dish {
  */
 export const c65Packs: PackSize[] = [
   {
-    id: "25g-10",
+    id: "25g",
     size: "25 g",
-    unit: "Pack of 10",
-    who: "A sachet a fry, ten fries in",
-    yields: "About 375 g of chicken per sachet",
+    who: "One sachet per fry",
     scale: 0.7,
-    order:
-      "Hi RS Chef'z, I would like to order 3 in 1 Masala — 25 g, pack of 10.",
+    order: "Hi, I would like to order RS Chef'z 3 in 1 Masala – 25 g.",
+    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
   },
   {
-    id: "30g-6",
-    size: "30 g",
-    unit: "Pack of 6",
-    who: "The slightly bigger sachet",
-    yields: "About 450 g of chicken per sachet",
-    scale: 0.8,
-    order:
-      "Hi RS Chef'z, I would like to order 3 in 1 Masala — 30 g, pack of 6.",
-  },
-  {
-    id: "500g-1",
+    id: "500g",
     size: "500 g",
-    unit: "Pack of 1",
     who: "The everyday kitchen pouch",
-    yields: "About 7.5 kg of chicken",
-    scale: 1,
-    order:
-      "Hi RS Chef'z, I would like to order 3 in 1 Masala — 500 g, pack of 1.",
+    scale: 0.86,
+    order: "Hi, I would like to order RS Chef'z 3 in 1 Masala – 500 g.",
+    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
   },
   {
-    id: "500g-2",
-    size: "500 g",
-    unit: "Pack of 2",
+    id: "1kg",
+    size: "1 kg",
     who: "Big families and small caterers",
-    yields: "About 15 kg of chicken",
-    scale: 1.16,
-    order:
-      "Hi RS Chef'z, I would like to order 3 in 1 Masala — 500 g, pack of 2.",
+    scale: 1,
+    order: "Hi, I would like to order RS Chef'z 3 in 1 Masala – 1 kg.",
+    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+  },
+  {
+    id: "5kg",
+    size: "5 kg",
+    who: "Restaurant and canteen kitchens",
+    scale: 1.18,
+    order: "Hi, I would like to order RS Chef'z 3 in 1 Masala – 5 kg.",
+    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
   },
 ];
 

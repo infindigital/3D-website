@@ -16,7 +16,7 @@ with zero build configuration. Any other Node host that runs
    | Variable | Value |
    | -------- | ----- |
    | `NEXT_PUBLIC_SITE_URL` | The final domain, for example `https://rschefz.com`. No trailing slash. Until a custom domain exists, use the `https://<project>.vercel.app` URL Vercel assigns. |
-   | `NEXT_PUBLIC_WHATSAPP_NUMBER` | Country code + number, digits only (see docs/ENVIRONMENT.md). Leave empty until the number is ready; every "Buy on WhatsApp" button stays hidden while it is unset. |
+   | `NEXT_PUBLIC_WHATSAPP_NUMBER` | Optional. Country code + number, digits only (see docs/ENVIRONMENT.md). The number is built into `src/config/site.ts`, so leaving this unset is fine; set it only to override that number. |
 
 4. Deploy. Every later push to the production branch redeploys
    automatically, and every other branch gets a preview URL.
@@ -69,6 +69,6 @@ the first frame. Details: [docs/HERO_ASSETS.md](./HERO_ASSETS.md).
 2. Share the URL in a WhatsApp chat and confirm the link preview shows
    the logo-and-packs card.
 3. Search Console (optional): submit `https://<domain>/sitemap.xml`.
-4. When the WhatsApp number is ready, set
-   `NEXT_PUBLIC_WHATSAPP_NUMBER` in Vercel and redeploy; the buy
-   buttons appear everywhere automatically.
+4. To move the order buttons to a different WhatsApp number, set
+   `NEXT_PUBLIC_WHATSAPP_NUMBER` in Vercel and redeploy; it overrides
+   the number built into the site.

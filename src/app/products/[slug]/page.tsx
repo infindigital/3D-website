@@ -36,8 +36,8 @@ const C65_SHELF_COPY = {
   ),
   lead: (
     <>
-      The same 3 in 1 Masala in four sizes — ten sachets for the drawer, or half
-      a kilo for a kitchen that fries every week.
+      The same 3 in 1 Masala in four sizes — a sachet for the drawer, or five
+      kilos for a kitchen that fries every day.
     </>
   ),
 };

@@ -198,9 +198,8 @@ export default function SixtyFiveFilm({ product }: { product: Product }) {
           </h2>
           <p className={styles.lead}>
             The whole method is printed on the back of the pack, and it is three
-            things long. {c65Yield.sachet} of masala to {c65Yield.chicken} of
-            cleaned chicken, and half an hour of that is the marinade’s, not
-            yours.
+            things long. One {c65Yield.sachet} sachet, one fry, and half an hour
+            of that is the marinade’s, not yours.
           </p>
         </header>
 

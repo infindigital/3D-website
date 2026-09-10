@@ -162,9 +162,23 @@
   color: var(--accent);
 }
 
+/*
+ * The two ways to buy this size, as one pair rather than a primary and an
+ * afterthought.
+ *
+ * A grid of equal fractions rather than a flex row, so both buttons are
+ * exactly the same width whatever their labels say — "WhatsApp Order" is
+ * twice the length of "Amazon" and a flex row sized them to their text.
+ *
+ * The 140px floor is the width the longer of the two labels needs. Below
+ * two of those the grid drops to a single column and the pair stacks, each
+ * button full width — which is what happens in the four-up row on a desktop,
+ * where a quarter of the shelf is narrower than two full labels. They stay
+ * identical to each other either way; that is the point of the floor.
+ */
 .actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 8px;
   margin-top: auto;
   padding-top: 18px;
@@ -172,45 +186,95 @@
 
 .order,
 .amazon {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 11px 16px;
+  gap: 7px;
+  /* Height comes from the box, not from the text, so the two pills match to
+     the pixel — the outlined one would otherwise stand 2px taller on its
+     own border. */
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid transparent;
   border-radius: 999px;
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: clamp(0.78rem, 1.3vw, 0.86rem);
+  font-size: clamp(0.74rem, 1.15vw, 0.82rem);
+  letter-spacing: 0.005em;
   white-space: nowrap;
-  transition: background 0.35s var(--ease-soft), color 0.35s var(--ease-soft),
-    border-color 0.35s var(--ease-soft);
+  overflow: hidden;
+  transition:
+    background 0.35s var(--ease-soft),
+    color 0.35s var(--ease-soft),
+    border-color 0.35s var(--ease-soft),
+    transform 0.35s var(--ease-cinematic),
+    box-shadow 0.35s var(--ease-cinematic);
+}
+
+/* A light sweeping across the pill on hover — the same gloss the pack itself
+   has under the shelf lighting, and the one flourish the pair gets. */
+.order::after,
+.amazon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--ease-cinematic);
+  pointer-events: none;
+}
+
+.order:hover::after,
+.amazon:hover::after {
+  transform: translateX(120%);
+}
+
+.buyIcon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 .order {
-  flex: 1 1 auto;
   background: var(--accent);
   color: var(--text-on-accent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
 .order:hover {
   background: color-mix(in srgb, var(--accent) 84%, #000);
+  transform: translateY(-2px);
+  box-shadow: 0 13px 26px color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
 .amazon {
-  flex: none;
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
   color: var(--text-primary);
 }
 
 .amazon:hover {
   border-color: var(--accent);
   color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.order:focus-visible,
+.amazon:focus-visible {
+  outline: 3px solid var(--color-turmeric);
+  outline-offset: 2px;
 }
 
 /* With no WhatsApp number configured the shop link is the only way to buy,
    so it stops being the quiet second option. */
 .amazon:only-child {
-  flex: 1 1 auto;
   background: var(--accent);
   border-color: transparent;
   color: var(--text-on-accent);
@@ -220,6 +284,24 @@
   background: color-mix(in srgb, var(--accent) 84%, #000);
   border-color: transparent;
   color: var(--text-on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .order,
+  .amazon {
+    transition: background 0.35s var(--ease-soft), color 0.35s var(--ease-soft),
+      border-color 0.35s var(--ease-soft);
+  }
+
+  .order:hover,
+  .amazon:hover {
+    transform: none;
+  }
+
+  .order::after,
+  .amazon::after {
+    display: none;
+  }
 }
 
 /* ---- the pouch, measured ---------------------------------------------- */
