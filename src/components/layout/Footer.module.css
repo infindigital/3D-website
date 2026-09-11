@@ -294,9 +294,18 @@
 }
 
 /* The slash is the studio's own mark, so it is the one coloured thing */
+/* Grey rather than the brand amber: the slash is punctuation inside someone
+   else's wordmark, and giving it our accent made it read as part of ours.
+   Set literally because the palette carries no neutral grey — every token
+   here is warm, and --text-secondary is pure black. */
 .creditSlash {
-  color: var(--color-turmeric);
+  color: #7d7d7d;
   margin: 0 1px;
+}
+
+/* It stays grey while the name goes red on hover, for the same reason. */
+.credit:hover .creditSlash {
+  color: #7d7d7d;
 }
 
 .creditArrow {
