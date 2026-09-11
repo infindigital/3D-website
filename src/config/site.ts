@@ -48,10 +48,17 @@ export function getWhatsAppUrl(message?: string): string | null {
 }
 
 /**
- * Where a given pack's Amazon button goes: its own listing when one has been
- * supplied, the brand storefront otherwise. Kept here so no component has to
- * remember the fallback.
+ * Where an Amazon button goes, most specific destination first.
+ *
+ * Pass the candidates in that order — typically the pack size's own listing,
+ * then the product's store page — and the first one supplied wins. The brand
+ * storefront is the last resort, so a button never links nowhere and never
+ * guesses a listing it has not been given.
  */
-export function getAmazonUrl(variantUrl?: string): string {
-  return variantUrl?.trim() || siteConfig.amazonStoreUrl;
+export function getAmazonUrl(...candidates: Array<string | undefined>): string {
+  for (const url of candidates) {
+    const trimmed = url?.trim();
+    if (trimmed) return trimmed;
+  }
+  return siteConfig.amazonStoreUrl;
 }

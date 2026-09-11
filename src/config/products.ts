@@ -26,6 +26,21 @@ export interface Product {
     back: string;
   };
   whatsappMessage: string;
+  /**
+   * This product's own page in the brand's Amazon store.
+   *
+   * Every Amazon button on the product's page uses it, and a pack size only
+   * overrides it when that size has a listing of its own (PackSize.amazonUrl
+   * in config/gobi.ts). Unset, the buttons fall back to the storefront in
+   * config/site.ts.
+   *
+   * Stored as the bare store-page URL. The links these came from carried a
+   * `visitId` — a per-session identifier from the browser that copied them —
+   * along with `ingress`, `lp_context_asin`, `store_ref` and `ref_`. None of
+   * that describes the page, and a session id baked into a site every visitor
+   * loads is someone else's stale tracking, so the query string is dropped.
+   */
+  amazonUrl?: string;
 }
 
 export const products: Product[] = [
@@ -54,6 +69,8 @@ export const products: Product[] = [
     },
     whatsappMessage:
       "Hi RS Chef'z, I would like to order Gobi Manchurian Masala.",
+    amazonUrl:
+      "https://www.amazon.in/stores/page/744ABF19-B5CA-4539-89D3-93F91114C191",
   },
   {
     slug: "three-in-one-masala",
@@ -79,6 +96,8 @@ export const products: Product[] = [
       back: "/assets/products/three-in-one/back.webp",
     },
     whatsappMessage: "Hi RS Chef'z, I would like to order 3 in 1 Masala.",
+    amazonUrl:
+      "https://www.amazon.in/stores/page/F721B0C6-BECC-45D8-9A04-C83F5C545C38",
   },
 ];
 

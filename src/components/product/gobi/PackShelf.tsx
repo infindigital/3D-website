@@ -241,7 +241,7 @@ export default function PackShelf({
                the Amazon link is this size's listing where one exists. Nobody
                has to pick a size twice. */
             const orderUrl = getWhatsAppUrl(pack.order);
-            const amazonUrl = getAmazonUrl(pack.amazonUrl);
+            const amazonUrl = getAmazonUrl(pack.amazonUrl, product.amazonUrl);
             /* Four cards each holding a link labelled "Amazon" is four
                identical links to a screen reader running through them out of
                context, hence the size in the accessible name. */

@@ -218,7 +218,7 @@ export const c65Packs: PackSize[] = [
     who: "One sachet per fry",
     scale: 0.7,
     order: "Hi, I would like to order RS Chef'z 3 in 1 Masala – 25 g.",
-    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+    // amazonUrl: "PASTE_THIS_SIZE'S_OWN_AMAZON_URL_HERE",
   },
   {
     id: "500g",
@@ -226,7 +226,7 @@ export const c65Packs: PackSize[] = [
     who: "The everyday kitchen pouch",
     scale: 0.86,
     order: "Hi, I would like to order RS Chef'z 3 in 1 Masala – 500 g.",
-    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+    // amazonUrl: "PASTE_THIS_SIZE'S_OWN_AMAZON_URL_HERE",
   },
   {
     id: "1kg",
@@ -234,7 +234,7 @@ export const c65Packs: PackSize[] = [
     who: "Big families and small caterers",
     scale: 1,
     order: "Hi, I would like to order RS Chef'z 3 in 1 Masala – 1 kg.",
-    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+    // amazonUrl: "PASTE_THIS_SIZE'S_OWN_AMAZON_URL_HERE",
   },
   {
     id: "5kg",
@@ -242,7 +242,7 @@ export const c65Packs: PackSize[] = [
     who: "Restaurant and canteen kitchens",
     scale: 1.18,
     order: "Hi, I would like to order RS Chef'z 3 in 1 Masala – 5 kg.",
-    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+    // amazonUrl: "PASTE_THIS_SIZE'S_OWN_AMAZON_URL_HERE",
   },
 ];
 

@@ -101,6 +101,7 @@ export default function GobiClose({ product }: { product: Product }) {
           <BuyButtons
             className={styles.buys}
             whatsappMessage={product.whatsappMessage}
+            amazonUrl={product.amazonUrl}
           />
         </div>
       </div>

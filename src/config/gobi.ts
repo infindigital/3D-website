@@ -350,12 +350,13 @@ export interface PackSize {
   /** Message pre-filled into the WhatsApp order for this size */
   order: string;
   /**
-   * This size's own Amazon listing.
+   * This size's own Amazon listing, when it has one.
    *
-   * Leave it undefined and the button falls back to the brand storefront in
-   * config/site.ts — which is the right behaviour while a size has no listing
-   * of its own, because a wrong ASIN sells the wrong pack. When Amazon's
-   * per-size URLs are to hand, paste each one here.
+   * Left undefined the button falls back to the product's Amazon store page
+   * (Product.amazonUrl in config/products.ts), which is the right behaviour
+   * while a size has no listing of its own: a guessed ASIN sells the wrong
+   * pack, a store page sells the right product. Fill this in only with a URL
+   * that genuinely opens on this size.
    */
   amazonUrl?: string;
 }
@@ -378,7 +379,7 @@ export const gobiPacks: PackSize[] = [
     scale: 0.72,
     order:
       "Hi, I would like to order Gobi Manchurian Masala – 30 g Pack of 10.",
-    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+    // amazonUrl: "PASTE_THIS_SIZE'S_OWN_AMAZON_URL_HERE",
   },
   {
     id: "500g",
@@ -387,7 +388,7 @@ export const gobiPacks: PackSize[] = [
     yields: "About 7 kg of gobi",
     scale: 0.86,
     order: "Hi, I would like to order Gobi Manchurian Masala – 500 g.",
-    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+    // amazonUrl: "PASTE_THIS_SIZE'S_OWN_AMAZON_URL_HERE",
   },
   {
     id: "1kg",
@@ -396,7 +397,7 @@ export const gobiPacks: PackSize[] = [
     yields: "About 15 kg of gobi",
     scale: 1,
     order: "Hi, I would like to order Gobi Manchurian Masala – 1 kg.",
-    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+    // amazonUrl: "PASTE_THIS_SIZE'S_OWN_AMAZON_URL_HERE",
   },
   {
     id: "5kg",
@@ -405,6 +406,6 @@ export const gobiPacks: PackSize[] = [
     yields: "About 70 kg of gobi",
     scale: 1.18,
     order: "Hi, I would like to order Gobi Manchurian Masala – 5 kg.",
-    // amazonUrl: "PASTE_EXACT_AMAZON_VARIANT_URL_HERE",
+    // amazonUrl: "PASTE_THIS_SIZE'S_OWN_AMAZON_URL_HERE",
   },
 ];

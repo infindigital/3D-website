@@ -189,6 +189,7 @@ export default function ProductHero({
           <p className={styles.description}>{product.description}</p>
           <BuyButtons
             whatsappMessage={product.whatsappMessage}
+            amazonUrl={product.amazonUrl}
             className={styles.ctas}
           />
         </div>

@@ -1,23 +1,32 @@
-import { siteConfig, getWhatsAppUrl } from "@/config/site";
+import { getAmazonUrl, getWhatsAppUrl } from "@/config/site";
 import styles from "./BuyButtons.module.css";
 
 interface BuyButtonsProps {
   whatsappMessage?: string;
+  /**
+   * Where Amazon goes. On a product's page this is that product's own store
+   * page, so the button lands on the pack being read about rather than on the
+   * storefront. Omitted — in the footer, say, where no one product is in
+   * view — it falls back to the storefront.
+   */
+  amazonUrl?: string;
   className?: string;
 }
 
 /**
  * The two purchase CTAs used across the site.
- * The WhatsApp button only renders when NEXT_PUBLIC_WHATSAPP_NUMBER is set,
- * see docs/ENVIRONMENT.md.
+ * The WhatsApp button only renders when a number is configured, see
+ * getWhatsAppUrl and docs/ENVIRONMENT.md.
  */
 export default function BuyButtons({
   whatsappMessage,
+  amazonUrl,
   className,
 }: BuyButtonsProps) {
   const whatsappUrl = getWhatsAppUrl(
     whatsappMessage ?? "Hi RS Chef'z, I would like to order your masalas.",
   );
+  const shopUrl = getAmazonUrl(amazonUrl);
 
   return (
     <div className={className ? `${styles.row} ${className}` : styles.row}>
@@ -41,7 +50,7 @@ export default function BuyButtons({
       )}
       <a
         className={`${styles.button} ${styles.amazon}`}
-        href={siteConfig.amazonStoreUrl}
+        href={shopUrl}
         target="_blank"
         rel="noopener noreferrer"
       >

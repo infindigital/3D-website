@@ -113,6 +113,7 @@ export default function SixtyFiveClose({
           <BuyButtons
             className={styles.buys}
             whatsappMessage={product.whatsappMessage}
+            amazonUrl={product.amazonUrl}
           />
         </div>
 
