@@ -224,8 +224,10 @@ function createScreenMaterial(
         vLocal = position.xy * uOverlap;
         /* Starts further back and never gets far: fog is depth, but every
            point of it is a point of the film turned to cream, and a screen
-           is only ever this far away because you are on your way to it. */
-        vFog = clamp((-mv.z - 11.0) / 30.0, 0.0, 0.22);
+           is only ever this far away because you are on your way to it.
+           Ceiling cut from 0.22 — a fifth of the picture replaced by cream
+           was reading as a dirty screen rather than as distance. */
+        vFog = clamp((-mv.z - 11.0) / 30.0, 0.0, 0.12);
       }
     `,
     fragmentShader: /* glsl */ `

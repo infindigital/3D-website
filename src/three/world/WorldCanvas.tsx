@@ -35,8 +35,12 @@ const CREAM = "#fff8ee";
  * corridor has depth, but every unit of it is a unit of the film washed out,
  * and the film is the thing worth looking at. Far enough back that a screen
  * still sits behind the one in front of it, and no further.
+ *
+ * Thinned from 0.026: at that density the cream reached the packs as well as
+ * the far wall, and a pack greyed by fog reads as a pack photographed badly.
+ * Depth survives the cut — the near screen still separates from the far one.
  */
-const FOG_DENSITY = 0.026;
+const FOG_DENSITY = 0.016;
 
 interface WorldCanvasProps {
   packs: StagePack[];
@@ -294,16 +298,23 @@ export default function WorldCanvas({ packs, awake, mode, onSelect }: WorldCanva
          the camera is a pure function of scroll, so it has not drifted. */
       frameloop={awake ? "always" : "never"}
       /*
-       * Capped rather than uncapped: the difference between 2x and 1.75x on
-       * a wall of video is invisible and the fill cost is not.
+       * Capped, but at the screen rather than under it.
        *
-       * A phone is capped harder again, and the reason is not the phone's
-       * screen — it is that a phone's screen is three device pixels to the
-       * CSS pixel and its fill rate is a fraction of a laptop's, so the
-       * honest ratio between what a shaft of transparent tiles costs and
-       * what it buys is worse there by about the amount this takes off.
+       * 1.75 was chosen on the grounds that the gap to 2x is invisible on a
+       * wall of video. That holds for the video and not for the packs: a
+       * retina laptop is 2 device pixels to the CSS pixel, so a buffer at
+       * 1.75 is upscaled by the browser on its way to the glass, and the
+       * resample lands on the printed artwork — the small type across the
+       * front of a pack is exactly the high-frequency detail a non-integer
+       * upscale smears. The packs are the product, so the cap is now the
+       * screen's own ratio and the common case resolves 1:1.
+       *
+       * A phone is still capped below its screen. Three device pixels to
+       * the CSS pixel against a fraction of a laptop's fill rate is a bill
+       * a shaft of transparent tiles cannot pay, so it takes the sharpening
+       * it can afford rather than all of it.
        */
-      dpr={tall ? [1, 1.4] : [1, 1.75]}
+      dpr={tall ? [1, 1.75] : [1, 2]}
       camera={{
         position: [start.x, start.y, start.z],
         fov: flight.fov,
