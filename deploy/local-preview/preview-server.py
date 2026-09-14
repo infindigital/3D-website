@@ -25,7 +25,9 @@ import posixpath
 import re
 import socket
 import sys
+import threading
 import urllib.parse
+import webbrowser
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PORT = int(os.environ.get("PORT", "8080"))
@@ -169,6 +171,14 @@ if __name__ == "__main__":
         for ip in lan:
             print(f"                      http://{ip}:{PORT}")
     print("\n  Leave this window open. Press Ctrl+C to stop.\n")
+
+    # Open the browser, so the whole thing is one double-click and nobody
+    # has to type an address anywhere.
+    if os.environ.get("NO_OPEN") != "1":
+        threading.Timer(
+            0.4, lambda: webbrowser.open(f"http://localhost:{PORT}")
+        ).start()
+
     try:
         server.serve_forever()
     except KeyboardInterrupt:

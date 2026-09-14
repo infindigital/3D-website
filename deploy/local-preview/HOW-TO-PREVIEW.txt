@@ -6,22 +6,43 @@ world, the scroll animations, the films, everything. It also gives you an
 address to open on your phone and tablet, so you can check those too.
 
 
-FIRST, WHY THE NORMAL WAY DOES NOT WORK
----------------------------------------
+YOU STILL JUST DOUBLE-CLICK A FILE
+----------------------------------
 
-Double-clicking index.html gives a white page with plain black text and
-no 3D. Nothing is broken.
+Double-click  preview-WINDOWS.cmd  (or preview-MAC-LINUX.command) and
+your browser opens the site by itself. You never type an address.
 
-Every stylesheet, script and picture in this site is linked from the site
-root, like  /_next/static/...  . On a web server that "/" means the top
-of the website. Double-clicked, there is no web server, so the browser
-reads "/" as the top of your hard disk, looks for C:\_next\... , and
-finds nothing. So it draws the words with no design and no 3D.
+The browser will show "localhost" at the top. That is only what a web
+page looks like when it is served from your own machine — it is not
+something you have to set up, install or remember.
 
-Those links are correct and must not change — they are exactly what makes
-the site work in public_html on Hostinger. The answer is not to change
-the site, it is to run a small web server on your computer. That is what
-the files here do.
+
+WHY NOT index.html DIRECTLY
+---------------------------
+
+Double-clicking index.html does not work for this site, and it cannot be
+made to without rebuilding how it loads everything. This was tried, and
+measured, rather than assumed:
+
+  * Opened directly, 28 files fail to load and the page draws as plain
+    black serif text with no design and no 3D.
+  * Rebuilt with relative asset links, the design and the fonts come back
+    but the page then crashes outright with "This page couldn't load".
+
+The crash is the real answer. The 3D world loads the pack artwork by
+path at the moment it runs — the packs are textures on the models, not
+pictures on the page — and those paths point at the site root. There is
+no site root when a file is opened straight off the disk, the texture
+loader throws, and it takes the whole page with it. Fixing that means
+changing 35 asset paths across 8 files and the way six loaders resolve
+them, giving two different path systems to keep in step, and even then
+the links between pages would not work, because moving from one page to
+the next asks the disk for a file the browser will not hand over.
+
+So the site keeps the paths that are correct for Hostinger, and the
+launcher supplies the one thing missing: something to serve them. It
+starts in about a second, needs no setup, and is one double-click —
+which is what opening a file was meant to be anyway.
 
 
 SETUP (once)
@@ -54,8 +75,8 @@ RUNNING IT
 WINDOWS
    Double-click  preview-WINDOWS.cmd
 
-   A black window opens and prints two addresses. Leave that window open
-   — closing it stops the site.
+   A black window opens, prints two addresses, and your browser opens the
+   site by itself. Leave that window open — closing it stops the site.
 
    Windows may show a "Windows protected your PC" box the first time.
    Click "More info", then "Run anyway". It may also ask about the
@@ -66,7 +87,8 @@ MAC
    Double-click  preview-MAC-LINUX.command
 
    If macOS refuses the first time, right-click the file, choose Open,
-   then click Open on the warning. That only happens once.
+   then click Open on the warning. That only happens once. Your browser
+   opens the site by itself.
 
 LINUX
    Open a terminal in the folder and run:
@@ -92,7 +114,8 @@ network. That is the one to use on other devices.
 ON YOUR COMPUTER
 ----------------
 
-Open  http://localhost:8080  in any browser.
+The browser opens by itself. If it did not, or you closed it, open
+http://localhost:8080 in any browser.
 
 To check the tablet and phone layouts without leaving your desk, press
 F12 for developer tools and click the small phone/tablet icon in its
@@ -142,7 +165,7 @@ On Windows Command Prompt:
 BEFORE UPLOADING TO HOSTINGER
 -----------------------------
 
-Delete these four files from the folder first:
+Delete these five files from the folder first:
 
     preview-WINDOWS.cmd
     preview-MAC-LINUX.command

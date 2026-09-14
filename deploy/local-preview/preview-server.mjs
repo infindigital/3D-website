@@ -21,7 +21,8 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { join, extname, dirname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
-import { networkInterfaces } from "node:os";
+import { networkInterfaces, platform } from "node:os";
+import { spawn } from "node:child_process";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT ?? 8080);
@@ -147,6 +148,24 @@ server.on("error", (err) => {
   throw err;
 });
 
+/**
+ * Open the site in the default browser, so the whole thing is one
+ * double-click and nobody has to type an address anywhere.
+ */
+function openBrowser(url) {
+  const cmd =
+    platform() === "win32"
+      ? ["cmd", ["/c", "start", "", url]]
+      : platform() === "darwin"
+        ? ["open", [url]]
+        : ["xdg-open", [url]];
+  try {
+    spawn(cmd[0], cmd[1], { stdio: "ignore", detached: true }).unref();
+  } catch {
+    /* No browser to launch is not a reason to stop serving. */
+  }
+}
+
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`\n  RS Chef'z preview is running.\n`);
   console.log(`  On this computer:   http://localhost:${PORT}`);
@@ -158,4 +177,5 @@ server.listen(PORT, "0.0.0.0", () => {
     console.log(`\n  No network address found — phone access needs Wi-Fi.`);
   }
   console.log(`\n  Leave this window open. Press Ctrl+C to stop.\n`);
+  if (process.env.NO_OPEN !== "1") openBrowser(`http://localhost:${PORT}`);
 });
