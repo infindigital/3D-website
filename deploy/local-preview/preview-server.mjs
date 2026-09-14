@@ -190,7 +190,18 @@ function openBrowser(url) {
         ? ["open", [url]]
         : ["xdg-open", [url]];
   try {
-    spawn(cmd[0], cmd[1], { stdio: "ignore", detached: true }).unref();
+    const child = spawn(cmd[0], cmd[1], { stdio: "ignore", detached: true });
+    /*
+     * A missing opener is reported asynchronously, as an 'error' event —
+     * spawn itself does not throw, so the try/catch around it never sees
+     * one. An 'error' event with nothing listening is thrown at the process
+     * instead, which would take the whole server down: the window closes
+     * the instant it opens and the preview looks broken when it is not.
+     * Swallow it. Not being able to launch a browser is not a reason to
+     * stop serving; the address is printed just below.
+     */
+    child.on("error", () => {});
+    child.unref();
   } catch {
     /* No browser to launch is not a reason to stop serving. */
   }

@@ -203,9 +203,19 @@ if __name__ == "__main__":
     # Open the browser, so the whole thing is one double-click and nobody
     # has to type an address anywhere.
     if os.environ.get("NO_OPEN") != "1":
-        threading.Timer(
-            0.4, lambda: webbrowser.open(f"http://localhost:{PORT}")
-        ).start()
+
+        def launch():
+            # A machine with no browser Python can find raises here. It costs
+            # nothing but the convenience of the automatic open, and the
+            # address is printed above, so say nothing rather than print a
+            # traceback into the window and make a working preview look
+            # broken.
+            try:
+                webbrowser.open(f"http://localhost:{PORT}")
+            except Exception:
+                pass
+
+        threading.Timer(0.4, launch).start()
 
     try:
         server.serve_forever()
