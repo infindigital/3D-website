@@ -18,9 +18,23 @@ import type { NextConfig } from "next";
  */
 const isStaticExport = process.env.STATIC_EXPORT === "1";
 
+/**
+ * The offline copy (npm run build:offline), which opens by double-clicking
+ * index.html with no server at all.
+ *
+ * assetPrefix "." makes Next's own links relative to the document rather
+ * than to a site root that does not exist off a disk. It is only half the
+ * job — the app's own /assets/... strings are rewritten afterwards by
+ * scripts/build-offline.mjs, because assetPrefix does not reach them.
+ *
+ * Preview only. These paths are wrong for a real host.
+ */
+const isFileBuild = process.env.FILE_BUILD === "1";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   ...(isStaticExport ? { output: "export" as const } : {}),
+  ...(isFileBuild ? { assetPrefix: "." } : {}),
   images: isStaticExport
     ? {
         /* No server, so no /_next/image endpoint to resize through. Every

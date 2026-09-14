@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
+    // The offline copy is build output too, just under another name.
+    "out-offline/**",
     "build/**",
     "next-env.d.ts",
   ]),
