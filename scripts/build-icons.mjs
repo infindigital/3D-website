@@ -2,7 +2,7 @@
  * Builds the browser icons out of the owner-supplied logo.
  *
  * Nothing here is drawn. The only source is public/assets/brand/logo.png,
- * and the only operations are crop, resize and centre — so the mark in a
+ * and the only operations are crop, resize and place — so the mark in a
  * browser tab is the brand's own mark and not a redrawing of it.
  *
  * WHY A CROP RATHER THAN THE WHOLE LOGO
@@ -13,6 +13,22 @@
  * tall: a smear, not a name. The two green pentagons are the part of the
  * mark that survives being tiny — a distinct silhouette in a colour nothing
  * else on the page uses — so they are what the icon carries.
+ *
+ * WHY THE TWO PENTAGONS ARE STACKED RATHER THAN LEFT SIDE BY SIDE
+ *
+ * Side by side they are 362x170, still more than twice as wide as they are
+ * tall. Dropped into a square that is fitted by width, they fill under half
+ * its height and read as a speck floating in an empty tab — which is what
+ * the first cut of this file produced.
+ *
+ * Each pentagon on its own is 179x170, square to within three percent. Set
+ * one high-left and the other low-right, they occupy the square's diagonal
+ * and each one ends up around 62% of the tab's width rather than 46% of its
+ * height. Same two shapes, same colour, same letters, roughly twice the ink.
+ *
+ * The alternative that reads even better small is one pentagon alone, big
+ * enough that the letter inside stays sharp at 16px — but it can only show
+ * R or S, and the mark is RS.
  *
  * WHAT IT WRITES
  *
@@ -41,39 +57,67 @@ const LOGO = join(ROOT, "public", "assets", "brand", "logo.png");
 const APP = join(ROOT, "src", "app");
 
 /**
- * The pentagon pair inside the logo, measured off the artwork's own alpha
- * channel rather than guessed. If the logo is ever redrawn, re-measure: the
- * build prints the region it used.
+ * The two pentagons inside the logo, each measured off the artwork's own
+ * alpha channel rather than guessed — the gap between them is columns 179
+ * to 182, which is where they part. If the logo is ever redrawn, re-measure:
+ * the build prints the regions it used.
  */
-const MARK = { left: 0, top: 0, width: 362, height: 170 };
+const PENTAGONS = [
+  { name: "R", region: { left: 0, top: 0, width: 179, height: 170 } },
+  { name: "S", region: { left: 183, top: 0, width: 179, height: 170 } },
+];
 
 /**
- * How much of the square the mark is allowed to fill. A little air on every
- * side stops the icon reading as a crop of something larger, and keeps it
- * clear of the rounded corners some platforms apply.
+ * How wide each pentagon is drawn, as a fraction of the icon.
+ *
+ * Two of them on a diagonal overlap by whatever is left over: at 0.62 they
+ * share about a quarter of their span, which is close to how they sit in the
+ * logo and keeps both letters clear of each other. Raising it makes the mark
+ * bigger and the overlap heavier; much past 0.66 the R starts to bite into
+ * the S.
  */
-const FILL = 0.94;
+const PENTAGON = 0.62;
 
-/** The mark on a transparent square of exactly `size` pixels. */
+/**
+ * A margin on all four sides. It stops the icon reading as a crop of
+ * something larger, and keeps the mark clear of the rounded corners some
+ * platforms apply.
+ */
+const INSET = 0.03;
+
+/**
+ * The mark on a square of exactly `size` pixels: one pentagon high-left, the
+ * other low-right.
+ */
 async function tile(size, background) {
-  const inner = Math.round(size * FILL);
-  const mark = await sharp(LOGO)
-    .extract(MARK)
-    /* `inside` keeps the mark's own proportions; it is the width that runs
-       out first, so the result is `inner` wide and short of `inner` tall. */
-    .resize(inner, inner, { fit: "inside", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-    .png()
-    .toBuffer();
+  const inset = Math.round(size * INSET);
+  const span = size - inset * 2;
+  const side = Math.round(span * PENTAGON);
+  /* What is left of the span once one pentagon is placed — the distance the
+     second one is moved down and across. */
+  const step = span - side;
+
+  const placed = await Promise.all(
+    PENTAGONS.map(async ({ region }, i) => ({
+      input: await sharp(LOGO)
+        .extract(region)
+        /* `inside` keeps each pentagon's own proportions; they are a touch
+           wider than they are tall, so width is what runs out first. */
+        .resize(side, side, {
+          fit: "inside",
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        })
+        .png()
+        .toBuffer(),
+      left: inset + step * i,
+      top: inset + step * i,
+    })),
+  );
 
   return sharp({
-    create: {
-      width: size,
-      height: size,
-      channels: 4,
-      background,
-    },
+    create: { width: size, height: size, channels: 4, background },
   })
-    .composite([{ input: mark, gravity: "centre" }])
+    .composite(placed)
     .png({ compressionLevel: 9 })
     .toBuffer();
 }
@@ -127,8 +171,10 @@ await writeFile(join(APP, "favicon.ico"), ico(inIco));
 await writeFile(join(APP, "icon.png"), await tile(512, CLEAR));
 await writeFile(join(APP, "apple-icon.png"), await tile(180, WHITE));
 
-const { left, top, width, height } = MARK;
-console.log(`mark taken from logo.png at ${left},${top} ${width}x${height}`);
+for (const { name, region } of PENTAGONS) {
+  const { left, top, width, height } = region;
+  console.log(`${name} taken from logo.png at ${left},${top} ${width}x${height}`);
+}
 console.log(`favicon.ico    ${ICO_SIZES.join(" + ")}`);
 console.log("icon.png       512, transparent");
 console.log("apple-icon.png 180, on white");
