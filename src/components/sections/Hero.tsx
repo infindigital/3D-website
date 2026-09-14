@@ -473,6 +473,30 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
 
       tl.add(() => window.dispatchEvent(new Event(HERO_BRAND_EVENT)), landed);
 
+      /*
+       * And show the bar's own mark directly, on the same beat, rather than
+       * only asking for it.
+       *
+       * The event above is the bar's cue to drop the class that is holding
+       * its mark back. That works, and it is still what runs. But it is a
+       * React state update, and the one thing the flying logo must not
+       * depend on is a state update arriving: if it does not, this timeline
+       * has just faded out the only copy of the mark on screen and nothing
+       * replaces it. The reported fault was exactly that shape — the logo
+       * reaching its place and then going.
+       *
+       * An inline opacity outranks the class, so this is enough on its own,
+       * needs nothing from React, and agrees with the state update rather
+       * than fighting it when both happen. It is written on the beat the
+       * flight ends, so it cannot be early on a slow phone the way a timer
+       * would be.
+       */
+      if (slot) {
+        tl.add(() => {
+          slot.style.opacity = "1";
+        }, landed);
+      }
+
       tl.to(
         arriving,
         {

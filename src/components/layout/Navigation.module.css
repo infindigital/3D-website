@@ -99,6 +99,27 @@
  */
 .brandHeld {
   opacity: 0;
+  /*
+   * Last resort, and only that.
+   *
+   * The hero shows this mark twice over: it dispatches the event the bar
+   * listens for, and it writes an inline opacity on this element on the same
+   * beat. Between them the mark arrives without needing React to have
+   * re-rendered. This covers the remaining case — a hero that dies partway
+   * through its flight, so that neither ever happens — and it is set long
+   * enough that it cannot fire during an intro merely running slowly on a
+   * cheap phone, which would put two copies of the mark on screen at once.
+   */
+  animation: brandArrives 0.35s var(--ease-soft) 12s forwards;
+}
+
+@keyframes brandArrives {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Wordmark in the logo's own identity: RS in green pentagons, Chef'z in red */

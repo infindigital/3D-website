@@ -57,7 +57,41 @@ function samePage(a: string, b: string): boolean {
  * it lands in public/assets/brand/logo.png (gated in layout.tsx).
  */
 export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
-  const pathname = usePathname();
+  const routerPath = usePathname();
+
+  /*
+   * Which page the bar believes it is on.
+   *
+   * Seeded from the router, which is right, and then kept honest against the
+   * address bar, which is the thing the reader can actually see. A client
+   * reported the red mark staying on HOME after moving to a product page —
+   * that is this value going stale, and it is the only way the bar can be
+   * wrong about which page it is on.
+   *
+   * I could not reproduce it, so this is not a diagnosis; it is a floor. The
+   * router still drives the common case and nothing here waits on it. There
+   * is no event for a pushState navigation, so the check has to be a poll,
+   * and it costs one string comparison twice a second.
+   */
+  const [pathname, setPathname] = useState(routerPath);
+
+  useEffect(() => {
+    const read = () =>
+      setPathname((prev) => {
+        const now = window.location.pathname;
+        return prev === now ? prev : now;
+      });
+
+    read();
+    window.addEventListener("popstate", read);
+    const tick = window.setInterval(read, 500);
+
+    return () => {
+      window.removeEventListener("popstate", read);
+      window.clearInterval(tick);
+    };
+  }, [routerPath]);
+
   const [scrolled, setScrolled] = useState(false);
   const [onDark, setOnDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
