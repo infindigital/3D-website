@@ -5,85 +5,96 @@ Built for: https://rschefz.com
 Hosting:   Hostinger shared / Premium / Business (hPanel)
 
 
-WHAT TO DO
-----------
+THE SHORT ANSWER
+----------------
+
+Upload  UPLOAD-TO-public_html.zip  into public_html and extract it there.
+
+That one file is the whole website — the 3D world, the films, the
+photography, the product pages and the .htaccess. Nothing else in this
+download goes to the server, and nothing has to be deleted afterwards.
+
+Everything else here runs on your own computer:
+
+    UPLOAD-TO-public_html/      the same files, already unzipped, for FTP
+    preview-WINDOWS.cmd         see the site locally, 3D and all
+    preview-MAC-LINUX.command
+    preview-server.mjs          (the launchers use these)
+    preview-server.py
+    HOW-TO-PREVIEW.txt
+
+
+STEP BY STEP
+------------
 
 1. Log in to hPanel and open  Files -> File Manager.
 
 2. Go into the  public_html  folder.
 
-3. Delete anything already in there (a fresh Hostinger account usually has
-   a default.php or an index.html placeholder). Leave public_html itself.
+3. Delete anything already in there. A fresh Hostinger account usually
+   has a default.php or an index.html placeholder. Leave public_html
+   itself.
 
-4. Upload this ZIP into public_html, then right-click it and choose
-   Extract. Everything must end up INSIDE public_html, not in a subfolder.
+4. Upload  UPLOAD-TO-public_html.zip  into public_html.
 
-   When it is right, public_html directly contains:
+5. Right-click it and choose Extract. Extract to public_html itself, not
+   to a new folder.
+
+6. Delete the ZIP once it has extracted.
+
+7. When it is right, public_html directly contains:
 
        index.html
        404.html
        .htaccess
        robots.txt
        sitemap.xml
+       favicon.ico
+       og-image.jpg
        _next/
        assets/
        products/
 
-   If instead you see  public_html/rs-chefz-site/index.html , move the
-   contents up one level.
+   If instead you see  public_html/UPLOAD-TO-public_html/index.html ,
+   move the contents up one level and delete the empty folder. The site
+   will not work one level down.
 
-5. Delete these from public_html — they are for your computer only and
-   do nothing on the server:
+8. In hPanel, point rschefz.com at this site and turn on the free SSL
+   certificate (Security -> SSL). The site forces https, so the
+   certificate has to exist or visitors get a warning.
 
-       the uploaded ZIP
-       READ-ME-FIRST.txt
-       HOW-TO-PREVIEW.txt
-       preview-WINDOWS.cmd
-       preview-MAC-LINUX.command
-       preview-server.mjs
-       preview-server.py
-
-6. In hPanel, point the domain rschefz.com at this site and turn on the
-   free SSL certificate (Security -> SSL). The site forces https, so the
-   certificate has to exist or visitors will get a warning.
-
-7. Open https://rschefz.com and check that the 3D world moves and that the
-   film plays.
+9. Open https://rschefz.com and check three things:
+       the 3D world moves as you scroll
+       the film plays
+       the two product links in the menu open
 
 
-PREVIEWING ON YOUR OWN COMPUTER
--------------------------------
+PREFER FTP?
+-----------
 
-Do NOT open index.html by double-clicking it.
+Upload the CONTENTS of the  UPLOAD-TO-public_html  folder — the files and
+folders inside it, not the folder itself — into public_html.
 
-If you do, you get a plain white page with black serif text, no styling,
-no pictures and no 3D. Nothing is broken — it is the wrong way to open a
-website.
+Make sure your FTP client is showing hidden files, or .htaccess will be
+silently left behind. In FileZilla: Server -> Force showing hidden files.
 
-Why: every stylesheet, script and image in these pages is linked from the
-site root, like  /_next/static/....  On a web server the leading "/"
-means "the top of the website". When you double-click the file, the
-browser is not on a web server, so "/" means the top of your hard disk —
-it looks for C:\_next\... , finds nothing, and gives up. That is exactly
-what the unstyled page is showing you.
 
-Those root-relative links are correct and must stay. They are what makes
-the site work on Hostinger, where "/" is your public_html folder.
+WHY THE 3D WORLD NEEDS ALL OF IT
+--------------------------------
 
-Use the preview tool included in this folder instead:
+The 3D world is not a single file. It needs both of these, whole:
 
-    Windows      double-click  preview-WINDOWS.cmd
-    Mac / Linux  double-click  preview-MAC-LINUX.command
+    _next/      the three.js code, the scroll animation, the page
+                transitions. The filenames contain a version hash, so
+                nothing in here can be renamed or tidied up.
+    assets/     the pack artwork, the photography and the three films.
+                The artwork is not only shown on the page — it is painted
+                onto the 3D packs as textures, so a missing file here
+                means a blank pack in the 3D world.
 
-It starts a small web server, prints an address for this computer and a
-second address to open on your phone or tablet over the same Wi-Fi, and
-behaves the way Hostinger does — clean product URLs, working video, the
-real 404 page. Full instructions, including the firewall and Wi-Fi
-gotchas, are in HOW-TO-PREVIEW.txt next to it.
-
-VS Code's "Live Server" extension also works, but it cannot do the clean
-product URLs, so there you have to open
-/products/gobi-manchurian-masala.html with the .html on the end.
+If a page loads but looks plain, or the 3D never appears, something from
+one of those two folders did not finish uploading. Re-upload that folder
+rather than guessing.
 
 
 IMPORTANT: THE .htaccess FILE
@@ -112,19 +123,21 @@ under the comment "One host, not two" — the active one is commented as
 such, and the www version is directly below it, commented out.
 
 
-WHAT IS IN HERE
----------------
+SEEING IT ON YOUR OWN COMPUTER FIRST
+------------------------------------
 
-index.html                  Home page
-products/*.html             The two product pages
-404.html                    Shown for any unknown address
-_next/                      JavaScript and CSS for the site, including the
-                            3D world (three.js), the scroll animation and
-                            the page transitions. Do not rename anything
-                            in here.
-assets/                     Product photography, pack artwork and the
-                            three video files
-sitemap.xml, robots.txt     For Google Search Console
+Double-click  preview-WINDOWS.cmd  (or preview-MAC-LINUX.command). Your
+browser opens the site by itself, with the 3D world, and it also prints an
+address you can open on your phone and tablet over the same Wi-Fi.
+
+Leave the black window open while you look; closing it stops the preview.
+Full instructions, including the firewall and Wi-Fi gotchas, are in
+HOW-TO-PREVIEW.txt.
+
+Do not open index.html by double-clicking it — you get a plain page with
+no design. That is not a fault; it is what a website looks like when it is
+opened as a file instead of served. HOW-TO-PREVIEW.txt explains why, and
+the separate offline download is the copy built for opening that way.
 
 
 AFTER IT IS LIVE

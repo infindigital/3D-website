@@ -19,12 +19,26 @@
  */
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join, extname, dirname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { networkInterfaces, platform } from "node:os";
 import { spawn } from "node:child_process";
 
-const ROOT = dirname(fileURLToPath(import.meta.url));
+const HERE = dirname(fileURLToPath(import.meta.url));
+
+/*
+ * The download keeps the site in its own folder, so that folder is exactly
+ * what gets uploaded and nothing else has to be deleted first. Serve it if
+ * it is there; otherwise serve whatever folder this file is sitting in,
+ * which is what happens once the launcher has been copied in beside
+ * index.html.
+ */
+const SITE_FOLDER = "UPLOAD-TO-public_html";
+const ROOT = existsSync(join(HERE, SITE_FOLDER, "index.html"))
+  ? join(HERE, SITE_FOLDER)
+  : HERE;
+
 const PORT = Number(process.env.PORT ?? 8080);
 
 const TYPES = {

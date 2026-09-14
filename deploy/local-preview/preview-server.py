@@ -29,7 +29,19 @@ import threading
 import urllib.parse
 import webbrowser
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+# The download keeps the site in its own folder, so that folder is exactly
+# what gets uploaded and nothing else has to be deleted first. Serve it if it
+# is there; otherwise serve whatever folder this file is sitting in, which is
+# what happens once the launcher has been copied in beside index.html.
+SITE_FOLDER = "UPLOAD-TO-public_html"
+ROOT = (
+    os.path.join(HERE, SITE_FOLDER)
+    if os.path.isfile(os.path.join(HERE, SITE_FOLDER, "index.html"))
+    else HERE
+)
+
 PORT = int(os.environ.get("PORT", "8080"))
 
 TYPES = {

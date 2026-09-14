@@ -48,15 +48,13 @@ which is what opening a file was meant to be anyway.
 SETUP (once)
 ------------
 
-1. Copy these files into the SAME folder as index.html:
+1. Nothing to arrange. The launcher and the site folder
+   (UPLOAD-TO-public_html) come out of the download side by side, and the
+   launcher looks inside that folder by itself.
 
-       preview-WINDOWS.cmd
-       preview-MAC-LINUX.command
-       preview-server.mjs
-       preview-server.py
-
-   That folder should already contain index.html, .htaccess, _next,
-   assets and products.
+   If you ever move the launcher somewhere else, put it either next to
+   the UPLOAD-TO-public_html folder or inside it, next to index.html.
+   Both work.
 
 2. You need either Node.js or Python on the computer. Most machines
    already have one. If neither is found, the launcher will tell you and
@@ -165,16 +163,14 @@ On Windows Command Prompt:
 BEFORE UPLOADING TO HOSTINGER
 -----------------------------
 
-Delete these five files from the folder first:
+Nothing to delete. These preview files sit outside the site folder on
+purpose, so what goes to Hostinger is simply
+UPLOAD-TO-public_html.zip — or the contents of the
+UPLOAD-TO-public_html folder — and nothing else.
 
-    preview-WINDOWS.cmd
-    preview-MAC-LINUX.command
-    preview-server.mjs
-    preview-server.py
-    HOW-TO-PREVIEW.txt
-
-They are only for your computer. They do nothing on Hostinger and should
-not be public.
+If you did copy the launcher into the site folder at some point, take
+those files back out before uploading. They do nothing on Hostinger and
+should not be public.
 
 
 WHAT THIS PREVIEW DOES THAT A BASIC ONE DOES NOT
