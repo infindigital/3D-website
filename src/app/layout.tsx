@@ -5,7 +5,9 @@ import { Poppins, Manrope, Anton } from "next/font/google";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
+import JsonLd from "@/components/seo/JsonLd";
 import { siteConfig, getSiteUrl } from "@/config/site";
+import { graph, organisationSchema, webSiteSchema } from "@/config/schema";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -42,24 +44,18 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: [
-    "RS Chefz",
-    "masala",
-    "Gobi Manchurian Masala",
-    "3 in 1 Masala",
-    "Chicken 65",
-    "Fish Fry",
-    "restaurant style masala",
-    "Indian spices",
-  ],
+  /* No `keywords`. Google has not used the meta keywords tag for ranking in
+     well over a decade; the work it was pretending to do is done by the
+     titles, headings, copy, internal links and structured data instead. */
   openGraph: {
     type: "website",
     siteName: siteConfig.name,
+    locale: "en_IN",
     title: `${siteConfig.name} | ${siteConfig.tagline}`,
     description: siteConfig.description,
     images: [
       {
-        url: "/og-image.jpg",
+        url: siteConfig.ogImage,
         width: 1200,
         height: 630,
         alt: `${siteConfig.name} masala packs`,
@@ -70,7 +66,18 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteConfig.name} | ${siteConfig.tagline}`,
     description: siteConfig.description,
-    images: ["/og-image.jpg"],
+    images: [siteConfig.ogImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
 };
 
@@ -84,12 +91,23 @@ export default function RootLayout({
     join(process.cwd(), "public", "assets", "brand", "logo.png"),
   );
 
+  /* The brand and the site, declared once for every page. Both nodes carry a
+     stable @id so a page's own Product and Breadcrumb nodes can point at
+     them instead of restating them. */
+  const siteGraph = graph([
+    organisationSchema(hasLogo ? "/assets/brand/logo.png" : undefined),
+    webSiteSchema(),
+  ]);
+
   return (
     <html
-      lang="en"
+      /* en-IN, not en: the audience, spelling and currency of this site are
+         Indian, and the hreflang a crawler infers from this should say so. */
+      lang="en-IN"
       className={`${poppins.variable} ${manrope.variable} ${anton.variable}`}
     >
       <body>
+        <JsonLd json={siteGraph} />
         <SmoothScroll>
           <Navigation hasLogo={hasLogo} />
           {children}

@@ -1,0 +1,68 @@
+/*
+ * A quiet trail. It sits under the fixed navigation bar at the very top of
+ * a product page, so it takes the bar's height as padding and none of its
+ * weight: small caps, secondary colour, no rules and no chips.
+ */
+.nav {
+  padding: 104px 24px 0;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 1240px;
+  margin: 0 auto;
+  list-style: none;
+  font-family: var(--font-heading);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  opacity: 0.55;
+}
+
+.link {
+  color: inherit;
+  transition: color 0.3s var(--ease-soft), opacity 0.3s var(--ease-soft);
+}
+
+.link:hover {
+  color: var(--color-chilli);
+  opacity: 1;
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--color-turmeric);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* The page you are on is not a link, and it is the one that reads at full
+   strength — the trail behind it is context, not navigation you need. */
+.current {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.sep {
+  opacity: 0.5;
+}
+
+@media (max-width: 640px) {
+  .nav {
+    padding: 92px 18px 0;
+  }
+
+  .list {
+    font-size: 0.68rem;
+    gap: 6px;
+  }
+}

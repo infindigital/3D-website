@@ -20,8 +20,20 @@ import PlateOff from "@/components/product/chicken65/PlateOff";
 import SixtyFiveEdge from "@/components/product/chicken65/SixtyFiveEdge";
 import SixtyFiveTable from "@/components/product/chicken65/SixtyFiveTable";
 import SixtyFiveClose from "@/components/product/chicken65/SixtyFiveClose";
+import Breadcrumbs, { type Crumb } from "@/components/seo/Breadcrumbs";
+import ProductIntro from "@/components/seo/ProductIntro";
+import FaqSection from "@/components/seo/FaqSection";
+import JsonLd from "@/components/seo/JsonLd";
 import { c65Packs, c65Promises } from "@/config/chicken65";
+import { gobiPacks } from "@/config/gobi";
 import { getProduct, products } from "@/config/products";
+import { siteConfig } from "@/config/site";
+import {
+  breadcrumbSchema,
+  faqSchema,
+  graph,
+  productSchema,
+} from "@/config/schema";
 
 /** The three lines above the 3 in 1 pack's shelf. The shelf itself is the one
     the Gobi page stands its sizes on, mounted with this range instead. */
@@ -70,12 +82,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) return {};
+
+  const path = `/products/${product.slug}`;
+  /* The pack's own artwork is the better social card when the owner has
+     supplied it — it is the thing being sold. The site card is the fallback
+     rather than the default. */
+  const social = has(product.images.front)
+    ? product.images.front
+    : siteConfig.ogImage;
+
   return {
-    title: product.name,
-    description: `${product.tagline} ${product.description}`,
-    openGraph: has(product.images.front)
-      ? { images: [product.images.front] }
-      : undefined,
+    /* Absolute: these titles already end in the brand, and the layout's
+       template would otherwise append it a second time. */
+    title: { absolute: product.seo.title },
+    description: product.seo.metaDescription,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "website",
+      /* Restated, not inherited: a page's openGraph replaces the layout's
+         whole object rather than merging into it. */
+      siteName: siteConfig.name,
+      locale: "en_IN",
+      url: path,
+      title: product.seo.title,
+      description: product.seo.metaDescription,
+      images: [{ url: social, alt: `RS Chef'z ${product.name} pack` }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.seo.title,
+      description: product.seo.metaDescription,
+      images: [social],
+    },
   };
 }
 
@@ -95,13 +133,44 @@ export default async function ProductPage({ params }: Props) {
   const isGobi = product.slug === GOBI_SLUG;
   const isThreeInOne = product.slug === THREE_IN_ONE_SLUG;
 
+  /* One array, two consumers: the visible trail and the BreadcrumbList. */
+  const crumbs: Crumb[] = [
+    { name: "Home", path: "/" },
+    { name: "Products", path: "/products" },
+    { name: product.name, path: `/products/${product.slug}` },
+  ];
+
+  /* Only artwork that is actually on disk is claimed as this product's
+     image — the same file-gate the rest of the page uses, applied to the
+     structured data so it can never point at a 404. */
+  const images = [product.images.front, product.images.back].filter(has);
+
+  const packs = isThreeInOne ? c65Packs : isGobi ? gobiPacks : [];
+  const packSizes = packs.map((pack) =>
+    pack.unit ? `${pack.size} ${pack.unit}` : pack.size,
+  );
+
+  const pageGraph = graph([
+    productSchema(product, images, packSizes),
+    breadcrumbSchema(crumbs),
+    /* Built from the same array FaqSection renders below, so every question
+       in the markup is one a reader can see answered on the page. */
+    faqSchema(product.seo.faqs),
+  ]);
+
   return (
     <main>
+      <JsonLd json={pageGraph} />
+      <Breadcrumbs crumbs={crumbs} />
       <ProductHero
         product={product}
         hasFront={has(product.images.front)}
         hasBack={has(product.images.back)}
       />
+      {/* The page in plain words, directly under the hero: what this is,
+          what it makes, and where it can be bought. Everything below is
+          photography, film and a 3D pack, none of which a crawler reads. */}
+      <ProductIntro product={product} other={other} />
       {isGobi && (
         <>
           {/* The six claims run as a band straight off the hero, then the
@@ -161,6 +230,11 @@ export default async function ProductPage({ params }: Props) {
           )}
         </>
       )}
+
+      {/* The questions, last, and open rather than folded away — the
+          FAQPage node above is only honest while every answer in it is one
+          a reader can find on this page. */}
+      <FaqSection faqs={product.seo.faqs} accentColor={product.accentColor} />
     </main>
   );
 }

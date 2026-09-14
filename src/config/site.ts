@@ -22,11 +22,46 @@ export const siteConfig = {
    * can be changed on the host without a deploy.
    */
   whatsappNumber: "918548043650",
+  /** The social preview image, 1200x630, served from this origin. */
+  ogImage: "/og-image.jpg",
+  /**
+   * Where the brand sells and where it operates. Both are stated on the
+   * packs and on the site, and both are what the structured data asserts.
+   */
+  country: "India",
+  countryCode: "IN",
 } as const;
 
-/** Canonical site origin, no trailing slash. */
+/**
+ * Canonical site origin, no trailing slash.
+ *
+ * Every canonical URL, the sitemap, robots.txt, the Open Graph URLs and every
+ * piece of structured data resolve through this one function, so connecting
+ * the real domain is a single environment variable and no code change.
+ *
+ * Order matters. NEXT_PUBLIC_SITE_URL is the production answer; the Vercel-
+ * supplied host is the preview answer, so a preview deployment is
+ * self-consistent rather than claiming to be production; localhost is last.
+ *
+ * Tested for emptiness rather than for undefined: a variable created in a
+ * host's dashboard but left blank arrives as "", which `??` would accept and
+ * hand to `new URL("")` as a crash during the build.
+ */
 export function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+
+  const onVercel =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
+    process.env.VERCEL_URL?.trim();
+  if (onVercel) return `https://${onVercel}`;
+
+  return "http://localhost:3000";
+}
+
+/** An absolute URL for a path, for canonicals and structured data. */
+export function absoluteUrl(path = "/"): string {
+  return `${getSiteUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 /**

@@ -498,10 +498,23 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
       className={styles.hero}
       aria-label="RS Chef'z"
     >
-      {/* The page needs a heading and the hero has no room for one: the
-          brand is the header, and the words behind the film are scenery. */}
+      {/*
+        The page's one H1.
+
+        It is read rather than seen, because the hero is a full-screen film
+        with an intro running over it and there is nowhere to set a heading
+        without covering the thing the heading is about. The brand is the
+        header here and the drifting words behind the film are scenery.
+
+        What it says is what the page is for — the pack, and the country it
+        ships to — rather than the brand line, which says nothing a search
+        for this product would contain. It is not hidden text in the
+        black-hat sense: the same claim is made visibly further down the
+        page, in the lineup and in the section that closes it, so a reader
+        and a crawler are being told the same thing.
+      */}
       <h1 className={styles.srOnly}>
-        {siteConfig.name} — {siteConfig.tagline}
+        Gobi Manchurian Masala in India — {siteConfig.name}
       </h1>
 
       {/* Scenery: huge words in the room's own orange, crossing it forever */}

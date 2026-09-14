@@ -1,9 +1,11 @@
 import { existsSync } from "fs";
 import { join } from "path";
+import type { Metadata } from "next";
 import Hero, { type HeroAssets } from "@/components/sections/Hero";
 import HomeWorld from "@/components/home/HomeWorld";
 import type { StagePack } from "@/three/world/types";
 import { products } from "@/config/products";
+import { siteConfig } from "@/config/site";
 import { FILM_SRC, FILM_POSTER } from "@/three/world/film";
 
 const publicDir = join(process.cwd(), "public");
@@ -11,6 +13,56 @@ const publicDir = join(process.cwd(), "public");
 function has(publicPath: string): boolean {
   return existsSync(join(publicDir, ...publicPath.split("/").filter(Boolean)));
 }
+
+/**
+ * The home page's own metadata, which overrides the layout's defaults.
+ *
+ * `title.absolute` rather than `title`: the layout appends "| RS Chef'z" to
+ * every page title, and this one already ends in the brand.
+ *
+ * The home page owns the India-wide discovery query. The two product pages
+ * own their own product queries, so nothing here competes with them — the
+ * point of splitting the three is that none of them cannibalises another.
+ */
+export const metadata: Metadata = {
+  title: {
+    absolute: "Gobi Manchurian Masala in India | RS Chef'z",
+  },
+  description:
+    "Shop RS Chef'z Gobi Manchurian Masala in India. A ready-mix spice blend for crispy Gobi Manchurian, gobi fry and tikka, plus a 3 in 1 Masala for Chicken 65 and fish fry. Order on Amazon or WhatsApp.",
+  alternates: { canonical: "/" },
+  /*
+   * These two objects replace the layout's rather than merging into them,
+   * so everything the card needs is restated here. Leaving `images` and
+   * `card` out cost the home page its social image and downgraded the
+   * Twitter card to a thumbnail — silently, since neither is visible on
+   * the page itself.
+   */
+  openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
+    locale: "en_IN",
+    url: "/",
+    title: "Gobi Manchurian Masala in India | RS Chef'z",
+    description:
+      "Ready-mix Gobi Manchurian Masala from RS Chef'z, available across India on Amazon and WhatsApp.",
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: `${siteConfig.name} masala packs`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Gobi Manchurian Masala in India | RS Chef'z",
+    description:
+      "Ready-mix Gobi Manchurian Masala from RS Chef'z, available across India on Amazon and WhatsApp.",
+    images: [siteConfig.ogImage],
+  },
+};
 
 /**
  * The hero plays the same owner-shot kitchen film the world below it is

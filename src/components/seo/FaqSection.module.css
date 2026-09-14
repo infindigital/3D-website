@@ -1,0 +1,77 @@
+/*
+ * The questions, as a two-column list of open answers.
+ *
+ * Deliberately not an accordion. A closed accordion hides the answer behind
+ * a click, and the whole justification for the FAQPage structured data on
+ * this page is that every answer in it is a thing a reader can actually
+ * read. Open is also simply faster to scan.
+ */
+.faq {
+  padding: clamp(64px, 8vw, 104px) 24px;
+  background: var(--color-cream);
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  font-family: var(--font-display), var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent, var(--color-chilli));
+}
+
+.heading {
+  margin-top: 14px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: clamp(26px, 3.4vw, 44px);
+  margin-top: clamp(34px, 4vw, 54px);
+}
+
+.item {
+  /* A hairline rather than a card. Twelve bordered boxes would read as a
+     form; a rule over each question reads as a list. */
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
+}
+
+.question {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
+  line-height: 1.32;
+  color: var(--text-primary);
+}
+
+.answer {
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: clamp(0.94rem, 1.3vw, 1rem);
+  line-height: 1.66;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .faq {
+    padding: 56px 18px;
+  }
+
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
