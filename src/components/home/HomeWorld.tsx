@@ -17,10 +17,18 @@ import { worldState } from "@/three/world/worldState";
 import { bandOpacity } from "@/three/world/bands";
 import { FILM_POSTER, FILM_SRC } from "@/three/world/film";
 import { supportsWebGL } from "@/utils/webgl";
+import { HERO_BRAND_EVENT } from "@/utils/heroOpen";
 import type { WorldMode } from "@/three/world/WorldCanvas";
 import styles from "./HomeWorld.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
+
+/**
+ * How long the world waits for the hero before mounting anyway. Only ever
+ * reached by a hero that never finished its intro; an ordinary visit is
+ * released by the hero's own beat, or by the first scroll, well inside it.
+ */
+const WORLD_WAIT_BACKSTOP_MS = 9000;
 
 const WorldCanvas = dynamic(() => import("@/three/world/WorldCanvas"), {
   ssr: false,
@@ -172,18 +180,66 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
   const canvasOn = layout !== "flat" && capable;
   /* Whether the world is close enough to be worth drawing. See below. */
   const [awake, setAwake] = useState(false);
+
+  /*
+   * Whether we are willing to pay for three.js yet.
+   *
+   * `canvasOn` is the *decision* — it drives the layout, and changing it
+   * late would flip the page between the world and the flat reading of it.
+   * This is only about when the module arrives. The two are separate because
+   * the cost being deferred is not the drawing, which already waits for the
+   * world to come into view: it is eight hundred kilobytes of script to
+   * fetch, parse and compile, plus every pack's artwork warmed for the
+   * texture loader, all of it landing on the main thread during the three
+   * seconds the intro is animating over it.
+   *
+   * The world sits below a hero exactly one screen tall, so none of it is
+   * on screen while that is happening. Waiting costs nothing and buys the
+   * opening the whole thread.
+   *
+   * It waits on the hero's own beat rather than on a stopwatch, for the
+   * reason written up in heroOpen.ts: a timer set against an animation runs
+   * at a different speed from it on a slow phone, and the timer wins. A
+   * scroll takes precedence over both — somebody already on their way down
+   * wants the world more than they want the intro — and the backstop is
+   * there for a hero that never finishes.
+   */
+  const [worldReady, setWorldReady] = useState(false);
+  const mountCanvas = canvasOn && worldReady;
   /* Only relevant to the flat layout: whether the film may play itself */
   const [filmPlays, setFilmPlays] = useState(false);
   const filmRef = useRef<HTMLVideoElement>(null);
 
   /* The texture loader fetches the raw artwork files, so warm them the
      moment we know the world will mount rather than waiting for three.js */
-  if (canvasOn) {
+  if (mountCanvas) {
     for (const pack of packs) {
       preload(pack.front, { as: "image" });
       if (pack.back) preload(pack.back, { as: "image" });
     }
   }
+
+  useEffect(() => {
+    if (!canvasOn || worldReady) return;
+
+    let settled = false;
+    const go = () => {
+      if (settled) return;
+      settled = true;
+      setWorldReady(true);
+    };
+
+    /* The mark landing in the bar is the intro's last large move. */
+    window.addEventListener(HERO_BRAND_EVENT, go);
+    window.addEventListener("scroll", go, { passive: true });
+    const backstop = window.setTimeout(go, WORLD_WAIT_BACKSTOP_MS);
+
+    return () => {
+      window.removeEventListener(HERO_BRAND_EVENT, go);
+      window.removeEventListener("scroll", go);
+      window.clearTimeout(backstop);
+    };
+  }, [canvasOn, worldReady]);
 
   useEffect(() => {
     const wide = window.matchMedia(WIDE);
@@ -233,7 +289,7 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
    */
   useEffect(() => {
     const world = worldRef.current;
-    if (!world || !canvasOn) return;
+    if (!world || !mountCanvas) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => setAwake(entry.isIntersecting),
@@ -242,7 +298,7 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
     observer.observe(world);
 
     return () => observer.disconnect();
-  }, [canvasOn]);
+  }, [mountCanvas]);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: no-preference)");
@@ -388,7 +444,7 @@ export default function HomeWorld({ packs, products }: HomeWorldProps) {
       <Cursor />
 
       <div className={styles.viewport}>
-        {canvasOn && (
+        {mountCanvas && (
           <div className={styles.canvas}>
             {/* Keyed on the world, so a window dragged from wide to narrow
                 rebuilds the scene at the other flight's lens rather than

@@ -18,7 +18,12 @@ import {
   setScrollLocked,
 } from "@/components/layout/SmoothScroll";
 import { usePointerParallax } from "@/hooks/usePointerParallax";
-import { HERO_BRAND_EVENT, HERO_OPEN_EVENT } from "@/utils/heroOpen";
+import {
+  HERO_BRAND_EVENT,
+  HERO_HOLD_EVENT,
+  HERO_OPEN_EVENT,
+  hasNavigated,
+} from "@/utils/heroOpen";
 import styles from "./Hero.module.css";
 
 /**
@@ -244,11 +249,29 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
   const [mode, setMode] = useState<"pending" | "intro" | "still">("pending");
 
   useIsoLayoutEffect(() => {
-    setMode(
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "still"
-        : "intro",
-    );
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* The intro belongs to arriving at the site. Coming back to the home
+       page from elsewhere gets the finished hero, with the bar and the mark
+       already standing where they belong, rather than four more seconds of
+       opening titles and a logo that has gone missing again. */
+    if (reduced || hasNavigated()) {
+      setMode("still");
+      return;
+    }
+
+    /*
+     * Claim the bar, here, before the browser has painted anything.
+     *
+     * This is the whole of the handover. The bar is in the served HTML and
+     * would otherwise be standing over the orange sheet that is about to
+     * cover the room; telling it so from a layout effect means it is gone in
+     * the same commit the intro appears in, with no frame in between. The
+     * navigation registers its listener in a layout effect of its own, and
+     * it is mounted above this one, so it is always listening by now.
+     */
+    window.dispatchEvent(new Event(HERO_HOLD_EVENT));
+    setMode("intro");
   }, []);
 
   /*
