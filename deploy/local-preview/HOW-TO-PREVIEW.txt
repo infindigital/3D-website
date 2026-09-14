@@ -1,0 +1,168 @@
+RS Chef'z — running the site on your own computer
+=================================================
+
+This makes the site work locally exactly as it will on Hostinger: the 3D
+world, the scroll animations, the films, everything. It also gives you an
+address to open on your phone and tablet, so you can check those too.
+
+
+FIRST, WHY THE NORMAL WAY DOES NOT WORK
+---------------------------------------
+
+Double-clicking index.html gives a white page with plain black text and
+no 3D. Nothing is broken.
+
+Every stylesheet, script and picture in this site is linked from the site
+root, like  /_next/static/...  . On a web server that "/" means the top
+of the website. Double-clicked, there is no web server, so the browser
+reads "/" as the top of your hard disk, looks for C:\_next\... , and
+finds nothing. So it draws the words with no design and no 3D.
+
+Those links are correct and must not change — they are exactly what makes
+the site work in public_html on Hostinger. The answer is not to change
+the site, it is to run a small web server on your computer. That is what
+the files here do.
+
+
+SETUP (once)
+------------
+
+1. Copy these files into the SAME folder as index.html:
+
+       preview-WINDOWS.cmd
+       preview-MAC-LINUX.command
+       preview-server.mjs
+       preview-server.py
+
+   That folder should already contain index.html, .htaccess, _next,
+   assets and products.
+
+2. You need either Node.js or Python on the computer. Most machines
+   already have one. If neither is found, the launcher will tell you and
+   give you the download links.
+
+       Node.js  -  https://nodejs.org         (click the LTS button)
+       Python   -  https://python.org/downloads
+                   During install, tick "Add Python to PATH"
+
+   Either one is fine. You do not need both.
+
+
+RUNNING IT
+----------
+
+WINDOWS
+   Double-click  preview-WINDOWS.cmd
+
+   A black window opens and prints two addresses. Leave that window open
+   — closing it stops the site.
+
+   Windows may show a "Windows protected your PC" box the first time.
+   Click "More info", then "Run anyway". It may also ask about the
+   firewall: tick "Private networks" and allow it, or your phone will not
+   be able to connect.
+
+MAC
+   Double-click  preview-MAC-LINUX.command
+
+   If macOS refuses the first time, right-click the file, choose Open,
+   then click Open on the warning. That only happens once.
+
+LINUX
+   Open a terminal in the folder and run:
+       ./preview-MAC-LINUX.command
+
+
+WHAT YOU WILL SEE
+-----------------
+
+  RS Chef'z preview is running.
+
+  On this computer:   http://localhost:8080
+
+  On your phone or tablet (same Wi-Fi):
+                      http://192.168.1.23:8080
+
+  Leave this window open. Press Ctrl+C to stop.
+
+The exact numbers in the second address will be different on your
+network. That is the one to use on other devices.
+
+
+ON YOUR COMPUTER
+----------------
+
+Open  http://localhost:8080  in any browser.
+
+To check the tablet and phone layouts without leaving your desk, press
+F12 for developer tools and click the small phone/tablet icon in its
+toolbar (Ctrl+Shift+M in Chrome). Pick a device from the dropdown at the
+top. This is how the layout is meant to be checked at different widths.
+
+
+ON YOUR REAL PHONE OR TABLET
+----------------------------
+
+1. Put the phone on the SAME Wi-Fi as the computer. Mobile data will not
+   reach it.
+2. Type the second address — the http://192.168.x.x:8080 one — into the
+   phone's browser. Type it exactly, including the :8080 on the end.
+3. The site loads, 3D and all.
+
+If it will not connect:
+  * Check both devices really are on the same Wi-Fi, not one on a guest
+    network.
+  * Windows Firewall is the usual cause. Allow the Node or Python popup
+    for "Private networks".
+  * Some office and hotel Wi-Fi block devices from talking to each other
+    ("client isolation"). A phone hotspot with the computer joined to it
+    works as a way around this.
+
+
+STOPPING IT
+-----------
+
+Click the black window and press Ctrl+C, or just close the window.
+
+
+IF PORT 8080 IS BUSY
+--------------------
+
+The launcher will say so. Start it on another port instead — open a
+terminal in the folder and run one of:
+
+    PORT=8081 node preview-server.mjs
+    PORT=8081 python preview-server.py
+
+On Windows Command Prompt:
+
+    set PORT=8081 && node preview-server.mjs
+
+
+BEFORE UPLOADING TO HOSTINGER
+-----------------------------
+
+Delete these four files from the folder first:
+
+    preview-WINDOWS.cmd
+    preview-MAC-LINUX.command
+    preview-server.mjs
+    preview-server.py
+    HOW-TO-PREVIEW.txt
+
+They are only for your computer. They do nothing on Hostinger and should
+not be public.
+
+
+WHAT THIS PREVIEW DOES THAT A BASIC ONE DOES NOT
+------------------------------------------------
+
+It copies what Hostinger's .htaccess does, so the preview is honest:
+
+  * Clean URLs. /products/gobi-manchurian-masala works without the .html,
+    the same as it will live. Most simple local servers cannot do this.
+  * Byte ranges, which video needs. Without them a browser refuses to
+    play the films even though the files are perfect.
+  * The real 404 page for unknown addresses.
+  * Correct file types for .mp4, .webp and the fonts.
+  * No caching, so a rebuilt site always shows immediately.

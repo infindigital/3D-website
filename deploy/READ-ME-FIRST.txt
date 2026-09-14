@@ -32,7 +32,16 @@ WHAT TO DO
    If instead you see  public_html/rs-chefz-site/index.html , move the
    contents up one level.
 
-5. Delete the uploaded ZIP and this READ-ME-FIRST.txt from public_html.
+5. Delete these from public_html — they are for your computer only and
+   do nothing on the server:
+
+       the uploaded ZIP
+       READ-ME-FIRST.txt
+       HOW-TO-PREVIEW.txt
+       preview-WINDOWS.cmd
+       preview-MAC-LINUX.command
+       preview-server.mjs
+       preview-server.py
 
 6. In hPanel, point the domain rschefz.com at this site and turn on the
    free SSL certificate (Security -> SSL). The site forces https, so the
@@ -61,26 +70,20 @@ what the unstyled page is showing you.
 Those root-relative links are correct and must stay. They are what makes
 the site work on Hostinger, where "/" is your public_html folder.
 
-To look at the site locally, serve the folder instead. Any of these:
+Use the preview tool included in this folder instead:
 
-  * VS Code: install the "Live Server" extension, right-click index.html
-    and choose "Open with Live Server".
+    Windows      double-click  preview-WINDOWS.cmd
+    Mac / Linux  double-click  preview-MAC-LINUX.command
 
-  * Windows, Mac or Linux with Python installed — open a terminal in this
-    folder and run:
-        python -m http.server 8000
-    then visit  http://localhost:8000
+It starts a small web server, prints an address for this computer and a
+second address to open on your phone or tablet over the same Wi-Fi, and
+behaves the way Hostinger does — clean product URLs, working video, the
+real 404 page. Full instructions, including the firewall and Wi-Fi
+gotchas, are in HOW-TO-PREVIEW.txt next to it.
 
-  * With Node installed:
-        npx serve .
-    then open the address it prints.
-
-One difference to expect locally: the product pages. On Hostinger the
-.htaccess turns /products/gobi-manchurian-masala into the .html file.
-Most simple local servers do not read .htaccess, so locally you may need
-to open  /products/gobi-manchurian-masala.html  with the .html on the
-end. That is a local-preview quirk only; on Hostinger the clean URL is
-the one that works.
+VS Code's "Live Server" extension also works, but it cannot do the clean
+product URLs, so there you have to open
+/products/gobi-manchurian-masala.html with the .html on the end.
 
 
 IMPORTANT: THE .htaccess FILE
