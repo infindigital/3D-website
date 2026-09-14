@@ -1,0 +1,147 @@
+RS Chef'z — website files for Hostinger
+=======================================
+
+Built for: https://rschefz.com
+Hosting:   Hostinger shared / Premium / Business (hPanel)
+
+
+WHAT TO DO
+----------
+
+1. Log in to hPanel and open  Files -> File Manager.
+
+2. Go into the  public_html  folder.
+
+3. Delete anything already in there (a fresh Hostinger account usually has
+   a default.php or an index.html placeholder). Leave public_html itself.
+
+4. Upload this ZIP into public_html, then right-click it and choose
+   Extract. Everything must end up INSIDE public_html, not in a subfolder.
+
+   When it is right, public_html directly contains:
+
+       index.html
+       404.html
+       .htaccess
+       robots.txt
+       sitemap.xml
+       _next/
+       assets/
+       products/
+
+   If instead you see  public_html/rs-chefz-site/index.html , move the
+   contents up one level.
+
+5. Delete the uploaded ZIP and this READ-ME-FIRST.txt from public_html.
+
+6. In hPanel, point the domain rschefz.com at this site and turn on the
+   free SSL certificate (Security -> SSL). The site forces https, so the
+   certificate has to exist or visitors will get a warning.
+
+7. Open https://rschefz.com and check that the 3D world moves and that the
+   film plays.
+
+
+PREVIEWING ON YOUR OWN COMPUTER
+-------------------------------
+
+Do NOT open index.html by double-clicking it.
+
+If you do, you get a plain white page with black serif text, no styling,
+no pictures and no 3D. Nothing is broken — it is the wrong way to open a
+website.
+
+Why: every stylesheet, script and image in these pages is linked from the
+site root, like  /_next/static/....  On a web server the leading "/"
+means "the top of the website". When you double-click the file, the
+browser is not on a web server, so "/" means the top of your hard disk —
+it looks for C:\_next\... , finds nothing, and gives up. That is exactly
+what the unstyled page is showing you.
+
+Those root-relative links are correct and must stay. They are what makes
+the site work on Hostinger, where "/" is your public_html folder.
+
+To look at the site locally, serve the folder instead. Any of these:
+
+  * VS Code: install the "Live Server" extension, right-click index.html
+    and choose "Open with Live Server".
+
+  * Windows, Mac or Linux with Python installed — open a terminal in this
+    folder and run:
+        python -m http.server 8000
+    then visit  http://localhost:8000
+
+  * With Node installed:
+        npx serve .
+    then open the address it prints.
+
+One difference to expect locally: the product pages. On Hostinger the
+.htaccess turns /products/gobi-manchurian-masala into the .html file.
+Most simple local servers do not read .htaccess, so locally you may need
+to open  /products/gobi-manchurian-masala.html  with the .html on the
+end. That is a local-preview quirk only; on Hostinger the clean URL is
+the one that works.
+
+
+IMPORTANT: THE .htaccess FILE
+-----------------------------
+
+.htaccess starts with a dot, so File Manager hides it by default. If the
+product pages give "404 Not Found" after upload, that file did not make
+it across.
+
+In File Manager, use  Settings -> Show hidden files  and confirm
+.htaccess is sitting in public_html next to index.html.
+
+It is what makes /products/gobi-manchurian-masala work instead of
+/products/gobi-manchurian-masala.html, and it also forces https, sends the
+security headers and sets the caching rules. Without it the home page will
+still load and the product links will not.
+
+
+WWW OR NO WWW
+-------------
+
+Set up as: rschefz.com  (no www). www.rschefz.com redirects to it.
+
+To prefer www.rschefz.com instead, open .htaccess and swap the two rules
+under the comment "One host, not two" — the active one is commented as
+such, and the www version is directly below it, commented out.
+
+
+WHAT IS IN HERE
+---------------
+
+index.html                  Home page
+products/*.html             The two product pages
+404.html                    Shown for any unknown address
+_next/                      JavaScript and CSS for the site, including the
+                            3D world (three.js), the scroll animation and
+                            the page transitions. Do not rename anything
+                            in here.
+assets/                     Product photography, pack artwork and the
+                            three video files
+sitemap.xml, robots.txt     For Google Search Console
+
+
+AFTER IT IS LIVE
+----------------
+
+1. Google Search Console -> add the property rschefz.com and verify it.
+2. Submit  https://rschefz.com/sitemap.xml
+3. Use URL Inspection on these three, and request indexing:
+      https://rschefz.com/
+      https://rschefz.com/products/gobi-manchurian-masala
+      https://rschefz.com/products/three-in-one-masala
+
+
+IF YOU CHANGE THE DOMAIN LATER
+------------------------------
+
+The domain is written into the page source (canonical tags, sitemap,
+structured data), so these files only suit rschefz.com. For a different
+domain the site has to be rebuilt:
+
+    NEXT_PUBLIC_SITE_URL=https://newdomain.com npm run build:static
+
+That regenerates the  out/  folder. Upload that instead.
