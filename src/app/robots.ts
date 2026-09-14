@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/config/site";
 
+/** Written once at build time, so the static export can emit robots.txt. */
+export const dynamic = "force-static";
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {

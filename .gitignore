@@ -41,3 +41,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Static export for Apache hosting — a build artifact, rebuilt by
+# `npm run build:static`, never committed.
+/out

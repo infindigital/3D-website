@@ -1,0 +1,127 @@
+# RS Chef'z — Apache configuration for Hostinger shared hosting (hPanel).
+#
+# This file is copied into the static export by the build, so it lands in
+# public_html alongside index.html. It does the three jobs Next.js does for
+# itself when a Node server is running and cannot when there isn't one:
+# route clean URLs, send the security and caching headers, and serve the
+# 404 page.
+#
+# Safe to leave in place on any Apache host. Nothing here is Hostinger-only.
+
+# ---------------------------------------------------------------------------
+# 1. Clean URLs
+# ---------------------------------------------------------------------------
+# The export writes products/gobi-manchurian-masala.html, but every link,
+# canonical tag and sitemap entry on this site points at the extensionless
+# /products/gobi-manchurian-masala. This maps one to the other, so the URL
+# a visitor sees is the URL the SEO markup claims. Without it every product
+# link is a 404.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Force HTTPS. Hostinger issues the certificate; this makes it the only
+  # way in, so the canonical https:// URLs are never served over http.
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # One host, not two. www and non-www serving the same pages is duplicate
+  # content; this settles it on the bare domain, which is what the canonical
+  # tags say. To prefer www instead, comment this rule out and uncomment the
+  # one below it.
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+  # RewriteCond %{HTTP_HOST} !^www\. [NC]
+  # RewriteCond %{HTTP_HOST} !^localhost [NC]
+  # RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Strip a trailing slash, so /products/gobi-manchurian-masala/ and
+  # /products/gobi-manchurian-masala are not two URLs for one page.
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ /$1 [L,R=301]
+
+  # The actual mapping: if the request has no extension and a matching .html
+  # exists, serve it. Real files and directories are left alone, so assets,
+  # /_next/* and sitemap.xml are untouched.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^(.*)$ /$1.html [L]
+</IfModule>
+
+# Anything that matches nothing at all gets the exported 404 page, with a
+# real 404 status rather than a redirect to a page that returns 200.
+ErrorDocument 404 /404.html
+
+# ---------------------------------------------------------------------------
+# 2. Security headers
+# ---------------------------------------------------------------------------
+# The same three next.config.ts sends on the Node build.
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 3. Caching
+# ---------------------------------------------------------------------------
+# Next fingerprints everything under /_next/static with a content hash, so
+# those files can be cached forever — a change produces a new filename. The
+# artwork and film under /assets keep their names when the owner replaces
+# one, so they get a day rather than a year. HTML is never cached, or a
+# visitor would keep seeing the previous deploy.
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 day"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+
+  # Hashed build output. Immutable by construction.
+  <IfModule mod_rewrite.c>
+    SetEnvIf Request_URI "^/_next/static/" IS_IMMUTABLE=1
+  </IfModule>
+  Header set Cache-Control "public, max-age=31536000, immutable" env=IS_IMMUTABLE
+
+  # Owner-supplied artwork, film and textures: a day fresh, a week stale.
+  SetEnvIf Request_URI "^/assets/" IS_ASSET=1
+  Header set Cache-Control "public, max-age=86400, stale-while-revalidate=604800" env=IS_ASSET
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 4. Compression
+# ---------------------------------------------------------------------------
+# Text compresses by roughly 70%, and the JavaScript bundle for the 3D world
+# is the largest text file on the site. Video and webp are already
+# compressed and are deliberately left out — gzipping them wastes CPU and
+# can make them marginally larger.
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/xml application/rss+xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 5. MIME types
+# ---------------------------------------------------------------------------
+# Older Apache builds do not know these, and a video served as text/plain
+# will not play. The hero film and the film deck both depend on this.
+
+<IfModule mod_mime.c>
+  AddType video/mp4 .mp4
+  AddType image/webp .webp
+  AddType image/avif .avif
+  AddType font/woff2 .woff2
+  AddType application/manifest+json .webmanifest
+</IfModule>

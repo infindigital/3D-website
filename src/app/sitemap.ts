@@ -3,6 +3,15 @@ import { getSiteUrl } from "@/config/site";
 import { products } from "@/config/products";
 
 /**
+ * Evaluated once, at build time.
+ *
+ * Required by the static export — there is no server on Apache to generate
+ * this per request — and correct for the Node build too: `new Date()` below
+ * is meant to be the moment of the deploy, not the moment of the visit.
+ */
+export const dynamic = "force-static";
+
+/**
  * The three canonical, indexable URLs and nothing else.
  *
  * No Amazon or WhatsApp links — those are outbound conversion destinations
