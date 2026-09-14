@@ -33,6 +33,24 @@ export const siteConfig = {
 } as const;
 
 /**
+ * When this copy of the site was built.
+ *
+ * It exists to settle one question that has cost several rounds: whether the
+ * page somebody is looking at is the page that was last handed over. A
+ * browser cache, a host that was never re-uploaded, or a deployment pointed
+ * at the wrong folder all look identical from the outside — the fix is
+ * applied, pushed, verified, and the screenshot still shows the old fault.
+ *
+ * Evaluated once while the page is being generated, so it is baked into the
+ * HTML rather than read in the browser. To check a live page: view source
+ * (Ctrl+U, or Cmd+Option+U) and search for rs-build.
+ */
+export const BUILD_STAMP = new Date()
+  .toISOString()
+  .slice(0, 16)
+  .replace("T", " ");
+
+/**
  * Canonical site origin, no trailing slash.
  *
  * Every canonical URL, the sitemap, robots.txt, the Open Graph URLs and every

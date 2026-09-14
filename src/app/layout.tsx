@@ -6,7 +6,7 @@ import SmoothScroll from "@/components/layout/SmoothScroll";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
 import JsonLd from "@/components/seo/JsonLd";
-import { siteConfig, getSiteUrl } from "@/config/site";
+import { siteConfig, getSiteUrl, BUILD_STAMP } from "@/config/site";
 import { graph, organisationSchema, webSiteSchema } from "@/config/schema";
 import "./globals.css";
 
@@ -68,6 +68,10 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [siteConfig.ogImage],
   },
+  /* Which build this page came out of. Not for crawlers; it is how anyone
+     can tell in five seconds whether the page in front of them is the one
+     that was last handed over. See BUILD_STAMP. */
+  other: { "rs-build": BUILD_STAMP },
   robots: {
     index: true,
     follow: true,
