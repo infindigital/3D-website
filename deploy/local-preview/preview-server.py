@@ -68,6 +68,14 @@ TYPES = {
 
 RANGE_RE = re.compile(r"^bytes=(\d*)-(\d*)$")
 
+# The permanent redirects .htaccess serves, repeated here so the preview tells
+# the same truth as Hostinger. Without them an old address 404s locally and
+# silently works live, which is the wrong way round for a thing whose job is
+# to show you what you are about to upload.
+REDIRECTS = {
+    "/products/three-in-one-masala": "/products/chicken-65-masala",
+}
+
 
 class Handler(http.server.BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
@@ -103,6 +111,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if len(raw) > 1 and raw.endswith("/"):
             self.send_response(301)
             self.send_header("Location", raw[:-1])
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
+        moved = REDIRECTS.get(raw.rstrip("/") or "/")
+        if moved:
+            self.send_response(301)
+            self.send_header("Location", moved)
             self.send_header("Content-Length", "0")
             self.end_headers()
             return

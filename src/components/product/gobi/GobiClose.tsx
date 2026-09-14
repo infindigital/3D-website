@@ -95,7 +95,7 @@ export default function GobiClose({ product }: { product: Product }) {
             or your kitchen&rsquo;s kitchen.
           </h2>
           <p className={styles.body}>
-            A 30 g sachet or a 5 kg sack — the same crunch, the same colour, the
+            A 30 g sachet or a 5 kg sack, the same crunch, the same colour, the
             same masala per plate.
           </p>
           <BuyButtons

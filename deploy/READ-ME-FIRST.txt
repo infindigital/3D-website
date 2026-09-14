@@ -148,7 +148,7 @@ AFTER IT IS LIVE
 3. Use URL Inspection on these three, and request indexing:
       https://rschefz.com/
       https://rschefz.com/products/gobi-manchurian-masala
-      https://rschefz.com/products/three-in-one-masala
+      https://rschefz.com/products/chicken-65-masala
 
 
 IF YOU CHANGE THE DOMAIN LATER

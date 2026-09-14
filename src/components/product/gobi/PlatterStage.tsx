@@ -242,7 +242,7 @@ export default function PlatterStage({ product }: { product: Product }) {
           className={styles.stage}
           ref={stageRef}
           role="group"
-          aria-label="Turntable of serving ideas — drag to spin"
+          aria-label="Turntable of serving ideas, drag to spin"
         >
           <div className={styles.ring}>
             {gobiServings.map((idea, index) => (

@@ -175,7 +175,7 @@ export default function PlateOff({ product }: { product: Product }) {
                 <Image
                   className={styles.plateImg}
                   src={c65Assets.plates.ours}
-                  alt="Chicken 65 cooked with RS Chef'z 3 in 1 Masala — evenly red, with onion, curry leaf and lime"
+                  alt="Chicken 65 cooked with RS Chef'z 3 in 1 Masala, evenly red, with onion, curry leaf and lime"
                   width={1100}
                   height={1100}
                   sizes="(max-width: 760px) 78vw, 38vw"
@@ -193,7 +193,7 @@ export default function PlateOff({ product }: { product: Product }) {
                 <Image
                   className={styles.plateImg}
                   src={c65Assets.plates.other}
-                  alt="Chicken 65 cooked with an ordinary masala — patchy brown, served dry with a chutney"
+                  alt="Chicken 65 cooked with an ordinary masala, patchy brown, served dry with a chutney"
                   width={1100}
                   height={1100}
                   sizes="(max-width: 760px) 78vw, 38vw"

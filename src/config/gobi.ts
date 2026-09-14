@@ -177,7 +177,7 @@ export const gobiRecipe: GobiRecipe = {
     { id: "grill", label: "Or grill", body: "Pan, charcoal or gas, on low." },
   ],
   /** The line the card prints in brackets, and the one people most often miss. */
-  note: "Do not add chilli or salt — the masala already carries both.",
+  note: "Do not add chilli or salt; the masala already carries both.",
 };
 
 export interface ComparisonRow {
@@ -305,7 +305,7 @@ export const gobiServings: ServingIdea[] = [
     style: "Appetiser",
     image: gobiAssets.platters.dry,
     presentation:
-      "On skewers standing in a glass, or flat on a platter — street food, plated.",
+      "On skewers standing in a glass, or flat on a platter: street food, plated.",
     garnish: "Spring onion, cilantro, sesame.",
     dip: "Schezwan or sweet chilli.",
   },

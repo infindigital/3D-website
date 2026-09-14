@@ -41,6 +41,16 @@ const ROOT = existsSync(join(HERE, SITE_FOLDER, "index.html"))
 
 const PORT = Number(process.env.PORT ?? 8080);
 
+/*
+ * The permanent redirects .htaccess serves, repeated here so the preview
+ * tells the same truth as Hostinger. Without them an old address 404s
+ * locally and silently works live, which is the wrong way round for a thing
+ * whose job is to show you what you are about to upload.
+ */
+const REDIRECTS = new Map([
+  ["/products/three-in-one-masala", "/products/chicken-65-masala"],
+]);
+
 const TYPES = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -91,6 +101,12 @@ const server = createServer(async (req, res) => {
 
     if (path.length > 1 && path.endsWith("/")) {
       res.writeHead(301, { Location: path.slice(0, -1) + url.search });
+      return res.end();
+    }
+
+    const moved = REDIRECTS.get(path);
+    if (moved) {
+      res.writeHead(301, { Location: moved + url.search });
       return res.end();
     }
 

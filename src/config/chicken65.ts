@@ -48,7 +48,7 @@ export const c65Assets = {
  */
 export const c65Yield = {
   sachet: "25 g",
-  note: "One 25 g sachet is one fry — a plate for four.",
+  note: "One 25 g sachet is one fry, a plate for four.",
 } as const;
 
 /** The short claims that run across the top of the page, under the hero. */
@@ -156,7 +156,7 @@ export interface C65Advantage {
 export const c65Advantages: C65Advantage[] = [
   { id: "jars", text: "One pack instead of eight jars" },
   { id: "range", text: "Chicken 65, fish fry, kabab, gobi" },
-  { id: "quick", text: "Mix, coat, fry — minutes, not hours" },
+  { id: "quick", text: "Mix, coat, fry: minutes, not hours" },
   { id: "same", text: "The same plate every single time" },
   { id: "clean", text: "No artificial colours or preservatives" },
   { id: "sealed", text: "Sealed pouch, fresh to the last spoon" },

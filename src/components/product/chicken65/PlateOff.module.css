@@ -375,7 +375,7 @@
   /* Stacked, the two lines lose the one thing that told them apart on a wide
      screen: which plate they were sitting under. So each says so. */
   .side::before {
-    content: "Theirs — ";
+    content: "Theirs: ";
     font-family: var(--font-heading);
     font-weight: 600;
     font-size: 0.72rem;
@@ -385,7 +385,7 @@
   }
 
   .sideOurs::before {
-    content: "Ours — ";
+    content: "Ours: ";
     color: var(--accent);
   }
 
@@ -437,10 +437,10 @@
    stacked list, and there the labels are the only thing separating them. */
 @media (prefers-reduced-motion: reduce) and (max-width: 760px) {
   .side::before {
-    content: "Theirs — ";
+    content: "Theirs: ";
   }
 
   .sideOurs::before {
-    content: "Ours — ";
+    content: "Ours: ";
   }
 }

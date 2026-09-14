@@ -188,7 +188,7 @@ function BandRun({ row, offset }: { row: string[]; offset: number }) {
           className={styles.bandWord}
           data-ink={INKS[(index + offset) % INKS.length]}
         >
-          {word} —
+          {word} ·
         </span>
       ))}
     </span>
@@ -537,7 +537,7 @@ export default function Hero({ assets }: { assets: HeroAssets }) {
         and a crawler are being told the same thing.
       */}
       <h1 className={styles.srOnly}>
-        Gobi Manchurian Masala in India — {siteConfig.name}
+        Gobi Manchurian Masala in India from {siteConfig.name}
       </h1>
 
       {/* Scenery: huge words in the room's own orange, crossing it forever */}

@@ -97,7 +97,7 @@ export const products: Product[] = [
       metaDescription:
         "RS Chef'z Gobi Manchurian Masala is a ready-mix spice blend for crispy Gobi Manchurian, gobi fry and tikka. Also for mushroom, paneer and potato. Order across India on Amazon or WhatsApp.",
       subheading:
-        "Manchurian, fry or tikka — from one ready-mix pack, with no salt or chilli to add",
+        "Manchurian, fry or tikka from one ready-mix pack, with no salt or chilli to add",
       intro:
         "RS Chef'z Gobi Manchurian Masala is a ready-mix spice blend for making restaurant-style Gobi Manchurian at home. Chilli, corn starch, salt, turmeric, ginger and natural spices are already measured into the pack, so there is no second masala to open and no salt or chilli to add. The same blend makes gobi fry and tikka, and works on mushroom, paneer and potato as well as cauliflower. It is sold in four sizes and can be ordered across India through Amazon or on WhatsApp.",
       faqs: [
@@ -145,7 +145,12 @@ export const products: Product[] = [
     },
   },
   {
-    slug: "three-in-one-masala",
+    /* The slug names the dish people search for, not the pack's shelf name.
+       "3 in 1" is what is printed on the front, but nobody types it: the
+       queries this page can win are the ones with Chicken 65 in them, and
+       the URL is one of the few places a keyword still carries weight. The
+       old URL is kept alive by a permanent redirect in public/.htaccess. */
+    slug: "chicken-65-masala",
     name: "3 in 1 Masala",
     shortName: "3 in 1",
     tagline: "One masala. Three favourites.",
@@ -175,14 +180,14 @@ export const products: Product[] = [
       metaDescription:
         "RS Chef'z 3 in 1 Masala is a ready-mix spice blend for Chicken 65, fish fry and Gobi Manchurian, and it makes kabab and Gobi 65 from the same pack. Order across India on Amazon or WhatsApp.",
       subheading:
-        "Chicken 65, fish fry, kabab and gobi — one ready-mix pack instead of a shelf of jars",
+        "Chicken 65, fish fry, kabab and gobi from one ready-mix pack instead of a shelf of jars",
       intro:
         "RS Chef'z 3 in 1 Masala is a ready-mix spice blend for Chicken 65, fish fry and Gobi Manchurian. Chilli, corn starch, salt, turmeric, ginger and natural spices come balanced in the pack, so the method is only three things long: mix the paste, coat and leave it, then fry. The same pack also makes seekh kabab and Gobi 65, which is what 3 in 1 means. It is sold in four sizes and can be ordered across India through Amazon or on WhatsApp.",
       faqs: [
         {
           question: "What is RS Chef'z 3 in 1 Masala?",
           answer:
-            "It is one ready-mix spice blend that covers three dishes — Chicken 65, fish fry and Gobi Manchurian — from a single pack. It contains chilli, corn starch, salt, turmeric, ginger and natural spices.",
+            "It is one ready-mix spice blend that covers three dishes from a single pack: Chicken 65, fish fry and Gobi Manchurian. It contains chilli, corn starch, salt, turmeric, ginger and natural spices.",
         },
         {
           question: "How do I use 3 in 1 Masala?",
@@ -197,7 +202,7 @@ export const products: Product[] = [
         {
           question: "Can I use it for fish fry?",
           answer:
-            "Yes. Fish fry is one of the three dishes on the pack. The method is the same — mix the paste, coat the fish, marinate and fry.",
+            "Yes. Fish fry is one of the three dishes on the pack. The method is the same: mix the paste, coat the fish, marinate and fry.",
         },
         {
           question: "Can I use it for Gobi Manchurian?",

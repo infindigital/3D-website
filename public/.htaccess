@@ -37,6 +37,12 @@
   # RewriteCond %{HTTP_HOST} !^localhost [NC]
   # RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+  # The 3 in 1 pack moved to a slug that names the dish people actually
+  # search for. Permanent, and before the rewrite below, so the old address
+  # answers with a redirect rather than a 404 and carries anything already
+  # pointing at it across.
+  RewriteRule ^products/three-in-one-masala/?$ /products/chicken-65-masala [L,R=301]
+
   # Strip a trailing slash, so /products/gobi-manchurian-masala/ and
   # /products/gobi-manchurian-masala are not two URLs for one page.
   RewriteCond %{REQUEST_FILENAME} !-d

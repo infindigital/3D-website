@@ -48,7 +48,7 @@ const C65_SHELF_COPY = {
   ),
   lead: (
     <>
-      The same 3 in 1 Masala in four sizes — a sachet for the drawer, or five
+      The same 3 in 1 Masala in four sizes: a sachet for the drawer, or five
       kilos for a kitchen that fries every day.
     </>
   ),
@@ -62,7 +62,7 @@ const C65_SHELF_COPY = {
 const GOBI_SLUG = "gobi-manchurian-masala";
 
 /** The pack whose page carries the Chicken 65 chapter below the shared story. */
-const THREE_IN_ONE_SLUG = "three-in-one-masala";
+const THREE_IN_ONE_SLUG = "chicken-65-masala";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -170,7 +170,15 @@ export default async function ProductPage({ params }: Props) {
       {/* The page in plain words, directly under the hero: what this is,
           what it makes, and where it can be bought. Everything below is
           photography, film and a 3D pack, none of which a crawler reads. */}
-      <ProductIntro product={product} other={other} />
+      <ProductIntro
+        product={product}
+        other={other}
+        /* Two compositions, one per pack. The gobi pack is one dish done
+           several ways, so its variations sit under the prose as chips; the
+           3 in 1 pack's whole claim is three named dishes in one bag, so
+           they stand numbered beside it. See IntroVariant. */
+        variant={isGobi ? "rule" : "index"}
+      />
       {isGobi && (
         <>
           {/* The six claims run as a band straight off the hero, then the

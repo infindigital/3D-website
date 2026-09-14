@@ -103,6 +103,26 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
   const revealed = owner === "none" || opened;
   const branded = owner === "none" || landed;
 
+  /*
+   * Exactly one link is the current one, decided once here rather than by
+   * each link deciding for itself.
+   *
+   * A client reported the bar showing two pages marked at the same time —
+   * HOME still lit on a product page, with the product lit beside it. Asking
+   * each link the same question independently is what makes that shape of
+   * fault expressible at all; picking a single winner first means the bar
+   * cannot say it twice, whatever the path turns out to be. The longest
+   * match wins, so a product page is never answered by the home link.
+   */
+  const activeHref = links.reduce<string | null>(
+    (best, link) =>
+      samePage(pathname, link.href) &&
+      (best === null || link.href.length > best.length)
+        ? link.href
+        : best,
+    null,
+  );
+
   /* Moving between pages hands the bar back. The intro plays on a page load
      rather than on every visit to "/", so arriving here from somewhere else
      must not take the navigation away again. */
@@ -263,9 +283,9 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
               <Link
                 href={link.href}
                 className={`${styles.link} ${
-                  samePage(pathname, link.href) ? styles.linkActive : ""
+                  link.href === activeHref ? styles.linkActive : ""
                 }`}
-                aria-current={samePage(pathname, link.href) ? "page" : undefined}
+                aria-current={link.href === activeHref ? "page" : undefined}
               >
                 {link.label}
               </Link>

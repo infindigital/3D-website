@@ -74,7 +74,7 @@ const GOBI_COPY = {
   ),
   lead: (
     <>
-      The same masala in four sizes — one fry at home, or a week&rsquo;s
+      The same masala in four sizes: one fry at home, or a week&rsquo;s
       service.
     </>
   ),

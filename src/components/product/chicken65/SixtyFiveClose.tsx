@@ -107,8 +107,8 @@ export default function SixtyFiveClose({
             and the fryer is on.
           </h2>
           <p className={styles.body}>
-            {c65Yield.note} The same pack does the kabab, the fish and the gobi
-            — which is the whole of what 3 in 1 means.
+            {c65Yield.note} The same pack does the kabab, the fish and the
+            gobi, which is the whole of what 3 in 1 means.
           </p>
           <BuyButtons
             className={styles.buys}

@@ -2,18 +2,96 @@
  * The plain-language paragraph, directly under the hero.
  *
  * It exists because everything else on these pages says what the product is
- * through photography, film and a 3D pack — none of which a crawler can
- * read, and none of which a visitor arriving cold from a search result can
- * skim in two seconds either. One measured column of prose serves both.
+ * through photography, film and a 3D pack: none of which a crawler can read,
+ * and none of which a visitor arriving cold from a search result can skim in
+ * two seconds either. One measured column of prose serves both.
+ *
+ * The two products lay it out differently. See IntroVariant in the component
+ * for why, and keep the two compositions distinct if either is edited: the
+ * fault being fixed here was that both pages carried the identical block.
  */
 .intro {
-  padding: clamp(52px, 6vw, 84px) 24px clamp(10px, 2vw, 24px);
+  position: relative;
+  padding: clamp(56px, 6.5vw, 92px) 24px clamp(14px, 2.4vw, 30px);
   background: var(--color-white);
 }
 
 .inner {
-  max-width: 780px;
+  max-width: 1080px;
   margin: 0 auto;
+}
+
+/* ------------------------------------------------------------------ *
+ * The rule variant: one column, hung off an accent rule
+ * ------------------------------------------------------------------ */
+
+.intro[data-variant="rule"] .inner {
+  max-width: 860px;
+}
+
+.intro[data-variant="rule"] .column {
+  position: relative;
+  padding-left: clamp(20px, 3.2vw, 38px);
+}
+
+/* The rule itself. It carries the pack's own colour and stops short of the
+   cross-link, so it measures the statement rather than the whole block. */
+.intro[data-variant="rule"] .column::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to bottom,
+    var(--accent, var(--color-chilli)) 0%,
+    color-mix(in srgb, var(--accent, var(--color-chilli)) 22%, transparent) 100%
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * The index variant: copy on the left, the dishes numbered on the right
+ * ------------------------------------------------------------------ */
+
+.intro[data-variant="index"] .inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  /* Wide between the columns, ordinary between the rows. One value for both
+     puts the column gutter's worth of space under the paragraph, which
+     leaves the cross-link stranded. */
+  column-gap: clamp(28px, 5vw, 72px);
+  row-gap: clamp(20px, 2.4vw, 30px);
+  /* Three rows against six lines of prose: aligned to the top the list
+     leaves a column of nothing under it, which reads as a gap rather than
+     as a margin. Centred, it sits against the paragraph on purpose. */
+  align-items: center;
+}
+
+/* The cross-link runs under both columns, and keeps the prose's measure
+   rather than stretching to the full width of the grid. */
+.crossRow {
+  grid-column: 1 / -1;
+  max-width: 640px;
+}
+
+.crossRow .cross {
+  margin-top: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Shared type
+ * ------------------------------------------------------------------ */
+
+.eyebrow {
+  margin-bottom: 14px;
+  font-family: var(--font-display), var(--font-heading);
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent, var(--color-chilli));
 }
 
 .heading {
@@ -34,10 +112,78 @@
   color: var(--text-secondary);
 }
 
-/* The other pack, one line, in prose rather than as a button — the two
-   pages should point at each other where it actually helps a reader. */
+/* ------------------------------------------------------------------ *
+ * The dishes, as chips (rule variant)
+ * ------------------------------------------------------------------ */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+  list-style: none;
+}
+
+.chip {
+  padding: 7px 15px;
+  border: 1px solid
+    color-mix(in srgb, var(--accent, var(--color-chilli)) 32%, transparent);
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--accent, var(--color-chilli)) 7%,
+    transparent
+  );
+  font-family: var(--font-display), var(--font-heading);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ *
+ * The dishes, numbered (index variant)
+ * ------------------------------------------------------------------ */
+
+.ledger {
+  margin-top: 4px;
+  list-style: none;
+  border-top: 1px solid rgba(58, 28, 10, 0.12);
+}
+
+.ledgerItem {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 15px 2px;
+  border-bottom: 1px solid rgba(58, 28, 10, 0.12);
+}
+
+.ledgerNumber {
+  flex: none;
+  font-family: var(--font-display), var(--font-heading);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--accent, var(--color-chilli));
+  font-variant-numeric: tabular-nums;
+}
+
+.ledgerName {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.98rem, 1.5vw, 1.1rem);
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+/* ------------------------------------------------------------------ *
+ * The other pack, one line, in prose rather than as a button: the two
+ * pages should point at each other where it actually helps a reader.
+ * ------------------------------------------------------------------ */
+
 .cross {
-  margin-top: 18px;
+  margin-top: 20px;
   font-family: var(--font-body);
   font-size: clamp(0.94rem, 1.3vw, 1rem);
   line-height: 1.7;
@@ -63,8 +209,35 @@
   border-radius: 3px;
 }
 
+/* ------------------------------------------------------------------ *
+ * Narrow
+ * ------------------------------------------------------------------ */
+
+@media (max-width: 860px) {
+  /* The two columns stop being two columns well before the phone, because
+     the numbered list needs its own width to read as a list rather than as
+     a squeezed margin note. */
+  .intro[data-variant="index"] .inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+
+  .intro[data-variant="index"] .ledger {
+    max-width: 420px;
+  }
+}
+
 @media (max-width: 640px) {
   .intro {
-    padding: 44px 18px 8px;
+    padding: 46px 18px 10px;
+  }
+
+  .intro[data-variant="rule"] .column {
+    padding-left: 16px;
+  }
+
+  .chip {
+    font-size: 0.72rem;
+    padding: 6px 12px;
   }
 }
