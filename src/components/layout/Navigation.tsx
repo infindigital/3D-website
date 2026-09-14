@@ -42,12 +42,20 @@ const links = [
  * bar that marks nothing, or marks the wrong thing, is the visible result of
  * that disagreement.
  */
+function tidyPath(path: string): string {
+  const clean = path
+    .replace(/\.html$/i, "")
+    /* A directory's own index is that directory. Hosts that hand out
+       /index.html, and VS Code's Live Server, both do this, and without it
+       the home page is not recognised as the home page: the bar then never
+       hides for the intro and sits on top of the opening titles. */
+    .replace(/(^|\/)index$/i, "/")
+    .replace(/(.)\/+$/, "$1");
+  return clean === "" ? "/" : clean;
+}
+
 function samePage(a: string, b: string): boolean {
-  const tidy = (path: string) => {
-    const clean = path.replace(/\.html$/i, "").replace(/\/+$/, "");
-    return clean === "" ? "/" : clean;
-  };
-  return tidy(a) === tidy(b);
+  return tidyPath(a) === tidyPath(b);
 }
 
 /**
@@ -113,7 +121,8 @@ export default function Navigation({ hasLogo = false }: { hasLogo?: boolean }) {
   /* State rather than a ref: this is read while rendering, and it is a
      constant for the life of the page either way. */
   const [firstPath] = useState(pathname);
-  const openingHome = pathname === "/" && firstPath === "/";
+  const onHome = samePage(pathname, "/");
+  const openingHome = onHome && samePage(firstPath, "/");
   const [owner, setOwner] = useState<"waiting" | "held" | "none">(
     openingHome ? "waiting" : "none",
   );
